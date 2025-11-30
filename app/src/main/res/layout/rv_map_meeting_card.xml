@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/white"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+<!--        &lt;!&ndash; 모임 이미지 (높이 증가) &ndash;&gt;-->
+<!--        <ImageView-->
+<!--            android:id="@+id/iv_meeting_image"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="80dp"-->
+<!--            android:scaleType="centerCrop"-->
+<!--            android:background="@color/bg_300"-->
+<!--            android:src="@drawable/placeholder_meeting_image" />-->
+
+        <!-- 모임 정보 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- 모임 제목 -->
+            <TextView
+                android:id="@+id/tv_meeting_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="오늘 저녁 삼겹살 드실 분!"
+                android:textColor="@color/text_100"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <!-- 위치 및 시간 정보 (개선된 레이아웃) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="10dp">
+
+                <!-- 위치 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="start|center_vertical">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_location"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/tv_meeting_location"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="강남역 맛집 골목"
+                        android:textColor="@color/text_200"
+                        android:textSize="12sp"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+
+                </LinearLayout>
+
+                <!-- 시간 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="start|center_vertical">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_clock"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/tv_meeting_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="오후 7:00"
+                        android:textColor="@color/text_200"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- 모임 설명 -->
+            <TextView
+                android:id="@+id/tv_meeting_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="회사 근처에서 맛있는 삼겹살 먹고 싶어요! 같이 드실 분들 환영합니다 😊"
+                android:textColor="@color/text_200"
+                android:textSize="12sp"
+                android:lineSpacingExtra="1dp"
+                android:layout_marginBottom="10dp"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <!-- 참여자 정보 및 시간 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- 참여자 아바타들 (개선된 겹치기) -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- 첫 번째 참여자 -->
+                    <TextView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:text="김"
+                        android:textColor="@color/white"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/participant_avatar_background_1"
+                        android:elevation="2dp" />
+
+                    <!-- 두 번째 참여자 -->
+                    <TextView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:text="이"
+                        android:textColor="@color/white"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/participant_avatar_background_1"
+                        android:layout_marginStart="-8dp"
+                        android:elevation="1dp" />
+
+                </LinearLayout>
+
+                <!-- 추가 필요 인원 -->
+                <TextView
+                    android:id="@+id/tv_participants_needed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+2명 더 필요"
+                    android:textColor="@color/primary_200"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="8dp" />
+
+                <!-- 게시 시간 -->
+                <TextView
+                    android:id="@+id/tv_post_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="30분 전"
+                    android:textColor="@color/text_200"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

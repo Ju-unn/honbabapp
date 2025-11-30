@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 눌려진 상태 -->
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <solid android:color="#02B050" />
+            <!-- 네이버 초록색의 어두운 버전 -->
+        </shape>
+    </item>
+
+    <!-- 일반 상태 -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/naver_green" />
+        </shape>
+    </item>
+
+</selector>

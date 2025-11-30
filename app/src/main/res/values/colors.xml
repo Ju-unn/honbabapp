@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!--혼밥 모여 메인 컬러 -->
+    <color name="primary_100">#FF8A30</color>
+    <color name="primary_200">#FF6F0F</color>
+
+    <!--혼밥 모여 강조 컬러-->
+    <color name="accent_100">#00C7AE</color>
+    <color name="accent_200">#2B2B2B</color>
+
+    <!--혼밥 모여 글자 컬러-->
+    <color name="text_100">#222222</color>
+    <color name="text_200">#888888</color>
+
+    <!--혼밥 모여 배경색 컬러-->
+    <color name="bg_100">#FFFFFF</color>
+    <color name="bg_200">#F7F7F7</color>
+    <color name="bg_300">#EDEDED</color>
+
+    <!--둥근 모서리 컬러-->
+    <color name="border_100">#E0E0E0</color>
+
+    <!--소셜 로그인 컬러-->
+    <color name="kakao_yellow">#FEE500</color>
+    <color name="naver_green">#03C75A</color>
+    <color name="google_red">#EA4335</color>
+
+    <!--시스템 컬러-->
+    <color name="error_red">#F44336</color>
+    <color name="success_green">#4CAF50</color>
+    <color name="warning_orange">#FF9800</color>
+
+    <!--그림자 컬러-->
+    <color name="shadow_light">#0F000000</color>
+    <color name="shadow_medium">#1A000000</color>
+
+</resources>

@@ -1,0 +1,20 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp"
+    android:height="20dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+  <!-- 검색 원 (path로 원 그리기) -->
+  <path
+      android:pathData="M11,3A8,8 0,1 1,11 19A8,8 0,1 1,11 3z"
+      android:strokeColor="#999999"
+      android:strokeWidth="2"
+      android:fillColor="@android:color/transparent"/>
+
+  <!-- 검색 손잡이 -->
+  <path
+      android:pathData="M21,21l-4.35,-4.35"
+      android:strokeColor="#999999"
+      android:strokeWidth="2"
+      android:strokeLineCap="round"/>
+</vector>

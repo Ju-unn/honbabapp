@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_200">
+
+    <!-- 상단 헤더 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:background="@color/bg_100"
+        android:elevation="2dp">
+
+        <!-- 뒤로가기 버튼 -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_arrow_back"
+            android:scaleType="centerCrop"
+            android:background="@color/white"
+            android:layout_marginEnd="12dp" />
+
+        <!-- 제목 -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="계정 / 정보 관리"
+            android:textColor="@color/primary_200"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:letterSpacing="-0.05"
+            android:layout_marginEnd="56dp"/>
+
+
+    </LinearLayout>
+
+    <!-- 스크롤 가능한 컨텐츠 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- 이메일 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="이메일"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:text="hong@email.com"
+                    android:textColor="@color/text_200"
+                    android:textSize="15sp"
+                    android:background="@drawable/readonly_field_background"
+                    android:paddingHorizontal="16dp"
+                    android:gravity="center_vertical" />
+
+            </LinearLayout>
+
+            <!-- 생년월일 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="생년월일"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_birthdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:text="1990년 1월 1일"
+                    android:textColor="@color/text_200"
+                    android:textSize="15sp"
+                    android:background="@drawable/readonly_field_background"
+                    android:paddingHorizontal="16dp"
+                    android:gravity="center_vertical" />
+
+            </LinearLayout>
+
+            <!-- 성별 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="32dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="성별"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_gender"
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:text="남성"
+                    android:textColor="@color/text_200"
+                    android:textSize="15sp"
+                    android:background="@drawable/readonly_field_background"
+                    android:paddingHorizontal="16dp"
+                    android:gravity="center_vertical" />
+
+            </LinearLayout>
+
+            <!-- 계정 관리 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="계정 관리"
+                android:textColor="@color/text_200"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 비밀번호 변경 -->
+            <LinearLayout
+                android:id="@+id/btn_change_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp"
+                android:background="@drawable/menu_item_background"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="12dp"
+                    android:src="@drawable/ic_user_account" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="비밀번호 변경"
+                    android:textColor="@color/text_100"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_chevron_right" />
+
+            </LinearLayout>
+
+            <!-- 계정 탈퇴 -->
+            <LinearLayout
+                android:id="@+id/btn_delete_account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp"
+                android:background="@drawable/menu_item_background"
+                android:layout_marginBottom="24dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_account_remove"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="계정 탈퇴"
+                    android:textColor="@color/error_red"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_chevron_right" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- 하단 고정 버튼 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_100"
+        android:padding="18dp"
+        android:elevation="4dp">
+
+        <Button
+            android:id="@+id/btn_save_profile"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="수정하기"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_primary_background"
+            android:elevation="2dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

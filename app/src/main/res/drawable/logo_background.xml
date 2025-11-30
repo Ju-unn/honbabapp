@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <solid android:color="@color/white" />
+    <corners android:radius="20dp" />
+
+    <!-- 그림자 효과를 위한 그라데이션 -->
+    <gradient
+        android:startColor="#FFFFFFFF"
+        android:centerColor="#FEFFFFFF"
+        android:endColor="#FCFFFFFF"
+        android:angle="45" />
+
+</shape>

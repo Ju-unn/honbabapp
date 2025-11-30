@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.fragment.ChatFragment">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/bg_200">
+
+        <!-- 상단 헤더 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/bg_100">
+
+            <!-- 상단 헤더 -->
+            <LinearLayout
+                android:id="@+id/header_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp"
+                android:background="@color/bg_100">
+
+                <!-- 뒤로가기 버튼 -->
+                <ImageButton
+                    android:id="@+id/btn_back"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/ic_arrow_back"
+                    android:scaleType="centerCrop"
+                    android:background="@color/white"
+                    android:layout_marginEnd="12dp" />
+
+                <!-- 제목 -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="채팅"
+                    android:textColor="@color/primary_200"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:letterSpacing="-0.05"
+                    android:layout_marginEnd="42dp" />
+
+            </LinearLayout>
+
+            <!-- 검색 바 -->
+            <LinearLayout
+                android:id="@+id/search_layout"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/search_bar_background"
+                android:layout_marginHorizontal="16dp"
+                android:paddingHorizontal="16dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_search"
+                    android:layout_marginEnd="8dp" />
+
+                <EditText
+                    android:id="@+id/et_search"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColorHint="@color/text_200"
+                    android:textSize="14sp"
+                    android:background="@android:color/transparent"
+                    android:hint="대화 상대를 검색해보세요" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- TabLayout으로 변경 -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_100"
+            app:tabMode="fixed"
+            app:tabGravity="fill"
+            app:tabIndicatorColor="@color/primary_100"
+            app:tabIndicatorHeight="3dp"
+            app:tabSelectedTextColor="@color/primary_100"
+            app:tabTextColor="@color/text_200">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="전체" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1:1" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="모임" />
+
+        </com.google.android.material.tabs.TabLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/bg_300" />
+
+        <!-- 채팅방 리스트 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_chat_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@color/bg_100"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp"
+            android:clipToPadding="false"
+            android:scrollbars="none" />
+
+    </LinearLayout>
+</FrameLayout>

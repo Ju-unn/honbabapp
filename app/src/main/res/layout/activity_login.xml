@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_200"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp">
+        <!--        앱로고 -->
+        <ImageView
+            android:id="@+id/iv_app_logo"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/app_logo2"
+            android:scaleType="centerCrop"
+            android:layout_marginTop="55dp"
+            android:layout_marginBottom="18dp"
+            android:elevation="3dp"/>
+
+        <!-- 앱 이름 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="혼밥 모여"
+            android:textColor="@color/primary_200"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:letterSpacing="-0.02" />
+
+        <!--        앱 설명-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="혼밥족을 위한 따듯한 만남"
+            android:textColor="@color/text_200"
+            android:textSize="14sp"
+            android:layout_marginBottom="36dp" />
+
+        <!--        로그인 폼-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="18dp">
+
+            <!--        이메일 선택-->
+            <EditText
+                android:id="@+id/et_email"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="이메일 또는 아이디"
+                android:textColorHint="@color/text_200"
+                android:textColor="@color/text_100"
+                android:textSize="14sp"
+                android:inputType="textEmailAddress"
+                android:background="@drawable/edittext_background"
+                android:paddingHorizontal="16dp"
+                android:layout_marginBottom="12dp"/>
+
+            <!--        비밀번호 선택-->
+            <EditText
+                android:id="@+id/et_password"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="비밀번호"
+                android:textColorHint="@color/text_200"
+                android:textColor="@color/text_100"
+                android:textSize="14sp"
+                android:inputType="textPassword"
+                android:background="@drawable/edittext_background"
+                android:paddingHorizontal="16dp"
+                android:layout_marginBottom="18dp"/>
+
+            <!--        로그인 버튼-->
+            <Button
+                android:id="@+id/btn_login"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="로그인"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@drawable/button_primary_background"
+                android:elevation="2dp"/>
+
+        </LinearLayout>
+
+        <!--        회원가입 -->
+        <TextView
+            android:id="@+id/tv_singup_link"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="이메일로 회원가입"
+            android:textColor="@color/primary_100"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"/>
+
+        <!--        소셜 로그인 구분선-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@color/border_100"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="또는"
+                android:textColor="@color/text_200"
+                android:textSize="12sp"
+                android:paddingHorizontal="16dp"/>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@color/border_100"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="55dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            >
+
+            <!-- 카카오 로그인 -->
+            <FrameLayout
+                android:id="@+id/btn_kakao_login"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/social_button_kakao_background"
+                android:layout_marginEnd="15dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless">
+
+                <ImageView
+                    android:layout_width="35dp"
+                    android:layout_height="33dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="카카오 로그인"
+                    android:src="@drawable/ic_kakao" />
+
+            </FrameLayout>
+
+            <!-- 네이버 로그인 -->
+            <FrameLayout
+                android:id="@+id/btn_naver_login"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/social_button_naver_background"
+                android:layout_marginEnd="15dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless">
+
+                <ImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_naver"
+                    android:contentDescription="네이버 로그인" />
+
+            </FrameLayout>
+
+            <!-- 구글 로그인 -->
+            <FrameLayout
+                android:id="@+id/btn_google_login"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/social_button_google_background"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="구글 로그인"
+                    android:src="@drawable/ic_google" />
+
+            </FrameLayout>
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+
+
+
+
+</ScrollView>
+

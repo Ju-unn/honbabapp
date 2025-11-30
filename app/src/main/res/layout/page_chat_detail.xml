@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_200">
+
+    <!-- 상단 헤더 -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:background="@color/bg_100"
+        android:elevation="2dp"
+        android:layout_marginTop="5dp">
+
+        <!-- 뒤로가기 버튼 -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_arrow_back"
+            android:scaleType="centerCrop"
+            android:background="@color/white"
+            android:layout_marginEnd="20dp" />
+
+        <!-- 채팅방 정보 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!--        프로필-->
+            <ImageView
+                android:id="@+id/im_chat_avatar"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/profile_avatar_background"
+                android:src="@drawable/ic_kakao"
+                android:layout_marginEnd="10dp"/>
+
+            <!-- 채팅방 제목 및 정보 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_chat_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="삼겹살 아저씨"
+                    android:textColor="@color/text_100"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tv_chat_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="매너 점수 4.6"
+                    android:textColor="@color/text_200"
+                    android:textSize="12sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 메뉴 버튼 -->
+        <ImageButton
+            android:id="@+id/btn_call"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_phone"
+            android:background="@color/white" />
+
+        <!-- 메뉴 버튼 -->
+        <ImageButton
+            android:id="@+id/btn_menu"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_bar3_vertical"
+            android:background="@color/white" />
+
+    </LinearLayout>
+
+    <!-- 메시지 리스트 -->
+
+    <!-- 하단 입력창 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_messages"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/bg_100"
+        android:clipToPadding="false"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        android:scrollbars="none" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:background="@color/bg_100"
+        android:elevation="4dp">
+
+        <!-- 첨부 버튼 -->
+
+        <!-- 메시지 입력창 -->
+        <ImageButton
+            android:id="@+id/btn_attach"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="12dp"
+            android:background="@color/white"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_circle_add" />
+
+        <EditText
+            android:id="@+id/et_message"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:hint="메시지를 입력하세요"
+            android:textColorHint="@color/text_200"
+            android:textColor="@color/text_100"
+            android:textSize="15sp"
+            android:background="@drawable/message_input_background"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp"
+            android:layout_marginEnd="8dp"
+            android:maxLines="4"
+            android:inputType="textMultiLine|textCapSentences" />
+
+        <!-- 전송 버튼 -->
+        <ImageButton
+            android:id="@+id/btn_send"
+            android:layout_width="44dp"
+            android:layout_height="55dp"
+            android:src="@drawable/ic_send"
+            android:background="@color/white"
+            android:scaleType="centerCrop"
+            />
+
+    </LinearLayout>
+
+</LinearLayout>

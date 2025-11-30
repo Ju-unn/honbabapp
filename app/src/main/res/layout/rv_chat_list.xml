@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="16dp"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+<!--    채팅 아바타-->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="14dp">
+
+<!--        프로필-->
+        <ImageView
+            android:id="@+id/im_chat_avatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_kakao"/>
+
+    </FrameLayout>
+
+<!--    채팅 정보-->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+<!--        채팅방 제목-->
+        <TextView
+            android:id="@+id/tv_chat_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="삼겹살 아저씨"
+            android:textColor="@color/text_100"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_marginBottom="2dp"/>
+
+<!--        마지막 메세지 미리보기-->
+        <TextView
+            android:id="@+id/tv_last_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="카카오에서 고기 줌"
+            android:textColor="@color/text_200"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="end"
+        android:layout_marginStart="12dp">
+
+<!--        시간-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5분전"
+            android:textColor="@color/text_200"
+            android:textSize="11sp"
+            android:layout_marginBottom="4dp"/>
+
+<!--        읽지 않은 메세지 배지-->
+        <TextView
+            android:id="@+id/tv_unread_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2"
+            android:textColor="@color/white"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:background="@drawable/unread_badge_background"
+            android:gravity="center"
+            android:minWidth="20dp"
+            android:minHeight="20dp"
+            android:paddingHorizontal="6dp"
+            android:visibility="visible"/>
+
+
+
+
+    </LinearLayout>
+
+
+</LinearLayout>

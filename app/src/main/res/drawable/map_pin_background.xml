@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+<!--    눌려진 상태-->
+    <item android:state_pressed="true">
+        <shape>
+            <solid android:color="@color/primary_200"/>
+            <stroke
+                android:width="2dp"
+                android:color="@color/white" />
+        </shape>
+    </item>
+
+<!--    일반 상태-->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/primary_100"/>
+            <stroke
+                android:width="2dp"
+                android:color="@color/white"/>
+        </shape>
+    </item>
+</selector>

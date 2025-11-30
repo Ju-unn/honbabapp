@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="end"
+    android:padding="4dp">
+
+    <!-- 왼쪽 여백 (내 메시지는 오른쪽 정렬) -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.3" />
+
+    <!-- 메시지 내용 -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.7"
+        android:orientation="vertical"
+        android:gravity="end">
+
+        <!-- 메시지 버블 -->
+        <TextView
+            android:id="@+id/tv_message_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="안녕하세요!12341231231231231231231231233123"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:background="@drawable/message_bubble_sent"
+            android:padding="12dp"
+            android:layout_marginBottom="4dp"
+            android:maxWidth="250dp" />
+
+        <!-- 시간 및 읽음 상태 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- 읽음 상태 -->
+            <TextView
+                android:id="@+id/tv_read_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="읽음"
+                android:textColor="@color/accent_100"
+                android:textSize="10sp"
+                android:layout_marginEnd="4dp" />
+
+            <!-- 시간 -->
+            <TextView
+                android:id="@+id/tv_message_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="오후 3:12"
+                android:textColor="@color/text_200"
+                android:textSize="10sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
