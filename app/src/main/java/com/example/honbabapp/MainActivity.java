@@ -6,6 +6,7 @@ import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.honbabapp.data.MockData;
@@ -13,6 +14,7 @@ import com.example.honbabapp.data.meeting.Meeting;
 import com.example.honbabapp.data.user.User;
 import com.example.honbabapp.databinding.ActivityMainBinding;
 import com.example.honbabapp.ui.adapter.MainFragmentAdapter;
+import com.example.honbabapp.ui.fragment.MapFragment;
 import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
@@ -115,6 +117,19 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public void navigationToMapWithCategory(String category) {
+        Bundle bundle = new Bundle();
+        bundle.putString("category" , category);
+
+        Fragment mapFragment = getSupportFragmentManager().findFragmentById(R.id.nav_map);
+
+        if (mapFragment instanceof MapFragment){
+            ((MapFragment) mapFragment).setCategory(category);
+        }
+
+        binding.bottomNavigationBar.setSelectedItemId(R.id.nav_map);
     }
 
 }

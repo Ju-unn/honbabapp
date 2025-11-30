@@ -1,6 +1,5 @@
 package com.example.honbabapp.ui.fragment;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -10,8 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.honbabapp.MeetingListActivity;
-import com.example.honbabapp.data.MockData;
+import com.example.honbabapp.MainActivity;
 import com.example.honbabapp.databinding.FragmentHomeBinding;
 import com.example.honbabapp.ui.adapter.HomeAllMeetingListAdapter;
 import com.example.honbabapp.ui.adapter.HomeHotMeetingListAdapter;
@@ -32,26 +30,94 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.i("HomeFragment" , "onCreateView");
-
         binding = FragmentHomeBinding.inflate(inflater , container , false);
-        hotMeetingListAdapter = new HomeHotMeetingListAdapter();
-        allMeetingListAdapter = new HomeAllMeetingListAdapter();
 
-        /// hot meetings recyclerView
+        // recyclerViews 설정
+        initRecyclerViews();
+
+        return binding.getRoot();
+    }
+
+    public void initRecyclerViews() {
+        // Hot Meetings RecyclerView
+        hotMeetingListAdapter = new HomeHotMeetingListAdapter();
         binding.rvHotMeetings.setAdapter(hotMeetingListAdapter);
 
-        /// all meetings recyclerView
+        // All Meetings RecyclerView
+        allMeetingListAdapter = new HomeAllMeetingListAdapter();
         binding.rvMeetings.setAdapter(allMeetingListAdapter);
+    }
 
+    public void initCategoryButtons() {
+        // 전체
         binding.categoryAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getContext() , MeetingListActivity.class);
-                startActivity(intent);
+               navigateToMap("잔체");
             }
         });
 
-        return binding.getRoot();
+        // 한식
+        binding.categoryKorean.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigateToMap("한식");
+            }
+        });
+
+        // 중식
+        binding.categoryChinese.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigateToMap("중식");
+            }
+        });
+
+        // 일식
+        binding.categoryJapanese.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigateToMap("일식");
+            }
+        });
+
+
+        // 오마카세
+        binding.categoryOmakase.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigateToMap("오마카세");
+            }
+        });
+
+        // 양식
+        binding.categoryWestern.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigateToMap("양식");
+            }
+        });
+
+        // 술집
+        binding.categoryPub.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigateToMap("술집");
+            }
+        });
+
+        // 카페
+        binding.categoryCafe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigateToMap("카페");
+            }
+        });
+    }
+
+    public void navigateToMap(String category){
+        MainActivity mainActivity = (MainActivity) requireActivity();
+        mainActivity.navigationToMapWithCategory(category);
     }
 
     @Override

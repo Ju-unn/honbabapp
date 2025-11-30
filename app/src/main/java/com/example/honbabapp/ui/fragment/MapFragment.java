@@ -16,24 +16,10 @@ import com.example.honbabapp.databinding.FragmentMapBinding;
 public class MapFragment extends Fragment {
 
     private FragmentMapBinding binding;
+    private String selectedCategory;
 
     public MapFragment() {
         Log.i("MapFragment" , "생성");
-    }
-
-    public static MapFragment newInstance(String param1, String param2) {
-        MapFragment fragment = new MapFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-
-        }
     }
 
     @Override
@@ -43,5 +29,16 @@ public class MapFragment extends Fragment {
 
         binding = FragmentMapBinding.inflate(inflater , container , false);
         return binding.getRoot();
+    }
+
+    public void setCategory(String category) {
+        this.selectedCategory = category;
+        if (binding != null) {
+            filterByCategory(category);
+        }
+    }
+
+    public void filterByCategory(String category) {
+        binding.btnFoodType.setText(category);
     }
 }
