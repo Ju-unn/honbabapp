@@ -6,24 +6,32 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.honbabapp.MainActivity;
 import com.example.honbabapp.R;
 import com.example.honbabapp.databinding.FragmentChatBinding;
 import com.example.honbabapp.databinding.FragmentMapBinding;
+import com.example.honbabapp.databinding.PageMapBottomSheetFilterBinding;
 import com.example.honbabapp.databinding.PageMapBottomSheetSortBinding;
+import com.example.honbabapp.databinding.PageMapFilterFoodBinding;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import java.util.HashSet;
 
 public class MapFragment extends Fragment {
 
     private FragmentMapBinding fragmentMapbinding;
     private PageMapBottomSheetSortBinding bottomSheetSortBinding;
-    private String selectedCategory;
+    private PageMapBottomSheetFilterBinding bottomSheetFilterBinding;
+    private HashSet<String> selectedFoodTypes = new HashSet<>();
     private String currentSortOption = "전체";
+
 
     public MapFragment() {
         Log.i("MapFragment" , "생성");
@@ -42,11 +50,27 @@ public class MapFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Log.i("MapFragment", "onViewCreated");
+        // 뒤로가기 버튼
+        onBackButtonClick();
 
-        // 정렬 버튼 클릭 이벤트
+        // 정렬 버튼 초기화
         initSortButton();
 
+        // 필터 버튼 초기화
+        initFilterButton();
     }
+
+    public void onBackButtonClick() {
+        fragmentMapbinding.btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity mainActivity = (MainActivity) requireActivity();
+                mainActivity.navigationToHome();
+            }
+        });
+    }
+
+    /// 인기순 , 전체 , 거리순 필터 버튼
     public void initSortButton() {
         fragmentMapbinding.btnSort.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,4 +156,63 @@ public class MapFragment extends Fragment {
             fragmentMapbinding.tvSortOption.setText(currentSortOption);
         }
     }
+
+
+    /// 필터 버튼 클릭 이벤트
+    public void initFilterButton() {
+        fragmentMapbinding.btnFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showFilterBottomSheet();
+            }
+        });
+    }
+
+    public void showFilterBottomSheet() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
+        bottomSheetFilterBinding = PageMapBottomSheetFilterBinding.inflate(LayoutInflater.from(getContext()));
+        bottomSheetDialog.setContentView(bottomSheetFilterBinding.getRoot());
+
+        /// 음식 버튼 클릭시
+        setupFoodButtons();
+
+        /// 닫기 버튼 클릭시
+        bottomSheetFilterBinding.btnClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+
+        /// 초기화 버튼 클릭시
+        bottomSheetFilterBinding.btnReset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedFoodTypes.clear();
+            }
+        });
+
+        /// 결과 보기 버튼 클릭시
+        bottomSheetFilterBinding.btnApply.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+
+        bottomSheetDialog.show();
+    }
+
+    public void setupFoodButtons() {
+        setupFoodButton()
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        fragmentMapbinding = null;
+        bottomSheetSortBinding = null;
+        bottomSheetFilterBinding = null;
+    }
+
 }

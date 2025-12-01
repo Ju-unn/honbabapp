@@ -37,8 +37,14 @@ public class MainActivity extends AppCompatActivity {
         initNavigation();
     }
 
+    /// mapPage로 이동
     public void navigationToMap() {
         binding.viewPager.setCurrentItem(1);
+    }
+
+    /// homePage로 이동
+    public void navigationToHome() {
+        binding.viewPager.setCurrentItem(0);
     }
 
     private void testCode() {
