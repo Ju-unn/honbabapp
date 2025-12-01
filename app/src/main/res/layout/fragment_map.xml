@@ -236,9 +236,10 @@
                     android:focusable="true">
 
                     <TextView
+                        android:id="@+id/tv_sort_option"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="추천순"
+                        android:text="전체순"
                         android:textColor="@color/text_200"
                         android:textSize="13sp" />
 

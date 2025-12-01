@@ -56,6 +56,7 @@ public class MapFragment extends Fragment {
         });
     }
 
+    /// 버튼 클릭 이벤트
     public void showSortButtonSheet() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
         bottomSheetSortBinding = PageMapBottomSheetSortBinding.inflate(LayoutInflater.from(getContext()));
@@ -77,6 +78,7 @@ public class MapFragment extends Fragment {
             public void onClick(View v) {
                 currentSortOption = "전체";
                 updateCheckMarksWithBinding(bottomSheetSortBinding);
+                updateSortButtonText();
                 bottomSheetDialog.dismiss();
             }
         });
@@ -87,6 +89,7 @@ public class MapFragment extends Fragment {
             public void onClick(View v) {
                 currentSortOption = "인기순";
                 updateCheckMarksWithBinding(bottomSheetSortBinding);
+                updateSortButtonText();
                 bottomSheetDialog.dismiss();
             }
         });
@@ -97,6 +100,7 @@ public class MapFragment extends Fragment {
             public void onClick(View v) {
                 currentSortOption = "거리순";
                 updateCheckMarksWithBinding(bottomSheetSortBinding);
+                updateSortButtonText();
                 bottomSheetDialog.dismiss();
             }
         });
@@ -104,6 +108,7 @@ public class MapFragment extends Fragment {
         bottomSheetDialog.show();
     }
 
+    /// 체크표시 여부
     public void updateCheckMarksWithBinding(PageMapBottomSheetSortBinding bottomSheetSortBinding) {
         /// 모든 체크 숨기기
         bottomSheetSortBinding.checkAll.setVisibility(View.GONE);
@@ -114,10 +119,17 @@ public class MapFragment extends Fragment {
         if (currentSortOption.equals("전체")) {
             bottomSheetSortBinding.checkAll.setVisibility(View.VISIBLE);
         } else if (currentSortOption.equals("인기순")) {
-            bottomSheetSortBinding.sortPopular.setVisibility(View.VISIBLE);
+            bottomSheetSortBinding.checkPopular.setVisibility(View.VISIBLE);
         } else if (currentSortOption.equals("거리순")) {
-            bottomSheetSortBinding.sortDistance.setVisibility(View.VISIBLE);
+            bottomSheetSortBinding.checkDistance.setVisibility(View.VISIBLE);
         }
 
+    }
+
+    /// fragment_map.xml textview수정
+    public void updateSortButtonText() {
+        if (fragmentMapbinding != null & fragmentMapbinding.tvSortOption != null) {
+            fragmentMapbinding.tvSortOption.setText(currentSortOption);
+        }
     }
 }

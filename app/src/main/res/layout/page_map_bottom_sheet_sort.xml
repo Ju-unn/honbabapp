@@ -7,7 +7,7 @@
     android:background="@drawable/bottom_sheet_background"
     android:paddingBottom="24dp">
 
-    <!-- 상단 핸들바 (드래그 인디케이터) -->
+    <!-- 상단 핸들바 -->
     <View
         android:layout_width="40dp"
         android:layout_height="4dp"
@@ -75,7 +75,6 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_list"
-                app:tint="@color/text_200"
                 android:layout_marginEnd="16dp" />
 
             <TextView
@@ -112,8 +111,8 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_star"
-                app:tint="@color/text_200"
                 android:layout_marginEnd="16dp" />
+            <!-- ✅ tint 제거! 원래 색(노란색) 사용 -->
 
             <TextView
                 android:layout_width="0dp"
@@ -149,8 +148,8 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_location"
-                app:tint="@color/text_200"
                 android:layout_marginEnd="16dp" />
+            <!-- ✅ tint 제거! 원래 색 사용 -->
 
             <TextView
                 android:layout_width="0dp"
