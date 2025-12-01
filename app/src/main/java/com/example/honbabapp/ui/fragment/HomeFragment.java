@@ -2,6 +2,8 @@ package com.example.honbabapp.ui.fragment;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -32,10 +34,20 @@ public class HomeFragment extends Fragment {
         Log.i("HomeFragment" , "onCreateView");
         binding = FragmentHomeBinding.inflate(inflater , container , false);
 
+
+
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Log.i("HomeFragment" , "onViewCreated");
         // recyclerViews 설정
         initRecyclerViews();
 
-        return binding.getRoot();
+        // 카테고리 클릭 이벤트 설정
+        initCategoryButtons();
     }
 
     public void initRecyclerViews() {
@@ -117,7 +129,7 @@ public class HomeFragment extends Fragment {
 
     public void navigateToMap(String category){
         MainActivity mainActivity = (MainActivity) requireActivity();
-        mainActivity.navigationToMapWithCategory(category);
+        mainActivity.navigationToMap();
     }
 
     @Override

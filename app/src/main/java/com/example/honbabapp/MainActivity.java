@@ -18,6 +18,7 @@ import com.example.honbabapp.ui.fragment.MapFragment;
 import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,6 +35,10 @@ public class MainActivity extends AppCompatActivity {
         testCode();
         initViewPager();
         initNavigation();
+    }
+
+    public void navigationToMap() {
+        binding.viewPager.setCurrentItem(1);
     }
 
     private void testCode() {
@@ -117,19 +122,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    public void navigationToMapWithCategory(String category) {
-        Bundle bundle = new Bundle();
-        bundle.putString("category" , category);
-
-        Fragment mapFragment = getSupportFragmentManager().findFragmentById(R.id.nav_map);
-
-        if (mapFragment instanceof MapFragment){
-            ((MapFragment) mapFragment).setCategory(category);
-        }
-
-        binding.bottomNavigationBar.setSelectedItemId(R.id.nav_map);
     }
 
 }
