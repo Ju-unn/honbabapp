@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.text.Layout;
 import android.util.Log;
@@ -19,9 +20,11 @@ import com.example.honbabapp.databinding.FragmentMapBinding;
 import com.example.honbabapp.databinding.PageMapBottomSheetFilterBinding;
 import com.example.honbabapp.databinding.PageMapBottomSheetSortBinding;
 import com.example.honbabapp.databinding.PageMapFilterFoodBinding;
+import com.example.honbabapp.ui.adapter.MapFilterPagerAdapter;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.HashSet;
 
@@ -30,9 +33,17 @@ public class MapFragment extends Fragment {
     private FragmentMapBinding fragmentMapbinding;
     private PageMapBottomSheetSortBinding bottomSheetSortBinding;
     private PageMapBottomSheetFilterBinding bottomSheetFilterBinding;
+    private MapFilterPagerAdapter adapter;
+    private MapFilterFoodFragment foodFragment;
+    private MapFilterPriceFragment priceFragment;
+
+    // 선택한 foodtypes를 담는곳
     private HashSet<String> selectedFoodTypes = new HashSet<>();
     private String currentSortOption = "전체";
 
+    // sliderRange price
+    private int minPrice = 0;
+    private int maxPrice = 50000;
 
     public MapFragment() {
         Log.i("MapFragment" , "생성");
@@ -174,16 +185,13 @@ public class MapFragment extends Fragment {
         bottomSheetFilterBinding = PageMapBottomSheetFilterBinding.inflate(LayoutInflater.from(getContext()));
         bottomSheetDialog.setContentView(bottomSheetFilterBinding.getRoot());
 
-        /// 음식 버튼 클릭시
-        setupFoodButtons();
+        setupViewPager();
 
         /// 쓰레기통 아이콘 클릭시
         bottomSheetFilterBinding.icDeleteAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                selectedFoodTypes.clear();
-                resetAllFoodButtons();
-                updateSelectedChips();
+                resetAllFilters();
             }
         });
 
@@ -199,9 +207,7 @@ public class MapFragment extends Fragment {
         bottomSheetFilterBinding.btnReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                selectedFoodTypes.clear();
-                resetAllFoodButtons();
-                updateSelectedChips();
+                resetAllFilters();
             }
         });
 
@@ -209,9 +215,6 @@ public class MapFragment extends Fragment {
         bottomSheetFilterBinding.btnApply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                selectedFoodTypes.clear();
-                updateSelectedChips();
-                resetAllFoodButtons();
                 bottomSheetDialog.dismiss();
             }
         });
@@ -219,123 +222,102 @@ public class MapFragment extends Fragment {
         bottomSheetDialog.show();
     }
 
-    public void setupFoodButtons() {
-        // 한식
-        setupFoodButton(bottomSheetFilterBinding.pageFood.btnKorean, "한식");
-        // 중식
-        setupFoodButton(bottomSheetFilterBinding.pageFood.btnChinese, "중식");
-        // 일식
-        setupFoodButton(bottomSheetFilterBinding.pageFood.btnJapanese, "일식");
-        // 오마카세
-        setupFoodButton(bottomSheetFilterBinding.pageFood.btnOmakase, "오마카세");
-        // 양식
-        setupFoodButton(bottomSheetFilterBinding.pageFood.btnWestern, "양식");
-        // 술집
-        setupFoodButton(bottomSheetFilterBinding.pageFood.btnBar, "술집");
-        // 카페
-        setupFoodButton(bottomSheetFilterBinding.pageFood.btnCafe, "카페");
+    public void setupViewPager() {
+        bottomSheetFilterBinding.viewPager.setAdapter(adapter);
+        new TabLayoutMediator(bottomSheetFilterBinding.tabLayout, bottomSheetFilterBinding.viewPager ,
+                (tab, position) -> tab.setText(position == 0 ? "음식 종류" : "가격")).attach();
+        bottomSheetFilterBinding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 0 && foodFragment == null) {
+                    foodFragment = (MapFilterFoodFragment) getChildFragmentManager().findFragmentByTag("f0" );
+                    if (foodFragment != null) setupFoodFragmentListener();
+                }
+                else if (position == 1 && priceFragment == null) {
+                    priceFragment = (MapFilterPriceFragment) getChildFragmentManager().findFragmentByTag("f1");
+                    if (priceFragment != null) setupPriceFragmentListener();
+                }
+            }
+        });
     }
 
-    /// 선택된 버튼 selected 활성화
-    public void setupFoodButton(Button button , String foodType) {
-        button.setOnClickListener(new View.OnClickListener() {
+    public void setupFoodFragmentListener() {
+        foodFragment.setOnFoodSelectedListener(new MapFilterFoodFragment.OnFoodSelectedListener() {
             @Override
-            public void onClick(View v) {
-                if (button.isSelected()) {
-                    button.setSelected(false);
-                    selectedFoodTypes.remove(foodType);
-                }
-                else {
-                    button.setSelected(true);
-                    selectedFoodTypes.add(foodType);
-                }
-
+            public void onFoodSelected(String foodType, boolean isSelected) {
+                if (isSelected) selectedFoodTypes.add(foodType);
+                else selectedFoodTypes.remove(foodType);
                 updateSelectedChips();
             }
         });
     }
 
-    /// 필터 chip 생성
-    public Chip createFilterChip(String foodType) {
-        Chip chip = new Chip(requireContext());
-        chip.setText(foodType);
-        chip.setCloseIconVisible(true);
-        chip.setChipBackgroundColorResource(R.color.primary_100);
-        chip.setTextColor(getResources().getColor(android.R.color.white , null));
-        chip.setCloseIconTintResource(android.R.color.white);
-        chip.setChipStrokeWidth(0);
-        chip.setEnsureMinTouchTargetSize(false);
-
-        chip.setOnCloseIconClickListener(new View.OnClickListener() {
+    public void setupPriceFragmentListener() {
+        priceFragment.setOnPriceSelectedListener(new MapFilterPriceFragment.OnPriceSelectedListener() {
             @Override
-            public void onClick(View v) {
-                selectedFoodTypes.remove(foodType);
-                uncheckFoodButton(foodType);
+            public void onPriceSelected(int min, int max) {
                 updateSelectedChips();
             }
         });
-        return chip;
     }
 
     /// 선택된 필터 chip
     public void updateSelectedChips() {
         //chip 초기화
         bottomSheetFilterBinding.chipGroupSelected.removeAllViews();
+        boolean has = !selectedFoodTypes.isEmpty() || !(minPrice == 0 && maxPrice == 50000);
+        bottomSheetFilterBinding.selectedFiltersScroll.setVisibility(has ? View.VISIBLE : View.GONE);
 
-        if (selectedFoodTypes.isEmpty()){
-            bottomSheetFilterBinding.selectedFiltersScroll.setVisibility(View.GONE);
-            return;
-        }
-
-        bottomSheetFilterBinding.selectedFiltersScroll.setVisibility(View.VISIBLE);
-
-        for (String foodType : selectedFoodTypes) {
-            Chip chip = createFilterChip(foodType);
-            bottomSheetFilterBinding.chipGroupSelected.addView(chip);
+        if (!has) return;
+        for (String food : selectedFoodTypes) {
+            bottomSheetFilterBinding.chipGroupSelected.addView(createFilterChip(food , "food"));
+            if (!(minPrice == 0 && maxPrice == 50000))
+                bottomSheetFilterBinding.chipGroupSelected.addView(createFilterChip(formatPrice(minPrice) + "~" + formatPrice(maxPrice), "price"));
         }
     }
 
-    public void uncheckFoodButton(String foodType) {
-        Button button = null;
 
-        switch (foodType) {
-            case "한식":
-                button = bottomSheetFilterBinding.pageFood.btnKorean;
-                break;
-            case "중식":
-                button = bottomSheetFilterBinding.pageFood.btnChinese;
-                break;
-            case "일식":
-                button = bottomSheetFilterBinding.pageFood.btnJapanese;
-                break;
-            case "오마카세":
-                button = bottomSheetFilterBinding.pageFood.btnOmakase;
-                break;
-            case "양식":
-                button = bottomSheetFilterBinding.pageFood.btnWestern;
-                break;
-            case "술집":
-                button = bottomSheetFilterBinding.pageFood.btnBar;
-                break;
-            case "카페":
-                button = bottomSheetFilterBinding.pageFood.btnCafe;
-                break;
-        }
+    /// 필터 chip 생성
+    public Chip createFilterChip(String text , String type) {
+        Chip chip = new Chip(requireContext());
+        chip.setText(text);
+        chip.setCloseIconVisible(true);
+        chip.setChipBackgroundColorResource(R.color.primary_100);
+        chip.setTextColor(getResources().getColor(android.R.color.white , null));
+        chip.setCloseIconTintResource(android.R.color.white);
 
-        if (button != null) {
-            button.setSelected(false);
-        }
+        chip.setOnCloseIconClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (type.equals("food")) {
+                    selectedFoodTypes.remove(text);
+                    if (foodFragment != null) foodFragment.setButtonSelected(text , false);
+                } else {
+                    minPrice = 0;
+                    maxPrice = 50000;
+                    if (priceFragment != null) priceFragment.resetPrice();
+                }
+                updateSelectedChips();
+            }
+        });
+        return chip;
     }
 
     /// 모든 음식 버튼 초기화
-    private void resetAllFoodButtons() {
-        bottomSheetFilterBinding.pageFood.btnKorean.setSelected(false);
-        bottomSheetFilterBinding.pageFood.btnChinese.setSelected(false);
-        bottomSheetFilterBinding.pageFood.btnJapanese.setSelected(false);
-        bottomSheetFilterBinding.pageFood.btnOmakase.setSelected(false);
-        bottomSheetFilterBinding.pageFood.btnWestern.setSelected(false);
-        bottomSheetFilterBinding.pageFood.btnBar.setSelected(false);
-        bottomSheetFilterBinding.pageFood.btnCafe.setSelected(false);
+    public void resetAllFilters() {
+        selectedFoodTypes.clear();
+        minPrice = 0;
+        maxPrice = 50000;
+        if (foodFragment != null) foodFragment.resetAllButtons();
+        if (priceFragment != null) priceFragment.resetPrice();
+        updateSelectedChips();
+    }
+
+    public String formatPrice(int price) {
+        if (price >= 10000) return (price / 10000) + "만원";
+        if (price >= 1000) return (price / 1000) + "천원";
+        return price + "원";
+
     }
 
     @Override

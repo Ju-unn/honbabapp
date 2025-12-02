@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- RangeSlider 초기 값 (0원 ~ 50,000원) -->
+    <array name="initial_price_range">
+        <item>0.0</item>
+        <item>50000.0</item>
+    </array>
+</resources>

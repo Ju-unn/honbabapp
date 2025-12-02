@@ -33,10 +33,24 @@
 
     </LinearLayout>
 
-    <!-- 📌 음식 종류 페이지 직접 포함 -->
-    <include
-        android:id="@+id/page_food"
-        layout="@layout/page_map_filter_food" />
+    <!-- 📌 TabLayout -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@android:color/white"
+        app:tabIndicatorColor="@color/primary_100"
+        app:tabIndicatorHeight="3dp"
+        app:tabSelectedTextColor="@color/primary_100"
+        app:tabTextColor="@color/text_200"
+        app:tabMode="fixed"
+        app:tabGravity="fill" />
+
+    <!-- 📌 ViewPager2 -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="300dp" />
 
     <!-- 📌 선택된 필터 표시 영역 -->
     <HorizontalScrollView
