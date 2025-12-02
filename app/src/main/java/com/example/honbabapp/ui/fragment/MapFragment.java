@@ -223,9 +223,20 @@ public class MapFragment extends Fragment {
     }
 
     public void setupViewPager() {
+        adapter = new MapFilterPagerAdapter(this);
         bottomSheetFilterBinding.viewPager.setAdapter(adapter);
-        new TabLayoutMediator(bottomSheetFilterBinding.tabLayout, bottomSheetFilterBinding.viewPager ,
-                (tab, position) -> tab.setText(position == 0 ? "음식 종류" : "가격")).attach();
+
+        bottomSheetFilterBinding.viewPager.post(new Runnable() {
+            @Override
+            public void run() {
+                new TabLayoutMediator(
+                        bottomSheetFilterBinding.tabLayout ,
+                        bottomSheetFilterBinding.viewPager ,
+                        (tab, position) -> tab.setText(position == 0 ? "음식 종류" : "가격")
+                ).attach();
+            }
+        });
+
         bottomSheetFilterBinding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {

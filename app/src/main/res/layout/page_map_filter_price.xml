@@ -16,15 +16,15 @@
         android:textStyle="bold"
         android:layout_marginBottom="24dp" />
 
-    <!-- 📌 RangeSlider -->
+    <!-- 📌 RangeSlider (Material 1.9.0 호환) -->
     <com.google.android.material.slider.RangeSlider
         android:id="@+id/price_range_slider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:valueFrom="0"
-        android:valueTo="50000"
+        android:valueFrom="0.0"
+        android:valueTo="50000.0"
+        android:stepSize="1000.0"
         app:values="@array/initial_price_range"
-        app:stepSize="1000"
         app:trackColorActive="@color/primary_100"
         app:trackColorInactive="@color/bg_200"
         app:thumbColor="@color/primary_100"
@@ -54,7 +54,8 @@
             android:text=" ~ "
             android:textColor="@color/text_200"
             android:textSize="16sp"
-            android:layout_marginHorizontal="8dp" />
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" />
 
         <TextView
             android:id="@+id/tv_max_price"
@@ -67,7 +68,7 @@
 
     </LinearLayout>
 
-    <!-- 📌 빠른 선택 버튼 (옵션) -->
+    <!-- 📌 빠른 선택 버튼 -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
