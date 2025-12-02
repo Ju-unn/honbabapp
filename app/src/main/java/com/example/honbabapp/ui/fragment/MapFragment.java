@@ -11,16 +11,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.example.honbabapp.MainActivity;
 import com.example.honbabapp.R;
-import com.example.honbabapp.databinding.FragmentChatBinding;
 import com.example.honbabapp.databinding.FragmentMapBinding;
 import com.example.honbabapp.databinding.PageMapBottomSheetFilterBinding;
 import com.example.honbabapp.databinding.PageMapBottomSheetSortBinding;
 import com.example.honbabapp.databinding.PageMapFilterFoodBinding;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.chip.Chip;
 
 import java.util.HashSet;
 
@@ -176,7 +177,17 @@ public class MapFragment extends Fragment {
         /// 음식 버튼 클릭시
         setupFoodButtons();
 
-        /// 닫기 버튼 클릭시
+        /// 쓰레기통 아이콘 클릭시
+        bottomSheetFilterBinding.icDeleteAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedFoodTypes.clear();
+                resetAllFoodButtons();
+                updateSelectedChips();
+            }
+        });
+
+        /// close 아이콘 클릭시
         bottomSheetFilterBinding.btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -189,6 +200,8 @@ public class MapFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 selectedFoodTypes.clear();
+                resetAllFoodButtons();
+                updateSelectedChips();
             }
         });
 
@@ -196,6 +209,9 @@ public class MapFragment extends Fragment {
         bottomSheetFilterBinding.btnApply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                selectedFoodTypes.clear();
+                updateSelectedChips();
+                resetAllFoodButtons();
                 bottomSheetDialog.dismiss();
             }
         });
@@ -204,7 +220,122 @@ public class MapFragment extends Fragment {
     }
 
     public void setupFoodButtons() {
-        setupFoodButton()
+        // 한식
+        setupFoodButton(bottomSheetFilterBinding.pageFood.btnKorean, "한식");
+        // 중식
+        setupFoodButton(bottomSheetFilterBinding.pageFood.btnChinese, "중식");
+        // 일식
+        setupFoodButton(bottomSheetFilterBinding.pageFood.btnJapanese, "일식");
+        // 오마카세
+        setupFoodButton(bottomSheetFilterBinding.pageFood.btnOmakase, "오마카세");
+        // 양식
+        setupFoodButton(bottomSheetFilterBinding.pageFood.btnWestern, "양식");
+        // 술집
+        setupFoodButton(bottomSheetFilterBinding.pageFood.btnBar, "술집");
+        // 카페
+        setupFoodButton(bottomSheetFilterBinding.pageFood.btnCafe, "카페");
+    }
+
+    /// 선택된 버튼 selected 활성화
+    public void setupFoodButton(Button button , String foodType) {
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (button.isSelected()) {
+                    button.setSelected(false);
+                    selectedFoodTypes.remove(foodType);
+                }
+                else {
+                    button.setSelected(true);
+                    selectedFoodTypes.add(foodType);
+                }
+
+                updateSelectedChips();
+            }
+        });
+    }
+
+    /// 필터 chip 생성
+    public Chip createFilterChip(String foodType) {
+        Chip chip = new Chip(requireContext());
+        chip.setText(foodType);
+        chip.setCloseIconVisible(true);
+        chip.setChipBackgroundColorResource(R.color.primary_100);
+        chip.setTextColor(getResources().getColor(android.R.color.white , null));
+        chip.setCloseIconTintResource(android.R.color.white);
+        chip.setChipStrokeWidth(0);
+        chip.setEnsureMinTouchTargetSize(false);
+
+        chip.setOnCloseIconClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedFoodTypes.remove(foodType);
+                uncheckFoodButton(foodType);
+                updateSelectedChips();
+            }
+        });
+        return chip;
+    }
+
+    /// 선택된 필터 chip
+    public void updateSelectedChips() {
+        //chip 초기화
+        bottomSheetFilterBinding.chipGroupSelected.removeAllViews();
+
+        if (selectedFoodTypes.isEmpty()){
+            bottomSheetFilterBinding.selectedFiltersScroll.setVisibility(View.GONE);
+            return;
+        }
+
+        bottomSheetFilterBinding.selectedFiltersScroll.setVisibility(View.VISIBLE);
+
+        for (String foodType : selectedFoodTypes) {
+            Chip chip = createFilterChip(foodType);
+            bottomSheetFilterBinding.chipGroupSelected.addView(chip);
+        }
+    }
+
+    public void uncheckFoodButton(String foodType) {
+        Button button = null;
+
+        switch (foodType) {
+            case "한식":
+                button = bottomSheetFilterBinding.pageFood.btnKorean;
+                break;
+            case "중식":
+                button = bottomSheetFilterBinding.pageFood.btnChinese;
+                break;
+            case "일식":
+                button = bottomSheetFilterBinding.pageFood.btnJapanese;
+                break;
+            case "오마카세":
+                button = bottomSheetFilterBinding.pageFood.btnOmakase;
+                break;
+            case "양식":
+                button = bottomSheetFilterBinding.pageFood.btnWestern;
+                break;
+            case "술집":
+                button = bottomSheetFilterBinding.pageFood.btnBar;
+                break;
+            case "카페":
+                button = bottomSheetFilterBinding.pageFood.btnCafe;
+                break;
+        }
+
+        if (button != null) {
+            button.setSelected(false);
+        }
+    }
+
+    /// 모든 음식 버튼 초기화
+    private void resetAllFoodButtons() {
+        bottomSheetFilterBinding.pageFood.btnKorean.setSelected(false);
+        bottomSheetFilterBinding.pageFood.btnChinese.setSelected(false);
+        bottomSheetFilterBinding.pageFood.btnJapanese.setSelected(false);
+        bottomSheetFilterBinding.pageFood.btnOmakase.setSelected(false);
+        bottomSheetFilterBinding.pageFood.btnWestern.setSelected(false);
+        bottomSheetFilterBinding.pageFood.btnBar.setSelected(false);
+        bottomSheetFilterBinding.pageFood.btnCafe.setSelected(false);
     }
 
     @Override

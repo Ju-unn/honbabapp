@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:fillViewport="true">
 
     <LinearLayout
@@ -29,12 +30,15 @@
 
             <Button
                 android:id="@+id/btn_korean"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="한식"
                 android:textSize="14sp"
                 android:textColor="@drawable/chip_button_text_color"
                 android:background="@drawable/chip_button_background"
+                app:backgroundTint="@null"
+                android:backgroundTint="@null"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
@@ -47,12 +51,14 @@
 
             <Button
                 android:id="@+id/btn_chinese"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="중식"
                 android:textSize="14sp"
                 android:textColor="@drawable/chip_button_text_color"
                 android:background="@drawable/chip_button_background"
+                app:backgroundTint="@null"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
@@ -65,12 +71,14 @@
 
             <Button
                 android:id="@+id/btn_japanese"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="일식"
                 android:textSize="14sp"
                 android:textColor="@drawable/chip_button_text_color"
                 android:background="@drawable/chip_button_background"
+                app:backgroundTint="@null"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
@@ -91,12 +99,14 @@
 
             <Button
                 android:id="@+id/btn_omakase"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="오마카세"
                 android:textSize="14sp"
                 android:textColor="@drawable/chip_button_text_color"
                 android:background="@drawable/chip_button_background"
+                app:backgroundTint="@null"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
@@ -109,12 +119,14 @@
 
             <Button
                 android:id="@+id/btn_western"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="양식"
                 android:textSize="14sp"
                 android:textColor="@drawable/chip_button_text_color"
                 android:background="@drawable/chip_button_background"
+                app:backgroundTint="@null"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
@@ -124,14 +136,17 @@
                 android:minHeight="0dp"
                 android:textAllCaps="false"
                 android:stateListAnimator="@null" />
+
             <Button
                 android:id="@+id/btn_bar"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="술집"
                 android:textSize="14sp"
                 android:textColor="@drawable/chip_button_text_color"
                 android:background="@drawable/chip_button_background"
+                app:backgroundTint="@null"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
@@ -144,12 +159,14 @@
 
             <Button
                 android:id="@+id/btn_cafe"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="카페"
                 android:textSize="14sp"
                 android:textColor="@drawable/chip_button_text_color"
                 android:background="@drawable/chip_button_background"
+                app:backgroundTint="@null"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:paddingTop="10dp"
@@ -158,7 +175,6 @@
                 android:minHeight="0dp"
                 android:textAllCaps="false"
                 android:stateListAnimator="@null" />
-
 
         </LinearLayout>
 

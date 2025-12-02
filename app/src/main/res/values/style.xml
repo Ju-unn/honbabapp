@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ShapeAppearanceOverlay.Honbab.FAB.Circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>  <!-- 50% = 가로/세로 절반 → 완전 원 -->
+
+    </style>
+
+    <style name="BottomNav_NoIndicator" parent="">
+        <item name="android:color">@android:color/transparent</item>
+    </style>
+
+</resources>

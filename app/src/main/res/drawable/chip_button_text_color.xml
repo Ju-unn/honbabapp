@@ -3,7 +3,7 @@
 
     <!-- 선택된 상태: 흰색 텍스트 -->
     <item android:state_selected="true"
-        android:color="@android:color/white"/>
+        android:color="@color/text_100"/>
 
     <!-- 미선택 상태: 검은색 텍스트 -->
     <item android:color="@color/text_100"/>
