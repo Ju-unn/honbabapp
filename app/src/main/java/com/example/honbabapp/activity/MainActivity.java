@@ -1,4 +1,4 @@
-package com.example.honbabapp;
+package com.example.honbabapp.activity;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -6,19 +6,17 @@ import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.honbabapp.R;
 import com.example.honbabapp.data.MockData;
 import com.example.honbabapp.data.meeting.Meeting;
 import com.example.honbabapp.data.user.User;
 import com.example.honbabapp.databinding.ActivityMainBinding;
 import com.example.honbabapp.ui.adapter.MainFragmentAdapter;
-import com.example.honbabapp.ui.fragment.MapFragment;
 import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 

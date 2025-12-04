@@ -40,7 +40,6 @@ public class HomeHotMeetingListAdapter extends RecyclerView.Adapter<HomeHotMeeti
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Meeting hotMeeting = hotMeetingList.get(position);
-        Meeting allMeeting = allMeetingList.get(position);
 
         /// hotMeetingList
         holder.hotMeetingBinding.tvMeetingTitle.setText(hotMeeting.meeting_title);   ///제목

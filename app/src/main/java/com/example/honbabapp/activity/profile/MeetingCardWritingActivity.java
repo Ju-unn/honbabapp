@@ -1,4 +1,4 @@
-package com.example.honbabapp;
+package com.example.honbabapp.activity.profile;
 
 import android.os.Bundle;
 import android.view.View;
@@ -9,24 +9,26 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.honbabapp.databinding.PageRegisterBinding;
+import com.example.honbabapp.R;
+import com.example.honbabapp.databinding.PageMeetingCardWritingBinding;
+import com.example.honbabapp.databinding.PageProfileMyMeetingsBinding;
 
-public class RegisterActivity extends AppCompatActivity {
-    private PageRegisterBinding registerBinding;
+public class MeetingCardWritingActivity extends AppCompatActivity {
+
+    private PageMeetingCardWritingBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        registerBinding = PageRegisterBinding.inflate(getLayoutInflater());
-        setContentView(registerBinding.getRoot());
+        binding = PageMeetingCardWritingBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        /// 뒤로가기 버튼
+        // 뒤로가기 버튼
         onBackButtonClick();
-
     }
 
     public void onBackButtonClick(){
-        registerBinding.btnBack.setOnClickListener(new View.OnClickListener() {
+        binding.btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getOnBackPressedDispatcher().onBackPressed();

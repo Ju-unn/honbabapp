@@ -6,339 +6,364 @@
     android:layout_height="match_parent"
     tools:context=".ui.fragment.MapFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/map"
+    <!-- 지도 영역 (전체 화면) -->
+    <FrameLayout
+        android:id="@+id/map_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/bg_200">
+        android:layout_height="match_parent">
 
-        <!-- 상단 검색바 (캐치테이블 스타일) -->
-        <LinearLayout
-            android:id="@+id/header_search_layout"
-            android:layout_width="0dp"
+        <!-- 네이버 지도가 여기 들어갈 예정 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#E0E0E0" />
+
+        <!-- 지도 위에 표시될 핀들 (나중에 네이버 API로 대체) -->
+        <FrameLayout
+            android:id="@+id/pin_1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="200dp"
+            android:layout_marginStart="50dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:text="🍖"
+                android:textSize="28sp"
+                android:gravity="center"
+                android:background="@drawable/map_pin_background"
+                android:elevation="4dp" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/pin_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="350dp"
+            android:layout_marginStart="200dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:text="🍣"
+                android:textSize="28sp"
+                android:gravity="center"
+                android:background="@drawable/map_pin_inactive_background"
+                android:elevation="4dp" />
+        </FrameLayout>
+
+    </FrameLayout>
+
+    <!-- 상단 검색바 (지도 위에 floating) -->
+    <LinearLayout
+        android:id="@+id/header_search_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="@color/white"
+        android:elevation="8dp">
+
+        <!-- 뒤로가기 버튼 -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:scaleType="centerInside" />
+
+        <!-- 검색 입력 필드 -->
+        <LinearLayout
+            android:id="@+id/search_input_layout"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="12dp"
-            android:background="@color/white"
-            android:elevation="4dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:background="@drawable/search_bar_background"
+            android:paddingHorizontal="12dp"
+            android:layout_marginHorizontal="8dp">
 
-            <!-- 뒤로가기 버튼 -->
-            <ImageButton
-                android:id="@+id/btn_back"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_arrow_back"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"
-                android:scaleType="centerInside" />
-
-            <!-- 검색 입력 필드 -->
-            <LinearLayout
-                android:id="@+id/search_input_layout"
+            <EditText
+                android:id="@+id/et_search_map"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:background="@drawable/search_bar_background"
-                android:paddingHorizontal="12dp"
-                android:layout_marginHorizontal="8dp"
+                android:hint="어떤 모임을 찾고 있나요?"
+                android:textColorHint="@color/text_200"
+                android:textSize="14sp"
+                android:textColor="@color/text_100"
+                android:background="@android:color/transparent"
+                android:focusable="false"
                 android:clickable="true"
-                android:focusable="true">
-
-                <TextView
-                    android:id="@+id/tv_search_hint"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="어떤 모임을 찾고 있나요?"
-                    android:textColor="@color/text_200"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
-
-            <!-- 날짜·인원 버튼 -->
-            <LinearLayout
-                android:id="@+id/btn_date_people"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:background="@drawable/button_primary_background"
-                android:paddingHorizontal="12dp"
-                android:clickable="true"
-                android:focusable="true">
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_calendar"
-                    android:tint="@color/white" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=" 날짜 "
-                    android:textColor="@color/white"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="4dp" />
-
-            </LinearLayout>
+                android:inputType="text"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionSearch"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp" />
 
         </LinearLayout>
 
-
-
-        <!-- 지도 영역 (네이버 API가 여기 들어갈 예정) -->
-        <FrameLayout
-            android:id="@+id/map_container"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintTop_toBottomOf="@id/header_search_layout"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/distance_filter_layout">
-
-            <!-- 지도 플레이스홀더 (임시 배경) -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="#E0E0E0" />
-
-            <!-- 지도 위에 표시될 핀들 (나중에 네이버 API로 대체) -->
-            <!-- 핀 예시 1 -->
-            <FrameLayout
-                android:id="@+id/pin_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="80dp"
-                android:layout_marginStart="50dp"
-                android:clickable="true"
-                android:focusable="true">
-
-                <TextView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:text="🍖"
-                    android:textSize="28sp"
-                    android:gravity="center"
-                    android:background="@drawable/map_pin_background"
-                    android:elevation="4dp" />
-
-            </FrameLayout>
-
-            <!-- 핀 예시 2 -->
-            <FrameLayout
-                android:id="@+id/pin_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="150dp"
-                android:layout_marginStart="180dp"
-                android:clickable="true"
-                android:focusable="true">
-
-                <TextView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:text="🍣"
-                    android:textSize="28sp"
-                    android:gravity="center"
-                    android:background="@drawable/map_pin_inactive_background"
-                    android:elevation="4dp" />
-
-            </FrameLayout>
-
-            <!-- 현재 위치 버튼 -->
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab_current_location"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end|bottom"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="16dp"
-                app:backgroundTint="@color/white"
-                android:elevation="6dp"
-                android:src="@drawable/ic_location"
-                app:fabSize="mini"
-                app:tint="@color/primary_100"
-                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Honbab.FAB.Circle"/>
-
-        </FrameLayout>
-
-        <!-- 거리 필터 드롭다운 -->
+        <!-- 날짜·인원 버튼 -->
         <LinearLayout
-            android:id="@+id/distance_filter_layout"
+            android:id="@+id/btn_date_people"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@color/white"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:background="@drawable/button_primary_background"
+            android:paddingHorizontal="12dp"
             android:clickable="true"
-            android:focusable="true"
-            android:elevation="4dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/bottom_filter_layout">
-
-            <TextView
-                android:id="@+id/tv_distance_filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="주변 1km"
-                android:textColor="@color/text_100"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+            android:focusable="true">
 
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:src="@drawable/ic_arrow_down"
+                android:src="@drawable/ic_calendar"
+                app:tint="@color/white" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" 날짜 "
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                android:textStyle="bold"
                 android:layout_marginStart="4dp" />
 
         </LinearLayout>
 
-        <!-- 하단 필터 버튼들 -->
-        <HorizontalScrollView
-            android:id="@+id/bottom_filter_layout"
-            android:layout_width="0dp"
+    </LinearLayout>
+
+    <!-- 거리 필터 버튼 (지도 위에 floating) -->
+    <LinearLayout
+        android:id="@+id/distance_filter_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="76dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/filter_button_background"
+        android:padding="10dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="6dp">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_location"
+            app:tint="@color/primary_100"
+            android:layout_marginEnd="4dp" />
+
+        <TextView
+            android:id="@+id/tv_distance"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="12dp"
-            android:background="@color/white"
-            android:elevation="4dp"
-            app:layout_constraintBottom_toTopOf="@id/rv_meeting_card"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:text="전체"
+            android:textColor="@color/text_100"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
-            <LinearLayout
-                android:layout_width="wrap_content"
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:src="@drawable/ic_arrow_down"
+            app:tint="@color/text_100"
+            android:layout_marginStart="4dp" />
+
+    </LinearLayout>
+
+    <!-- 현재 위치 버튼 (지도 위에 floating - BottomSheet 영향 안받음) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_current_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="80dp"
+        app:backgroundTint="@color/white"
+        android:elevation="6dp"
+        android:src="@drawable/ic_location"
+        app:fabSize="mini"
+        app:fabCustomSize="40dp"
+        app:maxImageSize="20dp"
+        app:tint="@color/primary_100"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Honbab.FAB.Circle"/>
+
+    <!-- BottomSheet: 카테고리 + 모임 리스트 -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/bottom_sheet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bottom_sheet_background"
+            android:elevation="12dp"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+            app:behavior_peekHeight="400dp"
+            app:behavior_hideable="false">
+
+            <!-- BottomSheet 핸들 -->
+            <View
+                android:id="@+id/bottom_sheet_handle"
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bottom_sheet_handle_background" />
+
+            <!-- 카테고리 필터 버튼들 (정렬, 필터 등) -->
+            <HorizontalScrollView
+                android:id="@+id/filter_scroll_view"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:scrollbars="none"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="12dp">
 
-                <!-- 추천순 버튼 -->
                 <LinearLayout
-                    android:id="@+id/btn_sort"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:background="@drawable/category_button_background"
-                    android:paddingHorizontal="16dp"
-                    android:layout_marginEnd="8dp"
-                    android:clickable="true"
-                    android:focusable="true">
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/tv_sort_option"
+                    <!-- 정렬 버튼 -->
+                    <LinearLayout
+                        android:id="@+id/btn_sort"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="전체순"
-                        android:textColor="@color/text_200"
-                        android:textSize="13sp" />
+                        android:layout_height="36dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/category_button_background"
+                        android:paddingHorizontal="16dp"
+                        android:layout_marginEnd="8dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_arrow_down"
-                        android:layout_marginStart="4dp" />
+                        <TextView
+                            android:id="@+id/tv_sort_option"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="전체순"
+                            android:textColor="@color/text_200"
+                            android:textSize="13sp" />
 
-                </LinearLayout>
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_arrow_down"
+                            android:layout_marginStart="4dp" />
 
-                <!-- 필터 버튼 -->
-                <LinearLayout
-                    android:id="@+id/btn_filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:background="@drawable/category_button_background"
-                    android:paddingHorizontal="16dp"
-                    android:layout_marginEnd="8dp"
-                    android:clickable="true"
-                    android:focusable="true">
+                    </LinearLayout>
 
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_filter" />
-
-                    <TextView
+                    <!-- 필터 버튼 -->
+                    <LinearLayout
+                        android:id="@+id/btn_filter"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="필터"
+                        android:layout_height="36dp"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:background="@drawable/category_button_background"
+                        android:paddingHorizontal="16dp"
+                        android:layout_marginEnd="8dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_filter" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="필터"
+                            android:textColor="@color/text_200"
+                            android:textSize="13sp"
+                            android:layout_marginStart="6dp" />
+
+                    </LinearLayout>
+
+                    <!-- 내 주변 버튼 -->
+                    <Button
+                        android:id="@+id/btn_near_me"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="내 주변"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/category_button_active_background"
+                        app:backgroundTint="@null"
+                        android:paddingHorizontal="16dp"
+                        android:layout_marginEnd="8dp"
+                        android:elevation="0dp"/>
+
+                    <!-- 음식 종류 버튼 -->
+                    <Button
+                        android:id="@+id/btn_food_type"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="음식 종류"
                         android:textColor="@color/text_200"
                         android:textSize="13sp"
-                        android:layout_marginStart="6dp" />
+                        android:background="@drawable/category_button_background"
+                        app:backgroundTint="@null"
+                        android:paddingHorizontal="16dp"
+                        android:layout_marginEnd="8dp"
+                        android:elevation="0dp"/>
+
+                    <!-- 가격 버튼 -->
+                    <Button
+                        android:id="@+id/btn_price"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="가격"
+                        android:textColor="@color/text_200"
+                        android:textSize="13sp"
+                        android:background="@drawable/category_button_background"
+                        app:backgroundTint="@null"
+                        android:paddingHorizontal="16dp"
+                        android:elevation="0dp"/>
 
                 </LinearLayout>
+            </HorizontalScrollView>
 
-                <!-- 내 주변 버튼 (선택됨) -->
-                <Button
-                    android:id="@+id/btn_near_me"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="내 주변"
-                    android:textColor="@color/white"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:background="@drawable/category_button_active_background"
-                    app:backgroundTint="@null"
-                    android:paddingHorizontal="16dp"
-                    android:layout_marginEnd="8dp"
-                    android:elevation="0dp"/>
+            <!-- 구분선 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/bg_300" />
 
-                <!-- 음식 종류 버튼 -->
-                <Button
-                    android:id="@+id/btn_food_type"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="음식 종류"
-                    android:textColor="@color/text_200"
-                    android:textSize="13sp"
-                    android:background="@drawable/category_button_background"
-                    app:backgroundTint="@null"
-                    android:paddingHorizontal="16dp"
-                    android:layout_marginEnd="8dp"
-                    android:elevation="0dp"/>
+            <!-- 모임 리스트 RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_meeting_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="12dp"
+                android:paddingBottom="24dp"
+                android:paddingHorizontal="8dp"
+                android:clipToPadding="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-                <!-- 가격 버튼 -->
-                <Button
-                    android:id="@+id/btn_price"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="가격"
-                    android:textColor="@color/text_200"
-                    android:textSize="13sp"
-                    android:background="@drawable/category_button_background"
-                    app:backgroundTint="@null"
-                    android:paddingHorizontal="16dp"
-                    android:elevation="0dp"/>
+        </LinearLayout>
 
-            </LinearLayout>
-        </HorizontalScrollView>
-
-        <!-- 하단 식당 리스트 -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_meeting_card"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bottom_sheet_background"
-            android:elevation="8dp"
-            android:paddingTop="12dp"
-            android:clipToPadding="false"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </FrameLayout>

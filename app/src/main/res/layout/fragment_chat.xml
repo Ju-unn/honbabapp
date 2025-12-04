@@ -29,15 +29,6 @@
                 android:padding="16dp"
                 android:background="@color/bg_100">
 
-                <!-- 뒤로가기 버튼 -->
-                <ImageButton
-                    android:id="@+id/btn_back"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/ic_arrow_back"
-                    android:scaleType="centerCrop"
-                    android:background="@color/white"
-                    android:layout_marginEnd="12dp" />
 
                 <!-- 제목 -->
                 <TextView
@@ -50,6 +41,7 @@
                     android:textStyle="bold"
                     android:gravity="center"
                     android:letterSpacing="-0.05"
+                    android:layout_marginStart="42dp"
                     android:layout_marginEnd="42dp" />
 
             </LinearLayout>
@@ -72,14 +64,19 @@
                     android:layout_marginEnd="8dp" />
 
                 <EditText
-                    android:id="@+id/et_search"
+                    android:id="@+id/et_search_chat"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:textColorHint="@color/text_200"
                     android:textSize="14sp"
                     android:background="@android:color/transparent"
-                    android:hint="대화 상대를 검색해보세요" />
+                    android:hint="대화 상대를 검색해보세요"
+                    android:inputType="text"
+                    android:maxLength="10"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:imeOptions="actionSearch" />
 
             </LinearLayout>
 

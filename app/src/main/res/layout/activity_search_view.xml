@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_100">
+
+    <!-- 상단 검색바 -->
+    <LinearLayout
+        android:id="@+id/search_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="@color/white"
+        android:elevation="4dp">
+
+        <!-- 뒤로가기 버튼 -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:contentDescription="뒤로가기" />
+
+        <!-- 검색 입력 필드 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/search_bar_background"
+            android:paddingHorizontal="12dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_search"
+                android:layout_marginEnd="8dp"
+                app:tint="@color/text_200" />
+
+            <EditText
+                android:id="@+id/et_search"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:hint="어떤 모임을 찾고 있나요?"
+                android:textColorHint="@color/text_200"
+                android:textSize="15sp"
+                android:textColor="@color/text_100"
+                android:background="@android:color/transparent"
+                android:inputType="text"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionSearch"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp" />
+
+            <!-- 검색어 지우기 버튼 -->
+            <ImageButton
+                android:id="@+id/btn_clear"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_close"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:padding="4dp"
+                android:visibility="gone"
+                app:tint="@color/text_200"
+                android:contentDescription="검색어 지우기" />
+
+        </LinearLayout>
+
+        <!-- 취소 버튼 -->
+        <TextView
+            android:id="@+id/btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="취소"
+            android:textColor="@color/text_100"
+            android:textSize="15sp"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground" />
+
+    </LinearLayout>
+
+    <!-- 스크롤 가능한 콘텐츠 영역 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 최근 검색어 섹션 -->
+            <LinearLayout
+                android:id="@+id/recent_search_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/white"
+                android:layout_marginTop="8dp"
+                android:visibility="visible">
+
+                <!-- 최근 검색어 헤더 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="최근 검색어"
+                        android:textColor="@color/text_100"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/btn_clear_all"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="전체 삭제"
+                        android:textColor="@color/text_200"
+                        android:textSize="13sp"
+                        android:padding="4dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?android:attr/selectableItemBackground" />
+
+                </LinearLayout>
+
+                <!-- 최근 검색어 리스트 -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_recent_searches"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="16dp"
+                    android:paddingBottom="12dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                <!-- 최근 검색어 없을 때 -->
+                <TextView
+                    android:id="@+id/tv_no_recent_searches"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="최근 검색 내역이 없습니다"
+                    android:textColor="@color/text_200"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:padding="32dp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- 추천 검색어 섹션 -->
+            <LinearLayout
+                android:id="@+id/recommend_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/white"
+                android:layout_marginTop="8dp">
+
+                <!-- 추천 검색어 헤더 -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="추천 검색어"
+                    android:textColor="@color/text_100"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="12dp" />
+
+                <!-- 추천 검색어 칩 그룹 -->
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chip_group_recommend"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="16dp"
+                    android:paddingBottom="16dp"
+                    app:chipSpacing="8dp">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_recommend_1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="혼밥하기 좋은 곳"
+                        android:textColor="@color/text_100"
+                        android:textSize="14sp"
+                        app:chipBackgroundColor="@color/bg_100"
+                        app:chipStrokeWidth="0dp"
+                        style="@style/Widget.MaterialComponents.Chip.Action" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_recommend_2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="신메뉴 맛집"
+                        android:textColor="@color/text_100"
+                        android:textSize="14sp"
+                        app:chipBackgroundColor="@color/bg_100"
+                        app:chipStrokeWidth="0dp"
+                        style="@style/Widget.MaterialComponents.Chip.Action" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_recommend_3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="데이트 추천"
+                        android:textColor="@color/text_100"
+                        android:textSize="14sp"
+                        app:chipBackgroundColor="@color/bg_100"
+                        app:chipStrokeWidth="0dp"
+                        style="@style/Widget.MaterialComponents.Chip.Action" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_recommend_4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="분위기 좋은 카페"
+                        android:textColor="@color/text_100"
+                        android:textSize="14sp"
+                        app:chipBackgroundColor="@color/bg_100"
+                        app:chipStrokeWidth="0dp"
+                        style="@style/Widget.MaterialComponents.Chip.Action" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_recommend_5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="야식 맛집"
+                        android:textColor="@color/text_100"
+                        android:textSize="14sp"
+                        app:chipBackgroundColor="@color/bg_100"
+                        app:chipStrokeWidth="0dp"
+                        style="@style/Widget.MaterialComponents.Chip.Action" />
+
+                </com.google.android.material.chip.ChipGroup>
+
+            </LinearLayout>
+
+            <!-- 검색 결과 섹션 -->
+            <LinearLayout
+                android:id="@+id/search_result_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/white"
+                android:layout_marginTop="8dp"
+                android:visibility="gone">
+
+                <!-- 검색 결과 헤더 -->
+                <TextView
+                    android:id="@+id/tv_search_result_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="검색 결과"
+                    android:textColor="@color/text_100"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="12dp" />
+
+                <!-- 검색 결과 리스트 -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_search_results"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="16dp"
+                    android:paddingBottom="16dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                <!-- 검색 결과 없을 때 -->
+                <LinearLayout
+                    android:id="@+id/no_result_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="48dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="검색 결과가 없습니다"
+                        android:textColor="@color/text_100"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="다른 검색어로 다시 시도해보세요"
+                        android:textColor="@color/text_200"
+                        android:textSize="14sp"
+                        android:layout_marginTop="8dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

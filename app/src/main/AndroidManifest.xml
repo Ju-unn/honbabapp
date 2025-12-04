@@ -13,13 +13,31 @@
         android:theme="@style/Theme.Honbabapp"
         tools:targetApi="31">
         <activity
-            android:name=".RegisterActivity"
+            android:name=".activity.profile.MeetingCardWritingActivity"
             android:exported="false" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".activity.profile.ProfileNotificationSettingActivity"
             android:exported="false" />
         <activity
-            android:name=".SplashActivity"
+            android:name=".activity.profile.ProfileProfileSettingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.profile.ProfileAccountSettingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.profile.ProfileMyMeetingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.SearchViewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,7 +46,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.MainActivity"
             android:exported="true" />
     </application>
 

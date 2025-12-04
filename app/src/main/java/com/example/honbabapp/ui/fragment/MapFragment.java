@@ -1,5 +1,6 @@
 package com.example.honbabapp.ui.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,11 +11,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
-import com.example.honbabapp.R;
-import com.example.honbabapp.databinding.FragmentChatBinding;
+import com.example.honbabapp.activity.MainActivity;
+import com.example.honbabapp.activity.SearchViewActivity;
 import com.example.honbabapp.databinding.FragmentMapBinding;
 import com.example.honbabapp.databinding.PageMapBottomSheetSortBinding;
+import com.example.honbabapp.ui.adapter.HomeAllMeetingListAdapter;
+import com.example.honbabapp.ui.adapter.HomeHotMeetingListAdapter;
+import com.example.honbabapp.ui.adapter.MapAllMeetingListAdapter;
+import com.example.honbabapp.ui.adapter.MapHotMeetingListAdapter;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
@@ -22,8 +28,12 @@ public class MapFragment extends Fragment {
 
     private FragmentMapBinding fragmentMapbinding;
     private PageMapBottomSheetSortBinding bottomSheetSortBinding;
-    private String selectedCategory;
+    private MapHotMeetingListAdapter hotMeetingListAdapter;
+    private MapAllMeetingListAdapter allMeetingListAdapter;
     private String currentSortOption = "전체";
+
+    // BottomSheet 관련 변수 추가
+    private BottomSheetBehavior<View> bottomSheetBehavior;
 
     public MapFragment() {
         Log.i("MapFragment" , "생성");
@@ -43,10 +53,50 @@ public class MapFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Log.i("MapFragment", "onViewCreated");
 
+        // 뒤로가기 버튼
+        onBackButtonClick();
+
         // 정렬 버튼 클릭 이벤트
         initSortButton();
 
+        // 검색버튼 클릭 이벤트
+        setupSearchBar();
+
+        initRecyclerView();
     }
+
+    /// recyclerview
+    public void initRecyclerView() {
+        allMeetingListAdapter = new MapAllMeetingListAdapter();
+        fragmentMapbinding.rvMeetingCard.setAdapter(allMeetingListAdapter);
+    }
+
+
+    /// 검색창 클릭시 searchViewActivity로 이동
+    public void setupSearchBar() {
+        EditText etSearchMap = fragmentMapbinding.etSearchMap;
+
+        // editText 클릭시
+        etSearchMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), SearchViewActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
+    /// 뒤로가기 버튼
+    public void onBackButtonClick() {
+        fragmentMapbinding.btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity mainActivity = (MainActivity) requireActivity();
+                mainActivity.navigationToHome();
+            }
+        });
+    }
+
     public void initSortButton() {
         fragmentMapbinding.btnSort.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,7 +106,7 @@ public class MapFragment extends Fragment {
         });
     }
 
-    /// 버튼 클릭 이벤트
+    /// bottomsheet 필터 버튼 클릭 이벤트
     public void showSortButtonSheet() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
         bottomSheetSortBinding = PageMapBottomSheetSortBinding.inflate(LayoutInflater.from(getContext()));
@@ -125,12 +175,11 @@ public class MapFragment extends Fragment {
             bottomSheetSortBinding.sortDistance.setVisibility(View.VISIBLE);
             bottomSheetSortBinding.checkDistance.setVisibility(View.VISIBLE);
         }
-
     }
 
     /// fragment_map.xml textview수정
     public void updateSortButtonText() {
-        if (fragmentMapbinding != null & fragmentMapbinding.tvSortOption != null) {
+        if (fragmentMapbinding != null && fragmentMapbinding.tvSortOption != null) {
             fragmentMapbinding.tvSortOption.setText(currentSortOption);
         }
     }

@@ -1,5 +1,6 @@
 package com.example.honbabapp.ui.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -11,7 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.honbabapp.MainActivity;
+import com.example.honbabapp.activity.MainActivity;
+import com.example.honbabapp.activity.profile.MeetingCardWritingActivity;
 import com.example.honbabapp.databinding.FragmentHomeBinding;
 import com.example.honbabapp.ui.adapter.HomeAllMeetingListAdapter;
 import com.example.honbabapp.ui.adapter.HomeHotMeetingListAdapter;
@@ -48,6 +50,9 @@ public class HomeFragment extends Fragment {
 
         // 카테고리 클릭 이벤트 설정
         initCategoryButtons();
+
+        // floating버튼 클릭 이벤트
+        meetingCardWritingOnClick();
     }
 
     public void initRecyclerViews() {
@@ -130,6 +135,17 @@ public class HomeFragment extends Fragment {
     public void navigateToMap(String category){
         MainActivity mainActivity = (MainActivity) requireActivity();
         mainActivity.navigationToMap();
+    }
+
+    /// flaoting 버트 클릭시 미팅 작성 페이지 이동
+    public void meetingCardWritingOnClick() {
+        binding.fabCreateMeeting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity() , MeetingCardWritingActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
