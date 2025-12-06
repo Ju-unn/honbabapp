@@ -7,7 +7,6 @@
     android:background="@color/bg_100">
 
     <!-- 상단 헤더 -->
-
     <LinearLayout
         android:id="@+id/header_layout"
         android:layout_width="0dp"
@@ -16,7 +15,8 @@
         android:elevation="2dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="16dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -26,10 +26,9 @@
         <Button
             android:id="@+id/btn_location"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_marginEnd="8dp"
+            android:layout_height="36dp"
             android:background="@drawable/button_primary_background"
-            android:paddingHorizontal="16dp"
+            android:paddingHorizontal="14dp"
             android:text="00동"
             android:textColor="@color/white"
             android:textSize="13sp"
@@ -39,30 +38,41 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="30dp"
             android:layout_weight="1"
             android:gravity="center"
             android:letterSpacing="0.05"
             android:text="혼밥 모여"
+            android:layout_marginEnd="30dp"
             android:textColor="@color/primary_200"
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <!-- 알림 버튼 -->
+        <!-- 알림 버튼 (개선된 디자인) -->
         <FrameLayout
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginStart="16dp">
+            android:layout_width="40dp"
+            android:layout_height="40dp">
 
             <ImageButton
                 android:id="@+id/btn_notification"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_gravity="center"
-                android:background="@color/white"
-                android:elevation="1dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_bell_off" />
+                android:background="@drawable/notification_button_background"
+                android:padding="8dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_bell_off"
+                android:contentDescription="알림" />
+
+            <!-- 읽지 않은 알림 배지 (알림 있을 때만 visible) -->
+            <View
+                android:id="@+id/notification_badge"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/notification_badge_background"
+                android:visibility="gone" />
 
         </FrameLayout>
     </LinearLayout>
@@ -248,6 +258,38 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
+                        <!-- 양식 -->
+                        <LinearLayout
+                            android:id="@+id/category_western"
+                            android:layout_width="0dp"
+                            android:layout_height="70dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="@drawable/category_grid_background"
+                            android:layout_marginEnd="10dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?android:attr/selectableItemBackground">
+
+                            <TextView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:text="🍔"
+                                android:textSize="24dp"
+                                android:gravity="center"
+                                android:layout_marginBottom="4dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="양식"
+                                android:textColor="@color/text_100"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
                         <!-- 오마카세 -->
                         <LinearLayout
                             android:id="@+id/category_omakase"
@@ -257,7 +299,7 @@
                             android:orientation="vertical"
                             android:gravity="center"
                             android:background="@drawable/category_grid_background"
-                            android:layout_marginEnd="10dp"
+                            android:layout_marginHorizontal="5dp"
                             android:clickable="true"
                             android:focusable="true"
                             android:foreground="?android:attr/selectableItemBackground">
@@ -274,38 +316,6 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="오마카세"
-                                android:textColor="@color/text_100"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
-
-                        </LinearLayout>
-
-                        <!-- 양식 -->
-                        <LinearLayout
-                            android:id="@+id/category_western"
-                            android:layout_width="0dp"
-                            android:layout_height="70dp"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:background="@drawable/category_grid_background"
-                            android:layout_marginHorizontal="5dp"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="?android:attr/selectableItemBackground">
-
-                            <TextView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:text="🍝"
-                                android:textSize="24dp"
-                                android:gravity="center"
-                                android:layout_marginBottom="4dp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="양식"
                                 android:textColor="@color/text_100"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -430,10 +440,7 @@
                     android:clipToPadding="false"
                     android:scrollbars="none"
                     android:nestedScrollingEnabled="false"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    />
-
-
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
             </LinearLayout>
 

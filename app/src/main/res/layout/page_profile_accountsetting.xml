@@ -190,7 +190,7 @@
 
             <!-- 계정 탈퇴 -->
             <LinearLayout
-                android:id="@+id/btn_delete_account"
+                    android:id="@+id/btn_delete_account"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"

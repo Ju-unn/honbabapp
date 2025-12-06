@@ -16,6 +16,15 @@
             android:name=".activity.profile.MeetingCardWritingActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.NotificationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.profile.ProfileChangePasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.profile.ProfileDeleteAccountActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.profile.ProfileNotificationSettingActivity"
             android:exported="false" />
         <activity

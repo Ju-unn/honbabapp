@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 체크된 상태 -->
+    <item android:state_checked="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/primary_100" />
+                    <corners android:radius="4dp" />
+                </shape>
+            </item>
+            <item
+                android:drawable="@android:drawable/checkbox_on_background"
+                android:gravity="center" />
+        </layer-list>
+    </item>
+
+    <!-- 체크 안된 상태 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/bg_100" />
+            <stroke
+                android:width="2dp"
+                android:color="@color/border_100" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+</selector>

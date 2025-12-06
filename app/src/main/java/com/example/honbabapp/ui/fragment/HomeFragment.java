@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.honbabapp.activity.MainActivity;
+import com.example.honbabapp.activity.NotificationActivity;
 import com.example.honbabapp.activity.profile.MeetingCardWritingActivity;
 import com.example.honbabapp.databinding.FragmentHomeBinding;
 import com.example.honbabapp.ui.adapter.HomeAllMeetingListAdapter;
@@ -53,6 +54,9 @@ public class HomeFragment extends Fragment {
 
         // floating버튼 클릭 이벤트
         meetingCardWritingOnClick();
+
+        // 알림버튼 클릭
+        notificationButtonOnClick();
     }
 
     public void initRecyclerViews() {
@@ -143,6 +147,17 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity() , MeetingCardWritingActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
+    /// 알림 버튼
+    public void notificationButtonOnClick() {
+        binding.btnNotification.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity() , NotificationActivity.class);
                 startActivity(intent);
             }
         });

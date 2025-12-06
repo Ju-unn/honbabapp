@@ -205,7 +205,8 @@
     <!-- BottomSheet: 카테고리 + 모임 리스트 -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginTop="60dp">
 
         <LinearLayout
             android:id="@+id/bottom_sheet"
@@ -215,7 +216,7 @@
             android:background="@drawable/bottom_sheet_background"
             android:elevation="12dp"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-            app:behavior_peekHeight="400dp"
+            app:behavior_peekHeight="200dp"
             app:behavior_hideable="false">
 
             <!-- BottomSheet 핸들 -->

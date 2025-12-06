@@ -37,4 +37,7 @@
     <color name="shadow_light">#0F000000</color>
     <color name="shadow_medium">#1A000000</color>
 
+    <color name="orange_border">#FF6B00</color>
+    <color name="gray_border">#E0E0E0</color>
+
 </resources>

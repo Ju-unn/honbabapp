@@ -1,5 +1,6 @@
 package com.example.honbabapp.activity.profile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -19,13 +20,28 @@ public class ProfileMyMeetingsActivity extends AppCompatActivity {
 
         // 뒤로가기 버튼
         onBackButtonClick();
+
+        // 미팅 만들기 버튼
+        meetingCardWritingOnClick();
     }
 
+    /// 뒤로가기 버튼
     public void onBackButtonClick(){
         binding.btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getOnBackPressedDispatcher().onBackPressed();
+            }
+        });
+    }
+
+    /// 모임 만들기 버튼
+    public void meetingCardWritingOnClick() {
+        binding.btnCreateMeeting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ProfileMyMeetingsActivity.this , MeetingCardWritingActivity.class);
+                startActivity(intent);
             }
         });
     }

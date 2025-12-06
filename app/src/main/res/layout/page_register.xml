@@ -198,35 +198,34 @@
                         android:layout_width="0dp"
                         android:layout_height="45dp"
                         android:layout_weight="2"
-                        android:hint="example@email.com"
+                        android:hint="이메일을 입력하세요"
                         android:textColorHint="@color/text_200"
                         android:textColor="@color/text_100"
                         android:textSize="14sp"
                         android:inputType="textEmailAddress"
                         android:background="@drawable/edittext_background"
                         android:paddingHorizontal="14dp"
-                        android:layout_marginEnd="10dp"/>
+                        android:layout_marginEnd="10dp" />
 
                     <Button
-                        android:id="@+id/btn_send_code"
+                        android:id="@+id/btn_send_verification"
                         android:layout_width="0dp"
                         android:layout_height="45dp"
                         android:layout_weight="1"
-                        android:text="인증 받기"
+                        android:text="이메일 전송"
                         android:textColor="@color/white"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         android:background="@drawable/button_primary_background"
-                        android:minWidth="80dp"
-                        android:layout_gravity="center" />
+                        android:minWidth="80dp" />
 
                 </LinearLayout>
 
-                <!-- 이메일 인증코드 -->
+                <!-- 인증번호 입력 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="이메일 인증코드"
+                    android:text="인증번호"
                     android:textColor="@color/text_200"
                     android:textSize="13sp"
                     android:textStyle="bold"
@@ -243,7 +242,7 @@
                         android:layout_width="0dp"
                         android:layout_height="45dp"
                         android:layout_weight="2"
-                        android:hint="인증코드 입력"
+                        android:hint="인증번호를 입력하세요"
                         android:textColorHint="@color/text_200"
                         android:textColor="@color/text_100"
                         android:textSize="14sp"
@@ -275,13 +274,13 @@
                     android:textColor="@color/text_200"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="7dp" />
+                    android:layout_marginBottom="7dp"/>
 
                 <EditText
                     android:id="@+id/et_password"
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
-                    android:hint="8자 이상 입력하세요"
+                    android:hint="비밀번호를 입력하세요"
                     android:textColorHint="@color/text_200"
                     android:textColor="@color/text_100"
                     android:textSize="14sp"
@@ -289,7 +288,7 @@
                     android:background="@drawable/edittext_background"
                     android:paddingHorizontal="14dp"
                     android:layout_marginBottom="18dp"
-                    android:maxLength="14" />
+                    android:maxLength="14"/>
 
                 <!-- 비밀번호 확인 -->
                 <TextView
@@ -308,11 +307,11 @@
                     android:layout_marginBottom="18dp">
 
                     <EditText
-                        android:id="@+id/et_verification_password"
+                        android:id="@+id/et_password_confirm"
                         android:layout_width="0dp"
                         android:layout_height="45dp"
                         android:layout_weight="2"
-                        android:hint="비밀번호를 다시 입력해주세요"
+                        android:hint="비밀번호를 다시 입력하세요"
                         android:textColorHint="@color/text_200"
                         android:textColor="@color/text_100"
                         android:textSize="14sp"
@@ -401,29 +400,45 @@
                     android:orientation="horizontal"
                     android:layout_marginBottom="18dp">
 
-                    <Button
+                    <!-- 남성 버튼 -->
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_gender_male"
                         android:layout_width="0dp"
                         android:layout_height="45dp"
                         android:layout_weight="1"
                         android:text="남성"
-                        android:textColor="@color/white"
+                        android:textColor="@color/text_200"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:background="@drawable/gender_button_selected_background"
-                        android:layout_marginEnd="5dp" />
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        app:backgroundTint="@color/white"
+                        app:strokeColor="@color/gray_border"
+                        app:strokeWidth="1dp"
+                        app:cornerRadius="8dp"
+                        app:rippleColor="@color/gray_border"
+                        android:layout_marginEnd="5dp"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
-                    <Button
+                    <!-- 여성 버튼 -->
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_gender_female"
                         android:layout_width="0dp"
                         android:layout_height="45dp"
                         android:layout_weight="1"
                         android:text="여성"
-                        android:textColor="@color/text_100"
+                        android:textColor="@color/text_200"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:background="@drawable/gender_button_background"
-                        android:layout_marginStart="5dp" />
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        app:backgroundTint="@color/white"
+                        app:strokeColor="@color/gray_border"
+                        app:strokeWidth="1dp"
+                        app:cornerRadius="8dp"
+                        app:rippleColor="@color/gray_border"
+                        android:layout_marginStart="5dp"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
                 </LinearLayout>
 
