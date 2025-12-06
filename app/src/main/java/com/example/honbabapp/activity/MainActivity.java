@@ -14,6 +14,7 @@ import com.example.honbabapp.data.meeting.Meeting;
 import com.example.honbabapp.data.user.User;
 import com.example.honbabapp.databinding.ActivityMainBinding;
 import com.example.honbabapp.ui.adapter.MainFragmentAdapter;
+import com.example.honbabapp.ui.fragment.MapFragment;
 import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
@@ -36,8 +37,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /// mapPage로 이동
-    public void navigationToMap() {
+    public void navigationToMap(String category) {
         binding.viewPager.setCurrentItem(1);
+        //fragmentList에서 MapFragment를 가져오기 (객체)
+        //객체 선언 하고 해당 객체를 fragmentList안에있는 MapFragment 받아오기
+        MapFragment mapFragment;
+        mapFragment = (MapFragment) adapter.fragmentList.get(1);
+        mapFragment.setFilter(category);
     }
 
     /// homePage로 이동
@@ -105,6 +111,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //viewPager의 표시되는 fragment가 변경되었을 때 호출되는코드
+        //setCurrentItem으로 변경되면 bottomNavigationBar의 아이템이 선택된 상태로 보여지도록 변경하는 코드가 포함되어있음
         binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {

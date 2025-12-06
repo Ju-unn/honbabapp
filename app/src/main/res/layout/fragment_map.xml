@@ -144,47 +144,6 @@
 
     </LinearLayout>
 
-    <!-- 거리 필터 버튼 (지도 위에 floating) -->
-    <LinearLayout
-        android:id="@+id/distance_filter_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="76dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@drawable/filter_button_background"
-        android:padding="10dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:elevation="6dp">
-
-        <ImageView
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:src="@drawable/ic_location"
-            app:tint="@color/primary_100"
-            android:layout_marginEnd="4dp" />
-
-        <TextView
-            android:id="@+id/tv_distance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="전체"
-            android:textColor="@color/text_100"
-            android:textSize="13sp"
-            android:textStyle="bold" />
-
-        <ImageView
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:src="@drawable/ic_arrow_down"
-            app:tint="@color/text_100"
-            android:layout_marginStart="4dp" />
-
-    </LinearLayout>
-
     <!-- 현재 위치 버튼 (지도 위에 floating - BottomSheet 영향 안받음) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_current_location"
@@ -280,7 +239,7 @@
                         android:layout_height="36dp"
                         android:orientation="horizontal"
                         android:gravity="center"
-                        android:background="@drawable/category_button_background"
+                        android:background="@drawable/category_button_active_background"
                         android:paddingHorizontal="16dp"
                         android:layout_marginEnd="8dp"
                         android:clickable="true"
@@ -301,49 +260,10 @@
 
                     </LinearLayout>
 
-                    <!-- 내 주변 버튼 -->
-                    <Button
-                        android:id="@+id/btn_near_me"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:text="내 주변"
-                        android:textColor="@color/white"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/category_button_active_background"
-                        app:backgroundTint="@null"
-                        android:paddingHorizontal="16dp"
-                        android:layout_marginEnd="8dp"
-                        android:elevation="0dp"/>
-
-                    <!-- 음식 종류 버튼 -->
-                    <Button
-                        android:id="@+id/btn_food_type"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:text="음식 종류"
-                        android:textColor="@color/text_200"
-                        android:textSize="13sp"
-                        android:background="@drawable/category_button_background"
-                        app:backgroundTint="@null"
-                        android:paddingHorizontal="16dp"
-                        android:layout_marginEnd="8dp"
-                        android:elevation="0dp"/>
-
-                    <!-- 가격 버튼 -->
-                    <Button
-                        android:id="@+id/btn_price"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:text="가격"
-                        android:textColor="@color/text_200"
-                        android:textSize="13sp"
-                        android:background="@drawable/category_button_background"
-                        app:backgroundTint="@null"
-                        android:paddingHorizontal="16dp"
-                        android:elevation="0dp"/>
-
                 </LinearLayout>
+
+
+
             </HorizontalScrollView>
 
             <!-- 구분선 -->
@@ -366,5 +286,4 @@
         </LinearLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
 </FrameLayout>

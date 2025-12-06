@@ -16,10 +16,9 @@ import java.util.ArrayList;
 
 public class MainFragmentAdapter extends FragmentStateAdapter {
 
-    ArrayList<Fragment> fragmentList = new ArrayList<>();
+    public ArrayList<Fragment> fragmentList = new ArrayList<>();
     public MainFragmentAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
-        this.fragmentList = fragmentList;
 
         fragmentList.add(new HomeFragment());
         fragmentList.add(new MapFragment());

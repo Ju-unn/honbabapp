@@ -18,6 +18,11 @@ import java.util.Map;
 public class MapAllMeetingListAdapter extends RecyclerView.Adapter<MapAllMeetingListAdapter.ViewHolder> {
     ArrayList<Meeting> allMeetings = MockData.getMeetingList();
 
+    //아이템 현재 정렬 상태 - 기본값은 전체
+    OrderBy orderBy = OrderBy.All;
+    //아이템 현재 필터 상태 - 기본값은 모두 null(선택되지 않음)
+    Filter filter = new Filter();
+
 
     @NonNull
     @Override
@@ -33,16 +38,36 @@ public class MapAllMeetingListAdapter extends RecyclerView.Adapter<MapAllMeeting
 
     @Override
     public void onBindViewHolder(@NonNull MapAllMeetingListAdapter.ViewHolder holder, int position) {
-        Meeting allMeeting = allMeetings.get(position);
+        Meeting meeting = getMeetingList().get(position);
 
-        holder.rvMeetingCardBinding.tvMeetingTitle.setText(allMeeting.meeting_title);
-        holder.rvMeetingCardBinding.tvMeetingLocation.setText(allMeeting.meeting_location.location_store_address);
-        holder.rvMeetingCardBinding.tvMeetingDescription.setText(allMeeting.meeting_description);
+        holder.rvMeetingCardBinding.tvMeetingTitle.setText(meeting.meeting_title);
+        holder.rvMeetingCardBinding.tvMeetingLocation.setText(meeting.meeting_location.location_store_address);
+        holder.rvMeetingCardBinding.tvMeetingDescription.setText(meeting.meeting_description);
+    }
+
+    //TODO : 해야될부분을 정의
+    //allMettings, filter, orderBy를 이용해서 표시될 meetingList를 가져오는 함수
+    public ArrayList<Meeting> getMeetingList() {
+
+        ArrayList<Meeting> result = new ArrayList<>();
+        for (Meeting m : allMeetings) {
+
+            // "전체"이거나 null이면 모든 Meeting 추가
+            if (filter.foodType == null || filter.foodType.equals("전체")) {
+                result.add(m);
+            }
+            // 특정 카테고리면 해당 타입만 추가
+            else if (filter.foodType.equals(m.meeting_category)) {
+                result.add(m);
+            }
+
+        }
+        return result;
     }
 
     @Override
     public int getItemCount() {
-        return allMeetings.size();
+        return getMeetingList().size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -52,5 +77,22 @@ public class MapAllMeetingListAdapter extends RecyclerView.Adapter<MapAllMeeting
             super(rvMeetingCardBinding.getRoot());
             this.rvMeetingCardBinding = rvMeetingCardBinding;
         }
+    }
+
+    public void setOrderByAndFilter(OrderBy orderBy , String filter) {
+        this.orderBy = orderBy;
+        this.filter.foodType  = filter;
+    }
+
+
+    //enum클래스 활용하여 아이템 정렬 상태 표시
+    public enum OrderBy {
+        All, Hot, Distance
+    }
+
+    public class Filter {
+        String foodType;
+        int price;
+        String location;
     }
 }

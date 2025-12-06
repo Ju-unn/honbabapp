@@ -74,7 +74,7 @@ public class HomeFragment extends Fragment {
         binding.categoryAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               navigateToMap("잔체");
+               navigateToMap("전체");
             }
         });
 
@@ -138,7 +138,7 @@ public class HomeFragment extends Fragment {
 
     public void navigateToMap(String category){
         MainActivity mainActivity = (MainActivity) requireActivity();
-        mainActivity.navigationToMap();
+        mainActivity.navigationToMap(category);
     }
 
     /// flaoting 버트 클릭시 미팅 작성 페이지 이동

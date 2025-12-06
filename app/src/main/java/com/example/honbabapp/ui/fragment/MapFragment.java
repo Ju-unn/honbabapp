@@ -21,8 +21,12 @@ import com.example.honbabapp.ui.adapter.HomeAllMeetingListAdapter;
 import com.example.honbabapp.ui.adapter.HomeHotMeetingListAdapter;
 import com.example.honbabapp.ui.adapter.MapAllMeetingListAdapter;
 import com.example.honbabapp.ui.adapter.MapHotMeetingListAdapter;
+import com.example.honbabapp.ui.dialog.MapFilterBottomSheetDialog;
+import com.example.honbabapp.ui.dialog.MapSortBottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import java.util.Map;
 
 public class MapFragment extends Fragment {
 
@@ -31,6 +35,7 @@ public class MapFragment extends Fragment {
     private MapHotMeetingListAdapter hotMeetingListAdapter;
     private MapAllMeetingListAdapter allMeetingListAdapter;
     private String currentSortOption = "전체";
+    private String pendingCategory = null;
 
     // BottomSheet 관련 변수 추가
     private BottomSheetBehavior<View> bottomSheetBehavior;
@@ -69,6 +74,7 @@ public class MapFragment extends Fragment {
     public void initRecyclerView() {
         allMeetingListAdapter = new MapAllMeetingListAdapter();
         fragmentMapbinding.rvMeetingCard.setAdapter(allMeetingListAdapter);
+
     }
 
 
@@ -104,21 +110,28 @@ public class MapFragment extends Fragment {
                 showSortButtonSheet();
             }
         });
+
+        /// 필터 클릭시
+        fragmentMapbinding.btnFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MapFilterBottomSheetDialog mapFilterBottomSheetDialog = new MapFilterBottomSheetDialog();
+                mapFilterBottomSheetDialog.show(getActivity().getSupportFragmentManager(), "mapFilterBottomsheetDiaglog");
+            }
+        });
     }
 
     /// bottomsheet 필터 버튼 클릭 이벤트
     public void showSortButtonSheet() {
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
-        bottomSheetSortBinding = PageMapBottomSheetSortBinding.inflate(LayoutInflater.from(getContext()));
-        bottomSheetDialog.setContentView(bottomSheetSortBinding.getRoot());
-
+        MapSortBottomSheetDialog mapSortBottomSheetDialog = new MapSortBottomSheetDialog();
+        mapSortBottomSheetDialog.show(getActivity().getSupportFragmentManager(), "mapSortBottomSheetDialog");
         updateCheckMarksWithBinding(bottomSheetSortBinding);
 
         /// 닫기 버튼 클릭
         bottomSheetSortBinding.btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                bottomSheetDialog.dismiss();
+                mapSortBottomSheetDialog.dismiss();
             }
         });
 
@@ -129,7 +142,7 @@ public class MapFragment extends Fragment {
                 currentSortOption = "전체";
                 updateCheckMarksWithBinding(bottomSheetSortBinding);
                 updateSortButtonText();
-                bottomSheetDialog.dismiss();
+                mapSortBottomSheetDialog.dismiss();
             }
         });
 
@@ -140,7 +153,7 @@ public class MapFragment extends Fragment {
                 currentSortOption = "인기순";
                 updateCheckMarksWithBinding(bottomSheetSortBinding);
                 updateSortButtonText();
-                bottomSheetDialog.dismiss();
+                mapSortBottomSheetDialog.dismiss();
             }
         });
 
@@ -151,12 +164,14 @@ public class MapFragment extends Fragment {
                 currentSortOption = "거리순";
                 updateCheckMarksWithBinding(bottomSheetSortBinding);
                 updateSortButtonText();
-                bottomSheetDialog.dismiss();
+                mapSortBottomSheetDialog.dismiss();
             }
         });
 
-        bottomSheetDialog.show();
+
     }
+
+
 
     /// 체크표시 여부
     public void updateCheckMarksWithBinding(PageMapBottomSheetSortBinding bottomSheetSortBinding) {
@@ -183,4 +198,20 @@ public class MapFragment extends Fragment {
             fragmentMapbinding.tvSortOption.setText(currentSortOption);
         }
     }
+
+    public void setFilter(String category) {
+        MapAllMeetingListAdapter.OrderBy orderBy;
+
+        if (currentSortOption.equals("인기순")) {
+            orderBy = MapAllMeetingListAdapter.OrderBy.Hot;
+        } else if (currentSortOption.equals("거리순")) {
+            orderBy = MapAllMeetingListAdapter.OrderBy.Distance;
+        } else {
+            orderBy = MapAllMeetingListAdapter.OrderBy.All;
+        }
+
+        allMeetingListAdapter.setOrderByAndFilter(orderBy , category);
+        allMeetingListAdapter.notifyDataSetChanged();
+    }
+
 }
