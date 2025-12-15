@@ -1,4 +1,4 @@
-package com.example.honbabapp.api.data;
+package com.example.honbabapp.api.data.request;
 
 public class LoginRequest {
     public String email;

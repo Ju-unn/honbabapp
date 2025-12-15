@@ -9,8 +9,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
-import com.example.honbabapp.api.data.LoginRequest;
-import com.example.honbabapp.api.data.LoginResponse;
+import com.example.honbabapp.api.data.request.LoginRequest;
+import com.example.honbabapp.api.data.response.LoginResponse;
 import com.example.honbabapp.databinding.ActivityLoginBinding;
 
 import retrofit2.Call;

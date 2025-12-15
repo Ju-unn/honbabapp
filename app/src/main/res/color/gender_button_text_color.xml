@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 선택된 상태 - 주황색 텍스트 -->
+    <item android:state_selected="true" android:color="#FF6B35" />
+    <!-- 일반 상태 - 회색 텍스트 -->
+    <item android:color="#757575" />
+</selector>
