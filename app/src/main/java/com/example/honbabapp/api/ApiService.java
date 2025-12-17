@@ -1,7 +1,7 @@
 package com.example.honbabapp.api;
 
 import com.example.honbabapp.api.data.AvailabilityData;
-import com.example.honbabapp.api.data.User;
+import com.example.honbabapp.api.data.LoginData;
 import com.example.honbabapp.api.data.VerificationData;
 import com.example.honbabapp.api.data.VerifiedData;
 import com.example.honbabapp.api.data.request.LoginRequest;
@@ -9,7 +9,6 @@ import com.example.honbabapp.api.data.request.RegisterRequest;
 import com.example.honbabapp.api.data.request.SendVerificationRequest;
 import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
-import com.example.honbabapp.api.data.response.LoginResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -27,7 +26,7 @@ public interface ApiService {
      * @return LoginResponse
      */
     @POST("api/auth/login.php")
-    Call<ApiResponse<User>> login(@Body LoginRequest loginRequest);
+    Call<ApiResponse<LoginData>> login(@Body LoginRequest loginRequest);
 
     // ==================== 회원가입 ====================
 
@@ -77,6 +76,6 @@ public interface ApiService {
      * @return ApiResponse<User> - 생성된 사용자 정보
      */
     @POST("api/auth/register.php")
-    Call<ApiResponse<User>> register(@Body RegisterRequest request);
+    Call<ApiResponse<Void>> register(@Body RegisterRequest request);
 }
 

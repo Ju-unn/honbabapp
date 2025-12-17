@@ -6,7 +6,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Patterns;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,7 +13,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.AvailabilityData;
-import com.example.honbabapp.api.data.User;
 import com.example.honbabapp.api.data.VerificationData;
 import com.example.honbabapp.api.data.VerifiedData;
 import com.example.honbabapp.api.data.request.RegisterRequest;
@@ -28,7 +26,6 @@ import java.util.Calendar;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * 회원가입 Activity
@@ -603,13 +600,13 @@ public class RegisterActivity extends AppCompatActivity {
         );
 
         // API 호출
-        Call<ApiResponse<User>> call = apiService.register(request);
+        Call<ApiResponse<Void>> call = apiService.register(request);
 
-        call.enqueue(new Callback<ApiResponse<User>>() {
+        call.enqueue(new Callback<ApiResponse<Void>>() {
             @Override
-            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    ApiResponse<User> apiResponse = response.body();
+                    ApiResponse<Void> apiResponse = response.body();
 
                     if (apiResponse.isSuccess()) {
                         Toast.makeText(RegisterActivity.this,
@@ -631,7 +628,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 Log.e(TAG, "회원가입 실패: " + t.getMessage());
                 Toast.makeText(RegisterActivity.this,
                         "네트워크 오류: " + t.getMessage(),
