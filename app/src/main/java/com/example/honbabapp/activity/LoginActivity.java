@@ -40,10 +40,10 @@ public class LoginActivity extends AppCompatActivity {
     private ApiService apiService;
     private SharedPreferences sharedPreferences;
 
-    // SharedPreferences 설정
-    private static final String PREF_NAME = "honbabapp_prefs";
-    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
-    private static final String KEY_USER_ID = "user_id";
+//    // SharedPreferences 설정
+//    private static final String PREF_NAME = "honbabapp_prefs";
+//    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
+//    private static final String KEY_USER_ID = "user_id";
 
 
 
@@ -57,8 +57,8 @@ public class LoginActivity extends AppCompatActivity {
         // 초기화
         initializeComponents();
 
-        // 자동 로그인 확인
-        checkAutoLogin();
+//        // 자동 로그인 확인
+//        checkAutoLogin();
 
         // 이벤트 리스너 설정
         setupListeners();
@@ -73,28 +73,28 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void initializeComponents() {
         apiService = RetrofitClient.getClient().create(ApiService.class);
-        sharedPreferences = getSharedPreferences(PREF_NAME , MODE_PRIVATE);
+//        sharedPreferences = getSharedPreferences(PREF_NAME , MODE_PRIVATE);
 
         Log.d(TAG, "LoginActivity 초기화 완료");
     }
 
-    /**
-     * 자동 로그인 확인
-     * SharedPreferences에 로그인 정보가 있다면 자동으로 메인 화면으로 이동
-     */
-    private void checkAutoLogin() {
-        boolean isLoggedIn = sharedPreferences.getBoolean(KEY_IS_LOGGED_IN , false);
-        int userId = sharedPreferences.getInt(KEY_USER_ID , -1);
-
-        if (isLoggedIn && userId != -1) {
-            Log.d(TAG, "자동 로그인: user_id = " + userId);
-
-            // 바로 메인 화면으로 이동
-            goToMainActivity();
-        } else {
-            Log.d(TAG, "자동 로그인 정보 없음 - 로그인 화면 표시");
-        }
-    }
+//    /**
+//     * 자동 로그인 확인
+//     * SharedPreferences에 로그인 정보가 있다면 자동으로 메인 화면으로 이동
+//     */
+//    private void checkAutoLogin() {
+//        boolean isLoggedIn = sharedPreferences.getBoolean(KEY_IS_LOGGED_IN , false);
+//        int userId = sharedPreferences.getInt(KEY_USER_ID , -1);
+//
+//        if (isLoggedIn && userId != -1) {
+//            Log.d(TAG, "자동 로그인: user_id = " + userId);
+//
+//            // 바로 메인 화면으로 이동
+//            goToMainActivity();
+//        } else {
+//            Log.d(TAG, "자동 로그인 정보 없음 - 로그인 화면 표시");
+//        }
+//    }
 
     /**
      * 이벤트 리스너 설정
@@ -244,14 +244,14 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "로그인 성공");
         Log.d(TAG, "user_id: " + loginData.getUser_id());
         Log.d(TAG, "nickname: " + loginData.getUser_nickname());
-
-        //SharedPreferences에 최소 정보만 저장
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(KEY_IS_LOGGED_IN , true);
-        editor.putInt(KEY_USER_ID , loginData.getUser_id());
-        editor.apply();
-
-        Log.d(TAG, "SharedPreferences 저장 완료: user_id=" + loginData.getUser_id());
+//
+//        //SharedPreferences에 최소 정보만 저장
+//        SharedPreferences.Editor editor = sharedPreferences.edit();
+//        editor.putBoolean(KEY_IS_LOGGED_IN , true);
+//        editor.putInt(KEY_USER_ID , loginData.getUser_id());
+//        editor.apply();
+//
+//        Log.d(TAG, "SharedPreferences 저장 완료: user_id=" + loginData.getUser_id());
 
         // 환영 메시지 (서버에서 받은 데이터로 표시)
         Toast.makeText(this,
