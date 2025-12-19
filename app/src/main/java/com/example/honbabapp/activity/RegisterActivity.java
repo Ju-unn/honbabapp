@@ -79,6 +79,9 @@ public class RegisterActivity extends AppCompatActivity {
         // 비밀번호 실시간 검증
         setupPasswordValidation();
 
+        // 전화번호 실시간 하이폰 추가
+        setupPhoneNumberAutoFormat();
+
         // 전화번호 중복확인
         registerBinding.btnCheckPhone.setOnClickListener(v -> checkPhoneDuplicate());
 
@@ -192,9 +195,14 @@ public class RegisterActivity extends AppCompatActivity {
     private void setupBirthdayPicker() {
         registerBinding.etBirthdate.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
-            int year = calendar.get(Calendar.YEAR);
-            int month = calendar.get(Calendar.MONTH);
-            int day = calendar.get(Calendar.DAY_OF_MONTH);
+            int currentYear = calendar.get(Calendar.YEAR);
+            int currentMonth = calendar.get(Calendar.MONTH);
+            int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+            // 기본 선택 날짜: 만 20세
+            int defaultYear = currentYear - 20;
+            int defaultMonth = currentMonth;
+            int defaultDay = currentDay;
 
             DatePickerDialog datePickerDialog = new DatePickerDialog(
                     RegisterActivity.this ,
@@ -206,8 +214,18 @@ public class RegisterActivity extends AppCompatActivity {
                                 selectedDay);
                         registerBinding.etBirthdate.setText(birthday);
                     } ,
-                    year , month , day
+                    defaultYear  , defaultMonth , defaultDay
             );
+
+            // 미래 날짜 선택 불가
+            datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
+
+            // 너무 오래된 날짜 선택 불가
+            Calendar minDate = Calendar.getInstance();
+            minDate.add(Calendar.YEAR, -100);
+            datePickerDialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
+
+
             datePickerDialog.show();
         });
     }
@@ -377,18 +395,8 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                registerBinding.etPasswordConfirm.setError(null);
                 isPasswordConfirmed = false;
-
-                String password = registerBinding.etPassword.getText().toString();
-                String passwordConfirm = s.toString();
-
-                if (!password.isEmpty() && !passwordConfirm.isEmpty()) {
-                    if (password.equals(passwordConfirm)) {
-                        registerBinding.etPasswordConfirm.setError(null);
-                    } else {
-                        registerBinding.etPasswordConfirm.setError("비밀번호가 일치하지 않습니다");
-                    }
-                }
             }
 
             @Override
@@ -452,6 +460,88 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
+     * 전화번호 실시간 하이폰 추가
+     */
+
+    private void setupPhoneNumberAutoFormat() {
+        registerBinding.etPhoneNumber.addTextChangedListener(new TextWatcher() {
+            private boolean isFormatting = false;
+            private String previousText = "";
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                if (!isFormatting) {
+                    previousText = s.toString();
+                }
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (isFormatting) return;
+
+                isFormatting = true;
+
+                try {
+                    // 현재 텍스트에서 하이픈 제거
+                    String input = s.toString().replaceAll("-", "");
+
+                    // 빈 문자열이면 그냥 리턴
+                    if (input.isEmpty()) {
+                        isFormatting = false;
+                        return;
+                    }
+
+                    // 11자리 넘으면 자르기
+                    if (input.length() > 11) {
+                        input = input.substring(0, 11);
+                    }
+
+                    // 포맷팅
+                    StringBuilder formatted = new StringBuilder();
+
+                    if (input.length() <= 3) {
+                        // 010
+                        formatted.append(input);
+                    } else if (input.length() <= 7) {
+                        // 010-1234
+                        formatted.append(input.substring(0, 3));
+                        formatted.append("-");
+                        formatted.append(input.substring(3));
+                    } else {
+                        // 010-1234-5678
+                        formatted.append(input.substring(0, 3));
+                        formatted.append("-");
+                        formatted.append(input.substring(3, 7));
+                        formatted.append("-");
+                        formatted.append(input.substring(7));
+                    }
+
+                    String result = formatted.toString();
+
+                    // 이전 텍스트와 다를 때만 업데이트
+                    if (!result.equals(previousText)) {
+                        s.replace(0, s.length(), result);
+                    }
+
+                } catch (Exception e) {
+                    // 오류 발생 시 이전 상태로 복구
+                    Log.e("PhoneFormat", "Error formatting phone number", e);
+                    try {
+                        s.replace(0, s.length(), previousText);
+                    } catch (Exception ex) {
+                        // 복구도 실패하면 그냥 무시
+                    }
+                } finally {
+                    isFormatting = false;
+                }
+            }
+        });
+    }
+
+    /**
      * 전화번호 중복 확인
      */
     private void checkPhoneDuplicate() {
@@ -463,30 +553,14 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // 2. 전화번호 형식 검증 (010-1234-5678 또는 01012345678)
-        // 하이픈 제거
-        String phoneDigits = phone.replaceAll("-", "");
-
-        // 숫자만 있는지 확인
-        if (!phoneDigits.matches("^[0-9]+$")) {
-            Toast.makeText(this, "전화번호는 숫자만 입력 가능합니다", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // 010으로 시작하는지 확인
-        if (!phoneDigits.startsWith("010")) {
-            Toast.makeText(this, "010으로 시작하는 전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // 길이 확인 (11자리)
-        if (phoneDigits.length() != 11) {
-            Toast.makeText(this, "전화번호는 11자리를 입력해주세요", Toast.LENGTH_SHORT).show();
+        // 2. 전화번호 형식 검증 (010-1234-5678)
+        if (!phone.matches("^010-\\d{4}-\\d{4}$")) {
+            Toast.makeText(this, "올바른 전화번호 형식이 아닙니다 (010-1234-5678)", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // 3. API 호출 (서버에 중복 확인 요청)
-        Call<ApiResponse<AvailabilityData>> call = apiService.checkPhone(phoneDigits);
+        Call<ApiResponse<AvailabilityData>> call = apiService.checkPhone(phone);
 
         call.enqueue(new Callback<ApiResponse<AvailabilityData>>() {
             @Override

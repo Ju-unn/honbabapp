@@ -63,9 +63,6 @@ public class LoginActivity extends AppCompatActivity {
         // 이벤트 리스너 설정
         setupListeners();
 
-        // 실시간 입력 검증
-        setupRealtimeValidation();
-
     }
 
     /**
@@ -121,42 +118,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * 실시간 입력 검증 설정
-     */
-    private void setupRealtimeValidation() {
-        TextWatcher textWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                updateLoginButtonState();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        };
-        binding.etEmail.addTextChangedListener(textWatcher);
-        binding.etPassword.addTextChangedListener(textWatcher);
-    }
-
-    /**
-     * 로그인 버튼 활성화 상태 업데이트
-     */
-    private void updateLoginButtonState() {
-        String email = binding.etEmail.getText().toString().trim();
-        String password = binding.etPassword.getText().toString().trim();
-
-        boolean isEnabled = !email.isEmpty() && !password.isEmpty();
-        binding.btnLogin.setEnabled(isEnabled);
-        binding.btnLogin.setAlpha(isEnabled ? 1.0f : 0.5f);
-    }
-
-    /**
      * 로그인 수행
      */
     private void performLogin(){
@@ -189,6 +150,7 @@ public class LoginActivity extends AppCompatActivity {
                         Log.e(TAG, "로그인 실패: " + apiResponse.getMessage());
                     }
                 } else {
+                    ApiResponse<LoginData> apiResponse = response.body();
                     // HTTP 오류
                     Toast.makeText(LoginActivity.this,
                             "로그인에 실패했습니다. 다시 시도해주세요.",
