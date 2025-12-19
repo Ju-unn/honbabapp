@@ -2,6 +2,7 @@ package com.example.honbabapp.activity;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -462,83 +463,8 @@ public class RegisterActivity extends AppCompatActivity {
     /**
      * 전화번호 실시간 하이폰 추가
      */
-
     private void setupPhoneNumberAutoFormat() {
-        registerBinding.etPhoneNumber.addTextChangedListener(new TextWatcher() {
-            private boolean isFormatting = false;
-            private String previousText = "";
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                if (!isFormatting) {
-                    previousText = s.toString();
-                }
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (isFormatting) return;
-
-                isFormatting = true;
-
-                try {
-                    // 현재 텍스트에서 하이픈 제거
-                    String input = s.toString().replaceAll("-", "");
-
-                    // 빈 문자열이면 그냥 리턴
-                    if (input.isEmpty()) {
-                        isFormatting = false;
-                        return;
-                    }
-
-                    // 11자리 넘으면 자르기
-                    if (input.length() > 11) {
-                        input = input.substring(0, 11);
-                    }
-
-                    // 포맷팅
-                    StringBuilder formatted = new StringBuilder();
-
-                    if (input.length() <= 3) {
-                        // 010
-                        formatted.append(input);
-                    } else if (input.length() <= 7) {
-                        // 010-1234
-                        formatted.append(input.substring(0, 3));
-                        formatted.append("-");
-                        formatted.append(input.substring(3));
-                    } else {
-                        // 010-1234-5678
-                        formatted.append(input.substring(0, 3));
-                        formatted.append("-");
-                        formatted.append(input.substring(3, 7));
-                        formatted.append("-");
-                        formatted.append(input.substring(7));
-                    }
-
-                    String result = formatted.toString();
-
-                    // 이전 텍스트와 다를 때만 업데이트
-                    if (!result.equals(previousText)) {
-                        s.replace(0, s.length(), result);
-                    }
-
-                } catch (Exception e) {
-                    // 오류 발생 시 이전 상태로 복구
-                    Log.e("PhoneFormat", "Error formatting phone number", e);
-                    try {
-                        s.replace(0, s.length(), previousText);
-                    } catch (Exception ex) {
-                        // 복구도 실패하면 그냥 무시
-                    }
-                } finally {
-                    isFormatting = false;
-                }
-            }
-        });
+        registerBinding.etPhoneNumber.addTextChangedListener(new PhoneNumberFormattingTextWatcher());
     }
 
     /**
