@@ -1,8 +1,10 @@
 package com.example.honbabapp.activity;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -21,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.AvailabilityData;
+import com.example.honbabapp.api.data.ImageUploadData;
 import com.example.honbabapp.api.data.VerificationData;
 import com.example.honbabapp.api.data.VerifiedData;
 import com.example.honbabapp.api.data.request.RegisterRequest;
@@ -29,9 +32,14 @@ import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageRegisterBinding;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -66,6 +74,13 @@ public class RegisterActivity extends AppCompatActivity {
     private String selectedGender = "남성"; // 기본값
     private String selectedLocation = "";
     private String verificationCode = ""; // 서버에서 받은 코드 (개발용)
+
+    // 프로필 이미지 관련 변수
+    private String uploadedImageUrl = null; // S3 URL
+    private boolean isImageUploading = false;
+
+    // 이미지 선택 Launcher
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,8 +211,11 @@ public class RegisterActivity extends AppCompatActivity {
                    }
 
                    registerBinding.ivProfilePreview.setImageBitmap(bitmap);
-
                    selectedProfileBitmap = bitmap;
+
+                   Toast.makeText(RegisterActivity.this,
+                           "이미지가 선택되었습니다",
+                           Toast.LENGTH_SHORT).show();
 
                    Log.d("PhotoPicker" , "Selected URI" + uri);
                } else {
@@ -211,6 +229,48 @@ public class RegisterActivity extends AppCompatActivity {
                     .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
                     .build());
         });
+    }
+
+
+
+    /**
+     * Bitmap을 File로 변환 (압축 포함)
+     */
+    private File createImageFileFromBitmap(Bitmap bitmap) throws IOException {
+        // 비율 유지하면서 리사이즈 (최대 1024 1024)
+        bitmap = resizeBitmap(bitmap , 1024 , 1024);
+
+        // 임시 파일 생성
+        File tempFile = File.createTempFile("profile_" , ".jpg" , getCacheDir());
+
+        // jepg 압축
+        FileOutputStream fos = new FileOutputStream(tempFile);
+        bitmap.compress(Bitmap.CompressFormat.JPEG , 80 , fos);
+        fos.close();
+
+        return tempFile;
+    }
+
+    /**
+     * Bitmap 리사이즈
+     */
+    private Bitmap resizeBitmap(Bitmap original , int maxWidth , int maxHeight) {
+        int width = original.getWidth();
+        int height = original.getHeight();
+
+        float ratio = Math.min(
+                (float) maxWidth / width ,
+                (float) maxHeight / height
+        );
+
+        if (ratio >= 1) {
+            return original;
+        }
+
+        int newWidth = Math.round(width * ratio);
+        int newHeight = Math.round(height * ratio);
+
+        return Bitmap.createScaledBitmap(original, newWidth, newHeight, true);
     }
 
     /**
@@ -607,7 +667,7 @@ public class RegisterActivity extends AppCompatActivity {
         String password = registerBinding.etPassword.getText().toString();
         String phoneNumber = registerBinding.etPhoneNumber.getText().toString().trim();
         String birthday = registerBinding.etBirthdate.getText().toString().trim();
-        String location = selectedLocation.isEmpty() ? "미설정" : selectedLocation;
+        String location = selectedLocation.isEmpty() ? "서울특별시 관악구" : selectedLocation;
 
         // 필수 입력 확인
         if (nickname.isEmpty()) {
@@ -635,15 +695,116 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // registerRequest 생성
+        // 프로필 이미지가 있으면 먼저 업로드!
+        if (selectedProfileBitmap != null && uploadedImageUrl == null) {
+            Toast.makeText(this, "프로필 이미지 업로드 중...", Toast.LENGTH_SHORT).show();
+            uploadProfileImageThenRegister(nickname, email, password, phoneNumber, birthday, location);
+        } else {
+            // 이미지 없거나 이미 업로드됨 → 바로 회원가입
+            registerWithData(nickname, email, password, phoneNumber, birthday, location, uploadedImageUrl);
+        }
+    }
+
+    /**
+     * 이미지 업로드 후 회원가입
+     */
+    private void uploadProfileImageThenRegister(String nickname, String email, String password,
+                                                String phoneNumber, String birthday, String location) {
+        if (isImageUploading) {
+            return;
+        }
+
+        isImageUploading = true;
+
+        try {
+            // Bitmap → File 변환
+            File imageFile = createImageFileFromBitmap(selectedProfileBitmap);
+
+            // RequestBody 생성
+            RequestBody requestFile = RequestBody.create(
+                    MediaType.parse("image/*"),
+                    imageFile
+            );
+
+            // MultipartBody.Part 생성
+            MultipartBody.Part imagePart = MultipartBody.Part.createFormData(
+                    "profile_image",
+                    imageFile.getName(),
+                    requestFile
+            );
+
+            // user_id
+            RequestBody userIdBody = RequestBody.create(
+                    MediaType.parse("text/plain"),
+                    "0"
+            );
+
+            // API 호출
+            Call<ApiResponse<ImageUploadData>> call = apiService.uploadProfileImage(imagePart, userIdBody);
+
+            call.enqueue(new Callback<ApiResponse<ImageUploadData>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<ImageUploadData>> call,
+                                       Response<ApiResponse<ImageUploadData>> response) {
+                    isImageUploading = false;
+
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiResponse<ImageUploadData> apiResponse = response.body();
+
+                        if (apiResponse.isSuccess()) {
+                            ImageUploadData data = apiResponse.getData();
+                            uploadedImageUrl = data.getProfile_image_url();
+
+                            Log.d(TAG, "이미지 업로드 성공! S3 URL: " + uploadedImageUrl);
+
+                            // 이미지 업로드 성공 → 회원가입 진행!
+                            registerWithData(nickname, email, password, phoneNumber, birthday, location, uploadedImageUrl);
+
+                        } else {
+                            Toast.makeText(RegisterActivity.this,
+                                    "이미지 업로드 실패: " + apiResponse.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(RegisterActivity.this,
+                                "이미지 업로드 실패: " + response.code(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<ImageUploadData>> call, Throwable t) {
+                    isImageUploading = false;
+                    Log.e(TAG, "이미지 업로드 오류: " + t.getMessage());
+                    Toast.makeText(RegisterActivity.this,
+                            "네트워크 오류: " + t.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                }
+            });
+
+        } catch (IOException e) {
+            isImageUploading = false;
+            Log.e(TAG, "파일 변환 오류: " + e.getMessage());
+            Toast.makeText(this, "이미지 처리 오류", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * 회원가입 API 호출
+     */
+    private void registerWithData(String nickname, String email, String password,
+                                  String phoneNumber, String birthday, String location,
+                                  String profileImageUrl) {
+        // RegisterRequest 생성
         RegisterRequest request = new RegisterRequest(
-                nickname ,
-                email ,
-                password ,
-                phoneNumber ,
-                birthday ,
-                selectedGender ,
-                location
+                nickname,
+                email,
+                password,
+                phoneNumber,
+                birthday,
+                selectedGender,
+                location,
+                profileImageUrl  // S3 URL (null 가능)
         );
 
         // API 호출
@@ -683,15 +844,6 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
     }
-
-
-
-
-
-
-
-
-
 
 
 

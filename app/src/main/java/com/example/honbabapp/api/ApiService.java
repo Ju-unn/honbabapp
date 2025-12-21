@@ -1,6 +1,7 @@
 package com.example.honbabapp.api;
 
 import com.example.honbabapp.api.data.AvailabilityData;
+import com.example.honbabapp.api.data.ImageUploadData;
 import com.example.honbabapp.api.data.LoginData;
 import com.example.honbabapp.api.data.VerificationData;
 import com.example.honbabapp.api.data.VerifiedData;
@@ -89,8 +90,8 @@ public interface ApiService {
      * 지원한다
      */
     @Multipart
-    @POST("")
-    Call<ApiResponse<Void>> uploadProfileImage(
+    @POST("api/auth/upload_profile_image.php")
+    Call<ApiResponse<ImageUploadData>> uploadProfileImage(
             @Part MultipartBody.Part image,
             @Part("user_id") RequestBody userId
             );
