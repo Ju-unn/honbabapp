@@ -10,10 +10,14 @@ import com.example.honbabapp.api.data.request.SendVerificationRequest;
 import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Query;
 
 public interface ApiService {
@@ -77,5 +81,18 @@ public interface ApiService {
      */
     @POST("api/auth/register.php")
     Call<ApiResponse<Void>> register(@Body RegisterRequest request);
+
+    /**
+     * Retrofit 라이브러리를 이용해서 통신을 하는데
+     * MultiPart타입, POST(HTTP Method) 형식으로 통신한다
+     * MultiPart는 이미지같은 형식을 보내기위해 사용하며 byte형식으로 통신하여 파일등을 주고받을 수 있도록
+     * 지원한다
+     */
+    @Multipart
+    @POST("")
+    Call<ApiResponse<Void>> uploadProfileImage(
+            @Part MultipartBody.Part image,
+            @Part("user_id") RequestBody userId
+            );
 }
 

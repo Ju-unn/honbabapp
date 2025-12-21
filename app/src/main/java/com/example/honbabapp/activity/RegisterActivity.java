@@ -1,7 +1,11 @@
 package com.example.honbabapp.activity;
 
 import android.app.DatePickerDialog;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -9,6 +13,9 @@ import android.util.Log;
 import android.util.Patterns;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.honbabapp.api.ApiService;
@@ -22,6 +29,7 @@ import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageRegisterBinding;
 
+import java.io.IOException;
 import java.util.Calendar;
 
 import retrofit2.Call;
@@ -82,6 +90,9 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 전화번호 실시간 하이폰 추가
         setupPhoneNumberAutoFormat();
+
+        // 이미지 선택하기
+        initProfileImagePicker();
 
         // 전화번호 중복확인
         registerBinding.btnCheckPhone.setOnClickListener(v -> checkPhoneDuplicate());
@@ -164,6 +175,42 @@ public class RegisterActivity extends AppCompatActivity {
         // 회원가입 완료 버튼
         registerBinding.btnSignupComplete.setOnClickListener(v -> performRegister());
 
+    }
+
+    /**
+     * 프로필 이미지 선택
+     */
+    Bitmap selectedProfileBitmap;
+    ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+            registerForActivityResult(new ActivityResultContracts.PickVisualMedia() , uri -> {
+               if (uri != null) {
+                   Bitmap bitmap;
+                   try {
+                       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                           bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(getContentResolver() , uri));
+                       } else {
+                           bitmap = MediaStore.Images.Media.getBitmap(getContentResolver() , uri);
+                       }
+                   } catch (IOException e) {
+                        throw new RuntimeException(e);
+                   }
+
+                   registerBinding.ivProfilePreview.setImageBitmap(bitmap);
+
+                   selectedProfileBitmap = bitmap;
+
+                   Log.d("PhotoPicker" , "Selected URI" + uri);
+               } else {
+                   Log.d("PhotoPicker" , "No media selected");
+               }
+            });
+
+    private void initProfileImagePicker() {
+        registerBinding.btnSelectProfileImage.setOnClickListener(v -> {
+            pickMedia.launch(new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                    .build());
+        });
     }
 
     /**

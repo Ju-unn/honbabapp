@@ -127,10 +127,10 @@
                             android:id="@+id/iv_profile_preview"
                             android:layout_width="100dp"
                             android:layout_height="100dp"
-                            android:src="@drawable/ic_user"
+                            android:src="@drawable/ic_person"
                             android:background="@drawable/profile_avatar_background"
                             android:scaleType="centerCrop"
-                            android:padding="20dp"/>
+                            android:clipToOutline="true"/>
 
                         <!-- 카메라 아이콘 버튼 -->
                         <ImageButton
