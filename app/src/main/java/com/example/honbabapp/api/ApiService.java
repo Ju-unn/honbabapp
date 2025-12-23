@@ -1,11 +1,20 @@
 package com.example.honbabapp.api;
 
+import com.example.honbabapp.api.data.meeting.ApplicantsData;
+import com.example.honbabapp.api.data.meeting.ApproveData;
 import com.example.honbabapp.api.data.AvailabilityData;
 import com.example.honbabapp.api.data.ImageUploadData;
-import com.example.honbabapp.api.data.LoginData;
+import com.example.honbabapp.api.data.login.LoginData;
+import com.example.honbabapp.api.data.meeting.Meeting;
+import com.example.honbabapp.api.data.meeting.MeetingCreateData;
+import com.example.honbabapp.api.data.meeting.MeetingListData;
+import com.example.honbabapp.api.data.meeting.ParticipantData;
 import com.example.honbabapp.api.data.VerificationData;
 import com.example.honbabapp.api.data.VerifiedData;
+import com.example.honbabapp.api.data.request.ApproveMeetingRequest;
+import com.example.honbabapp.api.data.request.JoinMeetingRequest;
 import com.example.honbabapp.api.data.request.LoginRequest;
+import com.example.honbabapp.api.data.request.MeetingCreateRequest;
 import com.example.honbabapp.api.data.request.RegisterRequest;
 import com.example.honbabapp.api.data.request.SendVerificationRequest;
 import com.example.honbabapp.api.data.request.VerifyCodeRequest;
@@ -95,5 +104,76 @@ public interface ApiService {
             @Part MultipartBody.Part image,
             @Part("user_id") RequestBody userId
             );
+
+    // ==================== Meeting API ====================
+
+    /**
+     * 1. 모임 생성
+     * @param request 모임 정보 (제목, 설명, 카테고리, 날짜, 인원, 가격, 장소)
+     * @return ApiResponse<MeetingCreateData> - meeting_id, location_id
+     */
+    @POST("api/meeting/create.php")
+    Call<ApiResponse<MeetingCreateData>> createMeeting(@Body MeetingCreateRequest request);
+
+    /**
+     * 2. 모임 목록 조회 (지역 필터링)
+     * @param sigungu 시/군/구 (예: "관악구", "강남구")
+     * @param category 카테고리 (예: "한식", "중식", "전체")
+     * @param status 모임 상태 (기본값: "모집중")
+     * @param page 페이지 번호 (기본값: 1)
+     * @param limit 페이지당 개수 (기본값: 10)
+     * @return ApiResponse<MeetingListData> - meetings 배열, total_count, page, total_pages
+     */
+    @GET("api/meeting/list.php")
+    Call<ApiResponse<MeetingListData>> getMeetingList(
+            @Query("sigungu") String sigungu,
+            @Query("category") String category,
+            @Query("status") String status,
+            @Query("page") int page,
+            @Query("limit") int limit
+    );
+
+    /**
+     * 3. 모임 상세 조회
+     * @param meetingId 모임 ID
+     * @return ApiResponse<Meeting> - 모임 상세 정보 (location, host, participants 포함)
+     */
+    @GET("api/meeting/detail.php")
+    Call<ApiResponse<Meeting>> getMeetingDetail(@Query("meeting_id") int meetingId);
+
+    /**
+     * 4. 모임 참여 신청
+     * @param request meeting_id, user_id
+     * @return ApiResponse<ParticipantData> - participant_id, participation_status
+     */
+    @POST("api/meeting/join.php")
+    Call<ApiResponse<ParticipantData>> joinMeeting(@Body JoinMeetingRequest request);
+
+    /**
+     * 5. 신청자 목록 조회 (호스트 전용)
+     * @param meetingId 모임 ID
+     * @param hostId 호스트 ID (권한 확인)
+     * @param status 참여 상태 ("대기", "승인", "거절")
+     * @return ApiResponse<ApplicantsData> - applicants 배열, total_count
+     */
+    @GET("api/meeting/applicants.php")
+    Call<ApiResponse<ApplicantsData>> getApplicants(
+            @Query("meeting_id") int meetingId,
+            @Query("host_id") int hostId,
+            @Query("status") String status
+    );
+
+    /**
+     * 6. 신청 승인/거절
+     * @param request participant_id, action ("approve" or "reject"), host_id
+     * @return ApiResponse<ApproveData> - participant_id, participation_status, meeting_current_participants
+     */
+    @POST("api/meeting/approve.php")
+    Call<ApiResponse<ApproveData>> approveMeeting(@Body ApproveMeetingRequest request);
+
+
+
+
+
 }
 

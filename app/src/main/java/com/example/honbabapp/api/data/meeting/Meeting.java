@@ -1,4 +1,8 @@
-package com.example.honbabapp.api.data;
+package com.example.honbabapp.api.data.meeting;
+
+import com.example.honbabapp.api.data.Location;
+
+import java.util.List;
 
 /**
  * 모임 정보 모델

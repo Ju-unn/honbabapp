@@ -1,4 +1,4 @@
-package com.example.honbabapp.api.data;
+package com.example.honbabapp.api.data.meeting;
 
 public class MeetingHost {
     private int user_id;

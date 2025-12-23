@@ -1,4 +1,4 @@
-package com.example.honbabapp.api.data;
+package com.example.honbabapp.api.data.login;
 
 /**
  * 로그인 응답 데이터 모델
