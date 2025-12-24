@@ -1,4 +1,6 @@
-package com.example.honbabapp.api.data.meeting;
+package com.example.honbabapp.api.data.response.meeting;
+
+import com.example.honbabapp.api.data.meeting.Meeting;
 
 import java.util.List;
 
@@ -19,7 +21,7 @@ import java.util.List;
  *   }
  * }
  */
-public class MeetingListData {
+public class MeetingListResponse {
     private List<Meeting> meetings;
     private int total_count;
     private int page;

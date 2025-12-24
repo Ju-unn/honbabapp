@@ -1,4 +1,4 @@
-package com.example.honbabapp.api.data.meeting;
+package com.example.honbabapp.api.data.response.meeting;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ import java.util.List;
  *   }
  * }
  */
-public class ApplicantsData {
+public class ApplicantsResponse {
     private int meeting_id;
     private List<Applicant> applicants;
     private int total_count;

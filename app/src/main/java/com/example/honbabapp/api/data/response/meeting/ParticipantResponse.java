@@ -1,4 +1,4 @@
-package com.example.honbabapp.api.data.meeting;
+package com.example.honbabapp.api.data.response.meeting;
 
 /**
  * 모임 참여 신청 응답 데이터
@@ -15,7 +15,7 @@ package com.example.honbabapp.api.data.meeting;
  *   }
  * }
  */
-public class ParticipantData {
+public class ParticipantResponse {
     private int participant_id;
     private String participation_status;
 

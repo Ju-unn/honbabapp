@@ -1,6 +1,6 @@
-package com.example.honbabapp.api.data.meeting;
+package com.example.honbabapp.api.data.response.meeting;
 
-public class MeetingCreateData {
+public class MeetingCreateResponse {
     private int meeting_id;
     private int location_id;
 

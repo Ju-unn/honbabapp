@@ -1,4 +1,4 @@
-package com.example.honbabapp.api.data.meeting;
+package com.example.honbabapp.api.data.response.meeting;
 
 /**
  * 신청 승인/거절 응답 데이터
@@ -26,7 +26,7 @@ package com.example.honbabapp.api.data.meeting;
  *   }
  * }
  */
-public class ApproveData {
+public class ApproveResponse {
     private int participant_id;
     private String participation_status;
     private Integer meeting_current_participants;  // 승인 시에만 있음

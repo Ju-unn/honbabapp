@@ -1,14 +1,14 @@
 package com.example.honbabapp.api;
 
-import com.example.honbabapp.api.data.meeting.ApplicantsData;
-import com.example.honbabapp.api.data.meeting.ApproveData;
+import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
+import com.example.honbabapp.api.data.response.meeting.ApproveResponse;
 import com.example.honbabapp.api.data.AvailabilityData;
 import com.example.honbabapp.api.data.ImageUploadData;
 import com.example.honbabapp.api.data.login.LoginData;
 import com.example.honbabapp.api.data.meeting.Meeting;
-import com.example.honbabapp.api.data.meeting.MeetingCreateData;
-import com.example.honbabapp.api.data.meeting.MeetingListData;
-import com.example.honbabapp.api.data.meeting.ParticipantData;
+import com.example.honbabapp.api.data.response.meeting.MeetingCreateResponse;
+import com.example.honbabapp.api.data.response.meeting.MeetingListResponse;
+import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
 import com.example.honbabapp.api.data.VerificationData;
 import com.example.honbabapp.api.data.VerifiedData;
 import com.example.honbabapp.api.data.request.ApproveMeetingRequest;
@@ -113,7 +113,7 @@ public interface ApiService {
      * @return ApiResponse<MeetingCreateData> - meeting_id, location_id
      */
     @POST("api/meeting/create.php")
-    Call<ApiResponse<MeetingCreateData>> createMeeting(@Body MeetingCreateRequest request);
+    Call<ApiResponse<MeetingCreateResponse>> createMeeting(@Body MeetingCreateRequest request);
 
     /**
      * 2. 모임 목록 조회 (지역 필터링)
@@ -125,7 +125,7 @@ public interface ApiService {
      * @return ApiResponse<MeetingListData> - meetings 배열, total_count, page, total_pages
      */
     @GET("api/meeting/list.php")
-    Call<ApiResponse<MeetingListData>> getMeetingList(
+    Call<ApiResponse<MeetingListResponse>> getMeetingList(
             @Query("sigungu") String sigungu,
             @Query("category") String category,
             @Query("status") String status,
@@ -147,7 +147,7 @@ public interface ApiService {
      * @return ApiResponse<ParticipantData> - participant_id, participation_status
      */
     @POST("api/meeting/join.php")
-    Call<ApiResponse<ParticipantData>> joinMeeting(@Body JoinMeetingRequest request);
+    Call<ApiResponse<ParticipantResponse>> joinMeeting(@Body JoinMeetingRequest request);
 
     /**
      * 5. 신청자 목록 조회 (호스트 전용)
@@ -157,7 +157,7 @@ public interface ApiService {
      * @return ApiResponse<ApplicantsData> - applicants 배열, total_count
      */
     @GET("api/meeting/applicants.php")
-    Call<ApiResponse<ApplicantsData>> getApplicants(
+    Call<ApiResponse<ApplicantsResponse>> getApplicants(
             @Query("meeting_id") int meetingId,
             @Query("host_id") int hostId,
             @Query("status") String status
@@ -169,7 +169,7 @@ public interface ApiService {
      * @return ApiResponse<ApproveData> - participant_id, participation_status, meeting_current_participants
      */
     @POST("api/meeting/approve.php")
-    Call<ApiResponse<ApproveData>> approveMeeting(@Body ApproveMeetingRequest request);
+    Call<ApiResponse<ApproveResponse>> approveMeeting(@Body ApproveMeetingRequest request);
 
 
 
