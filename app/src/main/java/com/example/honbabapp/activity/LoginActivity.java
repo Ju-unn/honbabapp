@@ -36,10 +36,10 @@ public class LoginActivity extends AppCompatActivity {
     private ApiService apiService;
     private SharedPreferences sharedPreferences;
 
-//    // SharedPreferences 설정
-//    private static final String PREF_NAME = "honbabapp_prefs";
-//    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
-//    private static final String KEY_USER_ID = "user_id";
+    // SharedPreferences 설정
+    private static final String PREF_NAME = "honbabapp_prefs";
+    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
+    private static final String KEY_USER_ID = "user_id";
 
 
 
@@ -66,7 +66,7 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void initializeComponents() {
         apiService = RetrofitClient.getClient().create(ApiService.class);
-//        sharedPreferences = getSharedPreferences(PREF_NAME , MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences(PREF_NAME , MODE_PRIVATE);
 
         Log.d(TAG, "LoginActivity 초기화 완료");
     }
@@ -202,14 +202,14 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "로그인 성공");
         Log.d(TAG, "user_id: " + loginData.getUser_id());
         Log.d(TAG, "nickname: " + loginData.getUser_nickname());
-//
-//        //SharedPreferences에 최소 정보만 저장
-//        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        //SharedPreferences에 최소 정보만 저장
+        SharedPreferences.Editor editor = sharedPreferences.edit();
 //        editor.putBoolean(KEY_IS_LOGGED_IN , true);
-//        editor.putInt(KEY_USER_ID , loginData.getUser_id());
-//        editor.apply();
+        editor.putInt(KEY_USER_ID , loginData.getUser_id());
+        editor.apply();
 //
-//        Log.d(TAG, "SharedPreferences 저장 완료: user_id=" + loginData.getUser_id());
+        Log.d(TAG, "SharedPreferences 저장 완료: user_id=" + loginData.getUser_id());
 
         // 환영 메시지 (서버에서 받은 데이터로 표시)
         Toast.makeText(this,

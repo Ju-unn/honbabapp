@@ -1,5 +1,6 @@
 package com.example.honbabapp.ui.adapter;
 
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -7,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.honbabapp.activity.MeetingDetailActivity;
 import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.data.MockData;
 import com.example.honbabapp.databinding.RvMapMeetingCardBinding;
@@ -74,6 +76,12 @@ public class HomeAllMeetingListAdapter extends RecyclerView.Adapter<HomeAllMeeti
          * Meeting 데이터를 UI에 바인딩
          */
         public void bind(Meeting meeting) {
+            // 클릭 이벤트
+            binding.getRoot().setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext() , MeetingDetailActivity.class);
+                intent.putExtra("meeting_id" , meeting.getMeeting_id());
+                v.getContext().startActivity(intent);
+            });
             // 1. 모임 제목
             binding.tvMeetingTitle.setText(meeting.getMeeting_title());
 
