@@ -1,5 +1,6 @@
-package com.example.honbabapp.activity;
+package com.example.honbabapp.activity.meeting;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -7,16 +8,17 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.api.data.meeting.MeetingParticipant;
+import com.example.honbabapp.api.data.request.JoinMeetingRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
+import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
 import com.example.honbabapp.databinding.PageMeetingDetailBinding;
-
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -235,10 +237,12 @@ public class MeetingDetailActivity extends AppCompatActivity {
     private void setupJoinButton() {
         // 호스트 인 경우 버튼 숨김
         if (meeting.getHost() != null && meeting.getHost().getUser_id() == currentUserId) {
+            
+            // 참여 신청 버튼 숨김
             binding.joinButtonContainer.setVisibility(View.GONE);
-            return;
 
-            //TODO: 호스트인경우 "참여자 목록" 보여주기 버튼을 보여주기
+            showHostManagermentButton();
+            return;
         }
 
         // 이미 참여 신청했는지 확인
@@ -253,9 +257,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
         }  else {
             // 참여 신청 버튼 클릭
             binding.btnJoinMeeting.setOnClickListener(v -> {
-                // TODO: join.php API 연동
-                Toast.makeText(this, "준비중",
-                        Toast.LENGTH_SHORT).show();
+                showJoinConfirmDialog();
             });
         }
     }
@@ -274,6 +276,119 @@ public class MeetingDetailActivity extends AppCompatActivity {
 
         return false;
     }
+
+    /**
+     * 참여 신청 확인 다이얼로그 표시
+     */
+    private void showJoinConfirmDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("모임 참여 신청")
+                .setMessage("이 모임에 참여 신청하시겠습니까?\\n호스트의 승인 후 참여가 확정됩니다.")
+                .setPositiveButton("신청하기" , (dialog, which) -> {
+                    // 참여 신청 api 호출
+                    joinMeeting();
+                })
+                .setNegativeButton("취소" , null)
+                .show();
+    }
+
+    /**
+     * 참여 신청 API 호출
+     */
+    private void joinMeeting() {
+        if (currentUserId == -1) {
+            Toast.makeText(this, "로그인이 필요합니다", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 버튼 비활성화 (중복 클릭 방지)
+        binding.btnJoinMeeting.setEnabled(false);
+        binding.btnJoinMeeting.setText("신청 중...");
+
+        // API 호출
+        JoinMeetingRequest request = new JoinMeetingRequest(meetingId , currentUserId);
+        Call<ApiResponse<ParticipantResponse>> call = apiService.joinMeeting(request);
+
+        call.enqueue(new Callback<ApiResponse<ParticipantResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<ParticipantResponse>> call, Response<ApiResponse<ParticipantResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<ParticipantResponse> apiResponse = response.body();
+
+                    if (apiResponse.isSuccess()) {
+                        // 신청 성공
+                        ParticipantResponse data = apiResponse.getData();
+                        Log.i(TAG, "참여 신청 성공: " + data.getParticipation_status());
+
+                        // UI 업데이트
+                        binding.btnJoinMeeting.setText("신청 완료");
+                        binding.btnJoinMeeting.setEnabled(false);
+
+                        // 성공 메세지
+                        Toast.makeText(MeetingDetailActivity.this,
+                                "참여 신청이 완료되었습니다.\n호스트의 승인을 기다려주세요.",
+                                Toast.LENGTH_LONG).show();
+
+                        // 모임 정보 다시 로드 (참여자 목록 업데이트)
+                        loadMeetingDetail();
+                    } else {
+                        // API 실패
+                        Log.e(TAG, "참여 신청 실패: " + apiResponse.getMessage());
+                        Toast.makeText(MeetingDetailActivity.this,
+                                apiResponse.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+
+                        // 버튼 다시 활성화
+                        binding.btnJoinMeeting.setEnabled(true);
+                        binding.btnJoinMeeting.setText("참여 신청하기");
+                    }
+                } else {
+                    Log.e(TAG, "HTTP 오류: " + response.code());
+                    Toast.makeText(MeetingDetailActivity.this,
+                            "참여 신청에 실패했습니다.",
+                            Toast.LENGTH_SHORT).show();
+
+                    // 버튼 다시 활성화
+                    binding.btnJoinMeeting.setEnabled(true);
+                    binding.btnJoinMeeting.setText("참여 신청하기");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<ParticipantResponse>> call, Throwable t) {
+                Log.e(TAG, "네트워크 오류: " + t.getMessage());
+                Toast.makeText(MeetingDetailActivity.this,
+                        "네트워크 오류가 발생했습니다.",
+                        Toast.LENGTH_SHORT).show();
+
+                // 버튼 다시 활성화
+                binding.btnJoinMeeting.setEnabled(true);
+                binding.btnJoinMeeting.setText("참여 신청하기");
+            }
+        });
+    }
+
+    /**
+     * 호스트용 관리 버튼 표시
+     */
+    private void showHostManagermentButton() {
+        // 버튼 컨테이너 다시 표시
+        binding.joinButtonContainer.setVisibility(View.VISIBLE);
+
+        // 버튼 텍스트 변경
+        binding.btnJoinMeeting.setText("신청자 목록");
+        binding.btnJoinMeeting.setEnabled(true);
+
+        // 클릭 이벤트
+        binding.btnJoinMeeting.setOnClickListener(v -> {
+            // 신청자 목록 화면으로 이동
+            Intent intent = new Intent(this , MeetingDetailActivity.class);
+            intent.putExtra("meeting_id" , meetingId);
+            intent.putExtra("meeting_title" , meeting.getMeeting_title());
+            startActivity(intent);
+        });
+    }
+
 
     @Override
     protected void onDestroy() {

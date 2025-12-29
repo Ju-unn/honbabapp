@@ -56,7 +56,7 @@
             android:name=".activity.LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.MeetingDetailActivity"
+            android:name=".activity.meeting.MeetingDetailActivity"
             android:exported="false" />
 
         <activity
