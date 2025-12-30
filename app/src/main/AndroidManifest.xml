@@ -58,6 +58,9 @@
         <activity
             android:name=".activity.meeting.MeetingDetailActivity"
             android:exported="false" />
+        <activity
+            android:name=".activity.meeting.MeetingApplicantListActivity"
+            android:exported="false" />
 
         <activity
             android:name=".activity.SplashActivity"

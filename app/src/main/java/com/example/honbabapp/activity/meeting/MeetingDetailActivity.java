@@ -43,6 +43,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
     private int currentUserId;
     private Meeting meeting;
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,7 +84,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
      * 모임 상세 정보 API 호출
      */
     private void loadMeetingDetail() {
-        Call<ApiResponse<Meeting>> call = apiService.getMeetingDetail(meetingId);
+        Call<ApiResponse<Meeting>> call = apiService.getMeetingDetail(meetingId , currentUserId);
 
         call.enqueue(new Callback<ApiResponse<Meeting>>() {
             @Override
@@ -245,12 +246,21 @@ public class MeetingDetailActivity extends AppCompatActivity {
             return;
         }
 
-        // 이미 참여 신청했는지 확인
-        boolean alreadyJoined = checkIfAlreadyJoined();
+        // 현재 사용자의 참여 상태 확인
+        String participationStatus = getParticipationStatus();
 
-        if (alreadyJoined) {
-            binding.btnJoinMeeting.setText("신청 완료");
-            binding.btnJoinMeeting.setEnabled(false);
+        if (participationStatus != null) {
+            // 참여 신청한 경우 - 상태에 따라 버튼 텍스트 변경
+            if (participationStatus.equals("승인")) {
+                binding.btnJoinMeeting.setText("참여 확정");
+                binding.btnJoinMeeting.setEnabled(false);
+            } else if (participationStatus.equals("대기")) {
+                binding.btnJoinMeeting.setText("승인 대기 중");
+                binding.btnJoinMeeting.setEnabled(false);
+            } else if (participationStatus.equals("거절")) {
+                binding.btnJoinMeeting.setText("참여 거절됨");
+                binding.btnJoinMeeting.setEnabled(false);
+            }
         } else if (meeting.getMeeting_status().equals("모집완료")) {
             binding.btnJoinMeeting.setText("모집 완료");
             binding.btnJoinMeeting.setEnabled(false);
@@ -263,13 +273,20 @@ public class MeetingDetailActivity extends AppCompatActivity {
     }
 
     /**
+     * 현재 사용자의 참여 상태 확인
+     */
+    private String getParticipationStatus() {
+        return meeting.getMy_participation_status();
+    }
+
+    /**
      * 이미 참여 신청했는지 확인
      */
     private boolean checkIfAlreadyJoined() {
         if (meeting.getParticipants() == null) return false;
 
         for (MeetingParticipant participant : meeting.getParticipants()) {
-            if (participant.getUser_id() == currentUserId) {
+            if (participant.getUser_id() == currentUserId ) {
                 return true;
             }
         }
@@ -283,7 +300,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
     private void showJoinConfirmDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("모임 참여 신청")
-                .setMessage("이 모임에 참여 신청하시겠습니까?\\n호스트의 승인 후 참여가 확정됩니다.")
+                .setMessage("이 모임에 참여 신청하시겠습니까?\n호스트의 승인 후 참여가 확정됩니다.")
                 .setPositiveButton("신청하기" , (dialog, which) -> {
                     // 참여 신청 api 호출
                     joinMeeting();
@@ -382,7 +399,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
         // 클릭 이벤트
         binding.btnJoinMeeting.setOnClickListener(v -> {
             // 신청자 목록 화면으로 이동
-            Intent intent = new Intent(this , MeetingDetailActivity.class);
+            Intent intent = new Intent(this , MeetingApplicantListActivity.class);
             intent.putExtra("meeting_id" , meetingId);
             intent.putExtra("meeting_title" , meeting.getMeeting_title());
             startActivity(intent);

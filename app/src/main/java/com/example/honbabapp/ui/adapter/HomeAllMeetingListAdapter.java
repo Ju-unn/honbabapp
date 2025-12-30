@@ -57,9 +57,12 @@ public class HomeAllMeetingListAdapter extends RecyclerView.Adapter<HomeAllMeeti
             Log.w(TAG, "updateMeetings: meetings is null");
             return;
         }
+        Log.i(TAG, "=== updateMeetings 호출됨 ===");
+        Log.i(TAG, "받은 모임 개수: " + meetings.size());
 
         this.meetingList.clear();
         this.meetingList.addAll(meetings);
+        Log.i(TAG, "Adapter에 저장된 모임 개수: " + this.meetingList.size());
         notifyDataSetChanged();
         Log.i(TAG, "모임 목록 업데이트 완료: " + meetings.size() + "개");
     }

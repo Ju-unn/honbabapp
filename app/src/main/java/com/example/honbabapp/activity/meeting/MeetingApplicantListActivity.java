@@ -161,10 +161,10 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
      */
     private void onApproveClick(ApplicantsResponse.Applicant applicant) {
         new AlertDialog.Builder(this)
-                .setTitle("침여 승인")
+                .setTitle("참여 승인")
                 .setMessage(applicant.getUser_nickname() + "님의 참여를 승인하시겠습니까?")
                 .setPositiveButton("승인" , (dialog , which) -> {
-                    approveApplicant(applicant , "apporve");
+                    approveApplicant(applicant , "approve");
                 })
                 .setNegativeButton("취소" , null)
                 .show();
