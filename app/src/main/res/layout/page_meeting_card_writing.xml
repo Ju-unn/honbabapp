@@ -126,8 +126,8 @@
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp"/>
 
-                <RadioGroup
-                    android:id="@+id/radio_group_category"
+                <!-- 카테고리 선택 버튼들 -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -248,7 +248,7 @@
 
                     </LinearLayout>
 
-                </RadioGroup>
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -450,75 +450,70 @@
             </LinearLayout>
 
             <!-- ========== 예상 비용 (추가) ========== -->
+            <!-- 가격대 선택 섹션 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_marginBottom="20dp">
 
+                <!-- 제목 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="예상 비용 (1인당)"
-                    android:textColor="@color/text_200"
+                    android:text="가격대"
                     android:textSize="13sp"
+                    android:textColor="@color/text_200"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp"/>
 
+                <!-- 선택된 가격 표시 -->
+                <TextView
+                    android:id="@+id/tv_price_range_display"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="10,000원 ~ 20,000원"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_200"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- RangeSlider -->
+                <com.google.android.material.slider.RangeSlider
+                    android:id="@+id/range_slider_price"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:valueFrom="0"
+                    android:valueTo="100000"
+                    android:stepSize="5000"
+                    app:values="@array/initial_price_range"
+                    app:labelBehavior="gone"/>
+
+                <!-- 가격 범위 안내 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <EditText
-                        android:id="@+id/et_price_min"
+                    <TextView
                         android:layout_width="0dp"
-                        android:layout_height="50dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="최소 금액"
-                        android:textColorHint="@color/text_200"
-                        android:textColor="@color/text_100"
-                        android:textSize="15sp"
-                        android:background="@drawable/edittext_background"
-                        android:paddingHorizontal="16dp"
-                        android:inputType="number"
-                        android:maxLength="7"/>
+                        android:text="0원"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_100"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text=" ~ "
-                        android:textColor="@color/text_100"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:layout_marginHorizontal="8dp"/>
-
-                    <EditText
-                        android:id="@+id/et_price_max"
-                        android:layout_width="0dp"
-                        android:layout_height="50dp"
-                        android:layout_weight="1"
-                        android:hint="최대 금액"
-                        android:textColorHint="@color/text_200"
-                        android:textColor="@color/text_100"
-                        android:textSize="15sp"
-                        android:background="@drawable/edittext_background"
-                        android:paddingHorizontal="16dp"
-                        android:inputType="number"
-                        android:maxLength="7"/>
-
+                        android:text="100,000원"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_100"/>
                 </LinearLayout>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="예) 20,000원 ~ 30,000원"
-                    android:textColor="@color/text_200"
-                    android:textSize="11sp"
-                    android:layout_marginTop="4dp"/>
-
             </LinearLayout>
+
+
 
             <!-- 가게 찾기 -->
             <LinearLayout

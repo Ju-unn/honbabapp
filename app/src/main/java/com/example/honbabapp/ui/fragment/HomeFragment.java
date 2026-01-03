@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import com.example.honbabapp.activity.MainActivity;
 import com.example.honbabapp.activity.NotificationActivity;
-import com.example.honbabapp.activity.profile.MeetingCardWritingActivity;
+import com.example.honbabapp.activity.meeting.MeetingCardWritingActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.meeting.Meeting;
@@ -80,6 +80,15 @@ public class HomeFragment extends Fragment {
         // 알림버튼 클릭
         notificationButtonOnClick();
     }
+
+    /**
+     * 모임 목록 새로고침 (외부에서 호출)
+     */
+    public void refreshMeetingList() {
+        Log.i(TAG, "모임 목록 새로고침 시작");
+        loadMeetings();  // 기존 loadMeetings() 재호출
+    }
+
 
     /**
      * RecyclerView 초기화

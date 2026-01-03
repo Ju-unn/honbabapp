@@ -39,9 +39,19 @@ public class MeetingCreateRequest {
         public String category;
         public String phone_number;
 
-        public LocationRequest(String place_name, String sigungu) {
+        public LocationRequest(String place_name, String address, String road_address,
+                               String sigungu, String dong, String map_x, String map_y,
+                               String category, String phone_number) {
             this.place_name = place_name;
+            this.address = address;
+            this.road_address = road_address;
+            this.sido = null;  // 임시
             this.sigungu = sigungu;
+            this.dong = dong;
+            this.map_x = map_x;
+            this.map_y = map_y;
+            this.category = category;
+            this.phone_number = phone_number;
         }
     }
 

@@ -1,11 +1,14 @@
 package com.example.honbabapp.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.honbabapp.R;
@@ -14,6 +17,7 @@ import com.example.honbabapp.data.meeting.Meeting;
 import com.example.honbabapp.data.user.User;
 import com.example.honbabapp.databinding.ActivityMainBinding;
 import com.example.honbabapp.ui.adapter.MainFragmentAdapter;
+import com.example.honbabapp.ui.fragment.HomeFragment;
 import com.example.honbabapp.ui.fragment.MapFragment;
 import com.google.android.material.navigation.NavigationBarView;
 
@@ -34,6 +38,40 @@ public class MainActivity extends AppCompatActivity {
         testCode();
         initViewPager();
         initNavigation();
+        handleIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        // 새로운 intent 처리
+        handleIntent(intent);
+    }
+
+    /**
+     * Intent 처리 (모임 생성 후 새로고침)
+     */
+    private void handleIntent(Intent intent) {
+        if (intent != null && intent.getBooleanExtra("refresh_home", false)) {
+            // HomeFragment로 이동
+            binding.viewPager.setCurrentItem(0, false);
+
+            // HomeFragment 찾기
+            Fragment fragment = getSupportFragmentManager()
+                    .findFragmentByTag("f" + 0);  // ViewPager2의 Fragment Tag
+
+            //  HomeFragment 새로고침
+            if (fragment instanceof HomeFragment) {
+                ((HomeFragment) fragment).refreshMeetingList();
+            }
+
+            // Toast 표시
+            int newMeetingId = intent.getIntExtra("new_meeting_id", -1);
+            if (newMeetingId != -1) {
+                Toast.makeText(this, "모임이 생성되었습니다!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     /// mapPage로 이동

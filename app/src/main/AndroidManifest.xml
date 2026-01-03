@@ -4,9 +4,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!-- 이미지 선택 권한-->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- 이미지 선택 권한 -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
@@ -19,12 +19,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Honbabapp"
-        tools:targetApi="31"
-        android:usesCleartextTraffic="true">
-
+        android:usesCleartextTraffic="true"
+        tools:targetApi="31">
         <activity
-            android:name=".activity.profile.MeetingCardWritingActivity"
-            android:exported="false" />
+            android:name=".activity.meeting.PlaceSearchActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".activity.NotificationActivity"
             android:exported="false" />
@@ -61,7 +61,9 @@
         <activity
             android:name=".activity.meeting.MeetingApplicantListActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".activity.meeting.MeetingCardWritingActivity"
+            android:exported="false" />
         <activity
             android:name=".activity.SplashActivity"
             android:exported="true">
