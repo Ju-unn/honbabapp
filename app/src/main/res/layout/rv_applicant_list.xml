@@ -7,17 +7,18 @@
     android:padding="16dp">
 
     <!-- 프로필 아바타 -->
+
+    <!-- 지원자 정보 -->
     <ImageView
         android:id="@+id/iv_applicant_avatar"
         android:layout_width="56dp"
         android:layout_height="56dp"
+        android:layout_marginTop="4dp"
         android:background="@android:color/transparent"
         android:src="@drawable/ic_kakao"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- 지원자 정보 -->
     <LinearLayout
         android:id="@+id/layout_applicant_info"
         android:layout_width="0dp"

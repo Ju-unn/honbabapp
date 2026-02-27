@@ -3,9 +3,13 @@ package com.example.honbabapp.ui.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
+import com.example.honbabapp.R;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
 import com.example.honbabapp.databinding.RvApplicantListBinding;
@@ -79,7 +83,7 @@ public class ApplicantListAdapter extends RecyclerView.Adapter<ApplicantListAdap
 
             //성별 표시 (한 줄 소개 대신)
             String gender = applicant.getUser_gender();
-            binding.tvApplicantIntro.setText(gender + " • 매너온도 " +
+            binding.tvApplicantIntro.setText(gender + " • 매너점수 " +
                     String.format("%.1f°C", applicant.getUser_manner_score()));
 
             // 신청 시간
@@ -100,7 +104,12 @@ public class ApplicantListAdapter extends RecyclerView.Adapter<ApplicantListAdap
                 }
             });
 
-            // 프로필 이미지 (TODO: Glide)
+            // 프로필 이미지
+            Glide.with(binding.getRoot().getContext())
+                    .load(applicant.getUser_profile_image())
+                    .placeholder(R.drawable.ic_kakao)
+                    .circleCrop()
+                    .into(binding.ivApplicantAvatar);
         }
     }
 
@@ -110,9 +119,15 @@ public class ApplicantListAdapter extends RecyclerView.Adapter<ApplicantListAdap
      */
     private String formatApplyTime(String appliedAt) {
         try {
-            // 현재는 단순 표시
-            // TODO: 실제 시간 차이 계산
-            return "방금 전";
+           SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            Date applyDate = sdf.parse(appliedAt);
+            long diffMs = System.currentTimeMillis() - applyDate.getTime();
+            long diffMin = diffMs / 60000;
+
+            if (diffMin < 60) return diffMin + "분 전";
+            long diffHour = diffMin / 60;
+            if (diffHour < 24) return diffHour + "시간 전";
+            return (diffHour / 24) + "일 전";
         } catch (Exception e) {
             return appliedAt;
         }

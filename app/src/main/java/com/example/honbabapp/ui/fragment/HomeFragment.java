@@ -111,6 +111,7 @@ public class HomeFragment extends Fragment {
         // TODO : DB에 저장된 user_location에서 sigungu 추출 or db location 3개로 분리
 
         // 현재는 임시로 하드코딩
+        // TODO : 나중에 위치정보 들고와서 수정
         String userSigungu = "관악구";
 
         // API 호출

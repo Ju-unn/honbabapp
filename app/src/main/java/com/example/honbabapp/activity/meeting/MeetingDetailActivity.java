@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.honbabapp.R;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.meeting.Meeting;
@@ -19,6 +20,8 @@ import com.example.honbabapp.api.data.request.JoinMeetingRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
 import com.example.honbabapp.databinding.PageMeetingDetailBinding;
+import com.example.honbabapp.ui.adapter.ParticipantListAdapter;
+import com.bumptech.glide.Glide;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,6 +41,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
     private String TAG = "MeetingDetailActivity";
     private PageMeetingDetailBinding binding;
     private ApiService apiService;
+    private ParticipantListAdapter participantAdapter;
 
     private int meetingId;
     private int currentUserId;
@@ -159,15 +163,36 @@ public class MeetingDetailActivity extends AppCompatActivity {
         // 호스트 정보
         if (meeting.getHost() != null) {
             binding.hostName.setText(meeting.getHost().getUser_nickname());
+            binding.hostMessage.setText("매너점수 " + String.format("%.1f" , meeting.getHost().getUser_manner_score()));
+            Glide.with(this)
+                    .load(meeting.getHost().getUser_profile_image())
+                    .placeholder(R.drawable.ic_kakao)
+                    .circleCrop()
+                    .into(binding.hostAvatar);
         }
+
+        // 참여자 제목 동적 업데이트
+        binding.tvParticipantsTitle.setText(
+                "참여자 (" + meeting.getMeeting_current_participants() + "/" + meeting.getMeeting_max_participants() + ")"
+        );
+
+        // 카테고리 바인딩
+        binding.tvStoreCategory.setText(meeting.getMeeting_category());
 
         // 참여자 목록
-        if (meeting.getParticipants() != null && !meeting.getParticipants().isEmpty()) {
-            // TODO: RecyclerView로 참여자 목록 표시
-            // 지금은 간단하게 참여자 수만 표시
-        }
+        setupParticipantsRecyclerView();
 
         // 9. 이미지 (TODO: 이미지 불러오기)
+    }
+
+    /**
+     * 참여자 RecyclerView 설정
+     */
+    private void setupParticipantsRecyclerView() {
+        if (meeting.getParticipants() == null || meeting.getParticipants().isEmpty()) return;
+
+        participantAdapter = new ParticipantListAdapter(meeting.getParticipants());
+        binding.rvParticipants.setAdapter(participantAdapter);
     }
 
     /**
