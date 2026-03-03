@@ -42,6 +42,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
     private PageMeetingDetailBinding binding;
     private ApiService apiService;
     private ParticipantListAdapter participantAdapter;
+    private static final int REQUEST_APPLICANT_LIST = 1001;
 
     private int meetingId;
     private int currentUserId;
@@ -99,6 +100,12 @@ public class MeetingDetailActivity extends AppCompatActivity {
                     if (apiResponse.isSuccess()) {
                         meeting = apiResponse.getData();
                         Log.i(TAG, "모임 상세 정보 로드 성공: " + meeting.getMeeting_title());
+
+                        if (meeting.getParticipants() != null) {
+                            for (MeetingParticipant p : meeting.getParticipants()) {
+                                Log.i(TAG, "참여자: " + p.getUser_nickname() + " / 이미지: " + p.getUser_profile_image());
+                            }
+                        }
 
                         // UI 업데이트
                         bindMeetingData();
@@ -160,16 +167,6 @@ public class MeetingDetailActivity extends AppCompatActivity {
         // 호스트 메시지 (모임 설명)
         binding.tvHostMessage.setText(meeting.getMeeting_description());
 
-        // 호스트 정보
-        if (meeting.getHost() != null) {
-            binding.hostName.setText(meeting.getHost().getUser_nickname());
-            binding.hostMessage.setText("매너점수 " + String.format("%.1f" , meeting.getHost().getUser_manner_score()));
-            Glide.with(this)
-                    .load(meeting.getHost().getUser_profile_image())
-                    .placeholder(R.drawable.ic_kakao)
-                    .circleCrop()
-                    .into(binding.hostAvatar);
-        }
 
         // 참여자 제목 동적 업데이트
         binding.tvParticipantsTitle.setText(
@@ -191,7 +188,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
     private void setupParticipantsRecyclerView() {
         if (meeting.getParticipants() == null || meeting.getParticipants().isEmpty()) return;
 
-        participantAdapter = new ParticipantListAdapter(meeting.getParticipants());
+        participantAdapter = new ParticipantListAdapter(meeting.getParticipants(), meeting.getHost().getUser_nickname());
         binding.rvParticipants.setAdapter(participantAdapter);
     }
 
@@ -427,10 +424,18 @@ public class MeetingDetailActivity extends AppCompatActivity {
             Intent intent = new Intent(this , MeetingApplicantListActivity.class);
             intent.putExtra("meeting_id" , meetingId);
             intent.putExtra("meeting_title" , meeting.getMeeting_title());
-            startActivity(intent);
+            startActivityForResult(intent , REQUEST_APPLICANT_LIST);
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_APPLICANT_LIST && resultCode == RESULT_OK) {
+            // 참여자 목록 개신
+            loadMeetingDetail();
+        }
+    }
 
     @Override
     protected void onDestroy() {

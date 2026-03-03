@@ -68,7 +68,10 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
         hostId = prefs.getInt("user_id", -1);
 
         // 뒤로가기 버튼
-        binding.btnBack.setOnClickListener(v -> finish());
+        binding.btnBack.setOnClickListener(v -> {
+            setResult(RESULT_OK);
+            finish();
+        });
 
         // recyclerView
         setupRecyclerView();
