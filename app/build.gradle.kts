@@ -32,6 +32,18 @@ android {
             "NAVER_CLIENT_SECRET",
             "\"${properties.getProperty("NAVER_CLIENT_SECRET")}\""
         )
+
+        buildConfigField(
+            "String",
+            "NAVER_MAPS_CLIENT_ID",
+            "\"${properties.getProperty("NAVER_MAPS_CLIENT_ID", "")}\""
+        )
+
+        buildConfigField(
+            "String",
+            "NAVER_MAPS_CLIENT_SECRET",
+            "\"${properties.getProperty("NAVER_MAPS_CLIENT_SECRET", "")}\""
+        )
     }
 
     buildTypes {
@@ -61,6 +73,7 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
