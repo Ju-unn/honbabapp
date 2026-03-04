@@ -53,6 +53,9 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
         // API 서비스 초기화
         apiService = RetrofitClient.getClient().create(ApiService.class);
 
+        // 기본 결과를 OK로 설정 (어떤 방식으로 나가든 항상 갱신)
+        setResult(RESULT_OK);
+
         // Intent에서 데이터 가져오기
         meetingId = getIntent().getIntExtra("meeting_id" , -1);
         meetingTitle = getIntent().getStringExtra("meeting_title");
@@ -68,16 +71,14 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
         hostId = prefs.getInt("user_id", -1);
 
         // 뒤로가기 버튼
-        binding.btnBack.setOnClickListener(v -> {
-            setResult(RESULT_OK);
-            finish();
+        binding.btnBack.setOnClickListener(v -> {finish();
         });
 
         // recyclerView
         setupRecyclerView();
 
         // 신청자 목록 로드
-        loadAppLicants();
+        loadApplicants();
 
     }
 
@@ -86,14 +87,14 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
      * RecyclerView 설정
      */
     private void setupRecyclerView() {
-        adapter = new ApplicantListAdapter(new ArrayList<>() , this::onApproveClick , this::onRejctClick);
+        adapter = new ApplicantListAdapter(new ArrayList<>() , this::onApproveClick , this::onRejectClick);
         binding.rvApplicants.setAdapter(adapter);
     }
 
     /**
      * 신청자 목록 API 호출
      */
-    private void loadAppLicants() {
+    private void loadApplicants() {
         Call<ApiResponse<ApplicantsResponse>> call = apiService.getApplicants(
                 meetingId ,
                 hostId ,
@@ -176,10 +177,10 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
     /**
      * 거절 버튼 클릭
      */
-    private void onRejctClick(ApplicantsResponse.Applicant applicant) {
+    private void onRejectClick(ApplicantsResponse.Applicant applicant) {
         new AlertDialog.Builder(this)
                 .setTitle("참여 거절")
-                .setMessage(applicant.getUser_nickname() + "님의 참여를 거절하시겠습니까?1")
+                .setMessage(applicant.getUser_nickname() + "님의 참여를 거절하시겠습니까?")
                 .setPositiveButton("거절" , (dialog , which) -> {
                     approveApplicant(applicant , "reject");
                 })
@@ -216,7 +217,7 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
 
                         // 신청자 목록 다시 로드
-                        loadAppLicants();
+                        loadApplicants();
                     } else {
                         Log.e(TAG, action + " 실패: " + apiResponse.getMessage());
                         Toast.makeText(MeetingApplicantListActivity.this,

@@ -258,51 +258,24 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        fusedLocationClient.getLastLocation()
+        fusedLocationClient.getCurrentLocation(
+                        Priority.PRIORITY_HIGH_ACCURACY, // GPS 최우선
+                        null
+                )
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
                         fetchAddressFromCoords(location.getLongitude(), location.getLatitude());
                     } else {
-                        requestNewLocation();
+                        registerBinding.tvSelectedLocation.setText("위치를 가져오지 못했습니다");
+                        Toast.makeText(this,
+                                "위치를 가져오지 못했습니다. 다시 시도해주세요.",
+                                Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
                     registerBinding.tvSelectedLocation.setText("위치를 가져오지 못했습니다");
                     Toast.makeText(this, "위치를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
                 });
-    }
-
-    private void requestNewLocation() {
-        Log.d(TAG, "requestNewLocation 호출됨");
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
-        LocationRequest locationRequest = new LocationRequest.Builder(
-                Priority.PRIORITY_HIGH_ACCURACY, 5000L)
-                .setMaxUpdates(1)
-                .build();
-
-        LocationCallback locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                Log.d(TAG, "새 위치 수신: " + locationResult);
-                fusedLocationClient.removeLocationUpdates(this);
-                if (locationResult != null && !locationResult.getLocations().isEmpty()) {
-                    android.location.Location loc = locationResult.getLocations().get(0);
-                    fetchAddressFromCoords(loc.getLongitude(), loc.getLatitude());
-                } else {
-                    registerBinding.tvSelectedLocation.setText("위치 정보 없음");
-                    Toast.makeText(RegisterActivity.this,
-                            "위치를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
-
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, getMainLooper());
     }
 
     private void fetchAddressFromCoords(double lng, double lat) {

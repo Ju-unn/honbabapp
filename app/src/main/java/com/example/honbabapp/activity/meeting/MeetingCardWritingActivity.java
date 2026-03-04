@@ -9,6 +9,8 @@ import android.util.Log;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,7 +46,6 @@ import retrofit2.Response;
 public class MeetingCardWritingActivity extends AppCompatActivity{
 
     private String TAG = "MeetingCardWriting";
-    private static final int REQUEST_PLACE_SEARCH = 100;
     private PageMeetingCardWritingBinding binding;
     private ApiService apiService;
 
@@ -115,40 +116,45 @@ public class MeetingCardWritingActivity extends AppCompatActivity{
     }
 
     /**
+     * ActivityResultLauncher
+     */
+    private final ActivityResultLauncher<Intent> placeSearchLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult() ,
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                            Intent data = result.getData();
+                            // 선택한 장소 정보 받기
+                            selectedPlaceName = data.getStringExtra("place_name");
+                            selectedAddress = data.getStringExtra("address");
+                            selectedRoadAddress = data.getStringExtra("road_address");
+                            selectedSigungu = data.getStringExtra("sigungu");
+                            selectedDong = data.getStringExtra("dong");
+                            selectedMapX = data.getStringExtra("map_x");
+                            selectedMapY = data.getStringExtra("map_y");
+                            selectedPlaceCategory = data.getStringExtra("category");
+                            selectedPhone = data.getStringExtra("phone");
+
+                            // UI 업데이트
+                            binding.tvSelectedStore.setText(selectedPlaceName);
+                            binding.tvSelectedStoreAddress.setText(selectedRoadAddress);
+
+                            Log.i(TAG, "선택한 장소: " + selectedPlaceName);
+                            Log.i(TAG, "주소: " + selectedRoadAddress);
+                            Log.i(TAG, "좌표: (" + selectedMapX + ", " + selectedMapY + ")");
+                        }
+                    }
+            );
+
+    /**
      * 장소 선택 버튼 설정
      */
     private void setupPlaceSelection() {
         // 장소 선택하기 버튼
         binding.btnSearchStore.setOnClickListener(v -> {
             Intent intent = new Intent(this , PlaceSearchActivity.class);
-            startActivityForResult(intent , REQUEST_PLACE_SEARCH);
+            placeSearchLauncher.launch(intent);
         });
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_PLACE_SEARCH && resultCode == RESULT_OK && data != null) {
-            // 선택한 장소 정보 받기
-            selectedPlaceName = data.getStringExtra("place_name");
-            selectedAddress = data.getStringExtra("address");
-            selectedRoadAddress = data.getStringExtra("road_address");
-            selectedSigungu = data.getStringExtra("sigungu");
-            selectedDong = data.getStringExtra("dong");
-            selectedMapX = data.getStringExtra("map_x");
-            selectedMapY = data.getStringExtra("map_y");
-            selectedPlaceCategory = data.getStringExtra("category");
-            selectedPhone = data.getStringExtra("phone");
-
-            // UI 업데이트
-            binding.tvSelectedStore.setText(selectedPlaceName);
-            binding.tvSelectedStoreAddress.setText(selectedRoadAddress);
-
-            Log.i(TAG, "선택한 장소: " + selectedPlaceName);
-            Log.i(TAG, "주소: " + selectedRoadAddress);
-            Log.i(TAG, "좌표: (" + selectedMapX + ", " + selectedMapY + ")");
-        }
     }
 
     /**

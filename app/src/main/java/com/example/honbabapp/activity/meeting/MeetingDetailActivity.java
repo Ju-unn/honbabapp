@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -42,7 +44,6 @@ public class MeetingDetailActivity extends AppCompatActivity {
     private PageMeetingDetailBinding binding;
     private ApiService apiService;
     private ParticipantListAdapter participantAdapter;
-    private static final int REQUEST_APPLICANT_LIST = 1001;
 
     private int meetingId;
     private int currentUserId;
@@ -408,6 +409,19 @@ public class MeetingDetailActivity extends AppCompatActivity {
     }
 
     /**
+     * ActivityResultLauncher
+     */
+    private final ActivityResultLauncher<Intent> applicantListLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult() ,
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK) {
+                            loadMeetingDetail();
+                        }
+                    }
+            );
+
+    /**
      * 호스트용 관리 버튼 표시
      */
     private void showHostManagermentButton() {
@@ -424,17 +438,8 @@ public class MeetingDetailActivity extends AppCompatActivity {
             Intent intent = new Intent(this , MeetingApplicantListActivity.class);
             intent.putExtra("meeting_id" , meetingId);
             intent.putExtra("meeting_title" , meeting.getMeeting_title());
-            startActivityForResult(intent , REQUEST_APPLICANT_LIST);
+            applicantListLauncher.launch(intent);
         });
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_APPLICANT_LIST && resultCode == RESULT_OK) {
-            // 참여자 목록 개신
-            loadMeetingDetail();
-        }
     }
 
     @Override
