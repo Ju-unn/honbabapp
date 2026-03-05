@@ -2,6 +2,7 @@ package com.example.honbabapp.activity;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
@@ -19,8 +20,12 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import com.example.honbabapp.api.ApiService;
+import com.example.honbabapp.api.NaverMapsApiService;
+import com.example.honbabapp.api.NaverMapsRetrofitClient;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.AvailabilityData;
 import com.example.honbabapp.api.data.ImageUploadData;
@@ -31,6 +36,14 @@ import com.example.honbabapp.api.data.request.SendVerificationRequest;
 import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageRegisterBinding;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.Priority;
+import com.example.honbabapp.BuildConfig;
+import com.example.honbabapp.api.data.response.naver.NaverReverseGeoResponse;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -61,6 +74,11 @@ public class RegisterActivity extends AppCompatActivity {
     private PageRegisterBinding registerBinding;
     private ApiService apiService;
     private static final String TAG = "RegisterActivity";
+
+    // 위치 관련 멤버 변수
+    private FusedLocationProviderClient fusedLocationClient;
+    private NaverMapsApiService naverMapsApiService;
+    private ActivityResultLauncher<String[]> locationPermissionLauncher;
 
 
     // 검증 완료 플래그
@@ -112,10 +130,46 @@ public class RegisterActivity extends AppCompatActivity {
         // 전화번호 중복확인
         registerBinding.btnCheckPhone.setOnClickListener(v -> checkPhoneDuplicate());
 
-        // 위치 선택
+        // 위치 서비스 초기화 (onCreate에서 바로 실행)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        naverMapsApiService = NaverMapsRetrofitClient.getInstance().getApiService();
+
+        // 권한 런처 등록 (onCreate에서 바로 등록)
+        locationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                result -> {
+                    boolean fineGranted   = Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_FINE_LOCATION));
+                    boolean coarseGranted = Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_COARSE_LOCATION));
+
+                    if (fineGranted || coarseGranted) {
+                        getCurrentLocation();
+                    } else {
+                        boolean showRationale = shouldShowRequestPermissionRationale(
+                                Manifest.permission.ACCESS_FINE_LOCATION);
+                        if (!showRationale) {
+                            Toast.makeText(this, "설정에서 위치 권한을 허용해주세요.", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(this, "위치 권한을 허용해주세요.\n다시 클릭해서 진행해 주세요.", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+        );
+
+        //  위치 선택 버튼 클릭
         registerBinding.layoutLocationSelect.setOnClickListener(v -> {
-            // TODO: 위치 선택 BottomSheet 또는 다이얼로그
-            Toast.makeText(this , "위치 선택 기능 구현 예정" , Toast.LENGTH_SHORT).show();
+            boolean hasFine   = ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+            boolean hasCoarse = ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+            if (hasFine || hasCoarse) {
+                getCurrentLocation();
+            } else {
+                locationPermissionLauncher.launch(new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                });
+            }
         });
 
         // 닉네임 입력 감지 (중복 확인 초기화)
@@ -190,6 +244,85 @@ public class RegisterActivity extends AppCompatActivity {
         // 회원가입 완료 버튼
         registerBinding.btnSignupComplete.setOnClickListener(v -> performRegister());
 
+    }
+
+    // 위치 조회 메서드
+
+    private void getCurrentLocation() {
+        registerBinding.tvSelectedLocation.setText("위치를 가져오는 중...");
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        fusedLocationClient.getCurrentLocation(
+                        Priority.PRIORITY_HIGH_ACCURACY, // GPS 최우선
+                        null
+                )
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        fetchAddressFromCoords(location.getLongitude(), location.getLatitude());
+                    } else {
+                        registerBinding.tvSelectedLocation.setText("위치를 가져오지 못했습니다");
+                        Toast.makeText(this,
+                                "위치를 가져오지 못했습니다. 다시 시도해주세요.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    registerBinding.tvSelectedLocation.setText("위치를 가져오지 못했습니다");
+                    Toast.makeText(this, "위치를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void fetchAddressFromCoords(double lng, double lat) {
+        String coords = lng + "," + lat;
+        Log.d(TAG, "좌표: " + coords);
+        Log.d(TAG, "Client ID: " + BuildConfig.NAVER_MAPS_CLIENT_ID);
+
+        Call<NaverReverseGeoResponse> call = naverMapsApiService.reverseGeocode(
+                BuildConfig.NAVER_MAPS_CLIENT_ID,
+                BuildConfig.NAVER_MAPS_CLIENT_SECRET,
+                coords, "json", "admcode"
+        );
+
+        call.enqueue(new Callback<NaverReverseGeoResponse>() {
+            @Override
+            public void onResponse(Call<NaverReverseGeoResponse> call,
+                                   Response<NaverReverseGeoResponse> response) {
+                Log.d(TAG, "응답 코드: " + response.code());
+                Log.d(TAG, "body null?: " + (response.body() == null));
+
+                if (response.isSuccessful() && response.body() != null) {
+                    String address = response.body().getFormattedAddress();
+                    if (address != null && !address.isEmpty()) {
+                        selectedLocation = address;
+                        registerBinding.tvSelectedLocation.setText(address);
+                        Toast.makeText(RegisterActivity.this,
+                                "동네 설정 완료: " + address, Toast.LENGTH_SHORT).show();
+                    } else {
+                        registerBinding.tvSelectedLocation.setText("주소를 가져오지 못했습니다");
+                        Toast.makeText(RegisterActivity.this,
+                                "위치를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    registerBinding.tvSelectedLocation.setText("주소를 가져오지 못했습니다");
+                    Toast.makeText(RegisterActivity.this,
+                            "위치를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<NaverReverseGeoResponse> call, Throwable t) {
+                Log.e(TAG, "API 실패: " + t.getMessage());
+                registerBinding.tvSelectedLocation.setText("네트워크 오류");
+                Toast.makeText(RegisterActivity.this,
+                        "위치를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**
@@ -843,6 +976,8 @@ public class RegisterActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
             }
         });
+
+
     }
 
 

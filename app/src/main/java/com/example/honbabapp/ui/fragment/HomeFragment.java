@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import com.example.honbabapp.activity.MainActivity;
 import com.example.honbabapp.activity.NotificationActivity;
-import com.example.honbabapp.activity.profile.MeetingCardWritingActivity;
+import com.example.honbabapp.activity.meeting.MeetingCardWritingActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.meeting.Meeting;
@@ -82,6 +82,15 @@ public class HomeFragment extends Fragment {
     }
 
     /**
+     * 모임 목록 새로고침 (외부에서 호출)
+     */
+    public void refreshMeetingList() {
+        Log.i(TAG, "모임 목록 새로고침 시작");
+        loadMeetings();  // 기존 loadMeetings() 재호출
+    }
+
+
+    /**
      * RecyclerView 초기화
      */
     public void initRecyclerViews() {
@@ -102,6 +111,7 @@ public class HomeFragment extends Fragment {
         // TODO : DB에 저장된 user_location에서 sigungu 추출 or db location 3개로 분리
 
         // 현재는 임시로 하드코딩
+        // TODO : 나중에 위치정보 들고와서 수정
         String userSigungu = "관악구";
 
         // API 호출

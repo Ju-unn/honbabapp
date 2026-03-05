@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
@@ -15,6 +17,34 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val properties = Properties().apply {
+            load(project.rootProject.file("local.properties").inputStream())
+        }
+
+        buildConfigField(
+            "String",
+            "NAVER_CLIENT_ID",
+            "\"${properties.getProperty("NAVER_CLIENT_ID")}\""
+        )
+
+        buildConfigField(
+            "String",
+            "NAVER_CLIENT_SECRET",
+            "\"${properties.getProperty("NAVER_CLIENT_SECRET")}\""
+        )
+
+        buildConfigField(
+            "String",
+            "NAVER_MAPS_CLIENT_ID",
+            "\"${properties.getProperty("NAVER_MAPS_CLIENT_ID", "")}\""
+        )
+
+        buildConfigField(
+            "String",
+            "NAVER_MAPS_CLIENT_SECRET",
+            "\"${properties.getProperty("NAVER_MAPS_CLIENT_SECRET", "")}\""
+        )
     }
 
     buildTypes {
@@ -32,15 +62,19 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
+
 }
 
 dependencies {
     val retrofitVersion = "2.9.0"
+    implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)

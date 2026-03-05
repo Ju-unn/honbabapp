@@ -5,6 +5,7 @@ public class MeetingParticipant {
     private String user_nickname;
     private String user_profile_image;
     private double user_manner_score;
+    private String participation_status;
     private String joined_at;
 
     public int getUser_id() {
@@ -37,6 +38,14 @@ public class MeetingParticipant {
 
     public void setUser_manner_score(double user_manner_score) {
         this.user_manner_score = user_manner_score;
+    }
+
+    public String getParticipation_status() {
+        return participation_status;
+    }
+
+    public void setParticipation_status(String participation_status) {
+        this.participation_status = participation_status;
     }
 
     public String getJoined_at() {

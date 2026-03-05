@@ -6,6 +6,7 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.honbabapp.activity.meeting.MeetingCardWritingActivity;
 import com.example.honbabapp.databinding.PageProfileMyMeetingsBinding;
 
 public class ProfileMyMeetingsActivity extends AppCompatActivity {

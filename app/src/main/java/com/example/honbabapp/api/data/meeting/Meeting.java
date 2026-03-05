@@ -39,11 +39,16 @@ public class Meeting {
     private boolean meeting_is_hot;
     private int meeting_view_count;
     private String meeting_created_at;
+    private String my_participation_status;
 
     // 연관 객체
     private Location location;
     private MeetingHost host;
     private List<MeetingParticipant> participants;
+
+    public String getMy_participation_status() {
+        return my_participation_status;
+    }
 
     public int getMeeting_id() {
         return meeting_id;

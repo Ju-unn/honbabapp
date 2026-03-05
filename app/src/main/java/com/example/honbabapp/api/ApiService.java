@@ -139,7 +139,7 @@ public interface ApiService {
      * @return ApiResponse<Meeting> - 모임 상세 정보 (location, host, participants 포함)
      */
     @GET("api/meeting/detail.php")
-    Call<ApiResponse<Meeting>> getMeetingDetail(@Query("meeting_id") int meetingId);
+    Call<ApiResponse<Meeting>> getMeetingDetail(@Query("meeting_id") int meetingId , @Query("user_id") int userId);
 
     /**
      * 4. 모임 참여 신청

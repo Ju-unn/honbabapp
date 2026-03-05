@@ -8,9 +8,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.honbabapp.activity.MeetingDetailActivity;
+import com.example.honbabapp.activity.meeting.MeetingDetailActivity;
 import com.example.honbabapp.api.data.meeting.Meeting;
-import com.example.honbabapp.data.MockData;
 import com.example.honbabapp.databinding.RvHotMeetingBinding;
 
 import java.util.ArrayList;

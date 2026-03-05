@@ -111,6 +111,13 @@
                 android:paddingStart="0dp"
                 android:paddingEnd="0dp" />
 
+            <ImageButton
+                android:id="@+id/btn_search"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@android:drawable/ic_menu_search"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+
         </LinearLayout>
 
         <!-- 날짜·인원 버튼 -->
