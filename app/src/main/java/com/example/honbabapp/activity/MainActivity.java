@@ -1,11 +1,17 @@
 package com.example.honbabapp.activity;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.honbabapp.R;
@@ -15,7 +21,10 @@ import com.example.honbabapp.data.user.User;
 import com.example.honbabapp.databinding.ActivityMainBinding;
 import com.example.honbabapp.ui.adapter.MainFragmentAdapter;
 import com.example.honbabapp.ui.fragment.MapFragment;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
 
@@ -34,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
         testCode();
         initViewPager();
         initNavigation();
+        getToken();
+        askNotificationPermission();
     }
 
     /// mapPage로 이동
@@ -43,7 +54,56 @@ public class MainActivity extends AppCompatActivity {
         //객체 선언 하고 해당 객체를 fragmentList안에있는 MapFragment 받아오기
         MapFragment mapFragment;
         mapFragment = (MapFragment) adapter.fragmentList.get(1);
-        mapFragment.setFilter(category);
+        if (mapFragment.isDetached()) { //뷰가 그려진 상태에서는 카테고리만 변경해서 해당부분만 새로 그리기
+            mapFragment.setFilter(category);
+        } else {    //초기값으로 설정 (뷰가 아직 그려지기전)
+            mapFragment.pendingCategory = category;
+        }
+    }
+
+    // Declare the launcher at the top of your Activity/Fragment:
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // FCM SDK (and your app) can post notifications.
+                } else {
+                    // TODO: Inform user that that your app will not show notifications.
+                }
+            });
+
+    private void askNotificationPermission() {
+        // This is only necessary for API level >= 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                // FCM SDK (and your app) can post notifications.
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                // TODO: display an educational UI explaining to the user the features that will be enabled
+                //       by them granting the POST_NOTIFICATION permission. This UI should provide the user
+                //       "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
+                //       If the user selects "No thanks," allow the user to continue without notifications.
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
+
+    public void getToken() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        String token = task.getResult();
+
+                        Log.i("Test_log" , "getToken : " + token);
+                    }
+                });
     }
 
     /// homePage로 이동

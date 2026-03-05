@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "92726812642",
+    "project_id": "honbab-app",
+    "storage_bucket": "honbab-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:92726812642:android:da83d05a89d1f9960563bb",
+        "android_client_info": {
+          "package_name": "com.example.honbabapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_4A0haPKD8wBslZlBri-sgPM4dFqra_0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -76,12 +76,14 @@ public class HomeAllMeetingListAdapter extends RecyclerView.Adapter<HomeAllMeeti
          * Meeting 데이터를 UI에 바인딩
          */
         public void bind(Meeting meeting) {
+            
             // 클릭 이벤트
             binding.getRoot().setOnClickListener(v -> {
                 Intent intent = new Intent(v.getContext() , MeetingDetailActivity.class);
                 intent.putExtra("meeting_id" , meeting.getMeeting_id());
                 v.getContext().startActivity(intent);
             });
+
             // 1. 모임 제목
             binding.tvMeetingTitle.setText(meeting.getMeeting_title());
 

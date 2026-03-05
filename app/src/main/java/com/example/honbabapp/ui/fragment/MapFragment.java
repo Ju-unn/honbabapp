@@ -35,7 +35,7 @@ public class MapFragment extends Fragment {
     private MapHotMeetingListAdapter hotMeetingListAdapter;
     private MapAllMeetingListAdapter allMeetingListAdapter;
     private String currentSortOption = "전체";
-    private String pendingCategory = null;
+    public String pendingCategory = null;
 
     // BottomSheet 관련 변수 추가
     private BottomSheetBehavior<View> bottomSheetBehavior;
@@ -75,6 +75,7 @@ public class MapFragment extends Fragment {
         allMeetingListAdapter = new MapAllMeetingListAdapter();
         fragmentMapbinding.rvMeetingCard.setAdapter(allMeetingListAdapter);
 
+        setFilter(pendingCategory);
     }
 
 
