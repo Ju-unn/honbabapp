@@ -36,7 +36,9 @@ import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.util.FusedLocationSource;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -73,7 +75,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
 
     /// 상태관리 /////////////////////////////////////////////////////////////////////////////////
-    private String currentCategory = "전체";
+    private Set<String> currentFilterCategories = new HashSet<>();
+    private int currentMinPrice = 0;
+    private int currentMaxPrice = 50000;
     private String currentSortOption = "전체";
 
     /// 상태관리 /////////////////////////////////////////////////////////////////////////////////
@@ -141,7 +145,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(@NonNull NaverMap naverMap) {
         Log.i(TAG, "onMapReady");
-        Log.i(TAG, "Client ID: " + com.example.honbabapp.BuildConfig.NAVER_MAPS_CLIENT_ID);
         this.naverMap = naverMap;
 
         // Naver SDK에 위치 소스 연결
@@ -167,9 +170,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         // pendingCategory setFilet()가 onMapReady() 전에 호출됐다면 여기서 처리
         if (pendingCategory != null) {
-            currentCategory = pendingCategory;
+            String cat = pendingCategory;
             pendingCategory = null;
-            showCategoryDialog(currentCategory);
+            showFilterDialog(cat);
         }
 
         // 현재 위치로 카메라 이동 후 첫 api 호출
@@ -224,8 +227,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
      */
 
     private void loadMeetingsOnMap () {
-        // "전체"는 서버에서 category 피라미터 없이 처리
-        String categoryParam = "전체".equals(currentCategory) ? null : currentCategory;
+        //set에서 1개면 api에게 전달 0개 2개 이상이면 서버에서 전체 조회
+        String categoryParam = null;
+        if (currentFilterCategories.size() == 1) {
+            categoryParam = currentFilterCategories.iterator().next();
+        }
 
         // 정렬 옵션 변환
         String orderByParam = "거리순".equals(currentSortOption) ? "distance" : null ;
@@ -304,52 +310,44 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 activeMarkers.add(marker); // 나중에 제거할 수 있도록 목록에 추가
 
             } catch (NumberFormatException e) {
-                Log.w(TAG, "좌표 파싱 실패: " + mapX + ", " + mapY);
+                Log.w(TAG, "좌표 파싱 실패: " + meeting.getLocation().getMap_x());
             }
         }
     }
 
     // ──────────────────────────────────────────────
-    // 카테고리 Dialog
+    // 필터 Dialog
     // ──────────────────────────────────────────────
 
-    /**
-     * 카테고리 선택 다이얼로그 표시
-     * HomeFragment에서 카테고리 클릭 시 자동 오픈
-     * @param category 사전 선택할 카테고리
-     */
-
-    private void showCategoryDialog(String category) {
-        MapCategoryBottomSheetDialog dialog = new MapCategoryBottomSheetDialog();
-        dialog.currentCategory = category; // 사전 선택 설정
-
-        dialog.listener = selectedCategory -> {
-            currentCategory = selectedCategory;
-            loadMeetingsOnMap (); // 선택된 카테고리로 재조회
-        };
-
-        dialog.show(getChildFragmentManager() , "mapCategoryDialog");
-
+    private void showFilterDialog(@Nullable String preSelectedCategory) {
+        MapFilterBottomSheetDialog dialog = new MapFilterBottomSheetDialog();
+        dialog.preSelectedCategory = preSelectedCategory;
+        dialog.listener = ((categories, minPrice, maxPrice, date, time) -> {
+            currentFilterCategories = new HashSet<>(categories);
+            currentMinPrice = minPrice;
+            currentMaxPrice = maxPrice;
+            loadMeetingsOnMap();
+        });
+        dialog.show(getChildFragmentManager(), "mapFilterDialog");
     }
 
     // ──────────────────────────────────────────────
-    // 외부에서 호출되는 메서드
+    // 외부에서 호출 (HomeFragment → MainActivity → 여기)
     // ──────────────────────────────────────────────
 
-    /**
-     * HomeFragment 카테고리 클릭 → MainActivity → 여기 호출
-     * naverMap이 준비됐으면 바로 처리, 아니면 pendingCategory에 저장
-     */
-
     public void setFilter(String category) {
-        if (naverMap == null) {
-            // 지도가 아직 초기화하면
+        if (naverMap == null){
             pendingCategory = category;
             return;
         }
-        currentCategory = category;
-        showCategoryDialog(category);
-        loadMeetingsOnMap ();
+
+        // 카테고리 선택시 즉시 반영
+        currentFilterCategories = new HashSet<>();
+        if (!"전체".equals(category)) {
+            currentFilterCategories.add(category);
+        }
+        showFilterDialog(category);
+        loadMeetingsOnMap();
     }
 
     // ──────────────────────────────────────────────
