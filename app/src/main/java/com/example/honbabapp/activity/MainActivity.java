@@ -22,6 +22,7 @@ import com.example.honbabapp.ui.fragment.MapFragment;
 import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -76,12 +77,14 @@ public class MainActivity extends AppCompatActivity {
 
     /// mapPage로 이동
     public void navigationToMap(String category) {
-        binding.viewPager.setCurrentItem(1);
+        binding.viewPager.setCurrentItem(1 , false);
         //fragmentList에서 MapFragment를 가져오기 (객체)
         //객체 선언 하고 해당 객체를 fragmentList안에있는 MapFragment 받아오기
-        MapFragment mapFragment;
-        mapFragment = (MapFragment) adapter.fragmentList.get(1);
-        mapFragment.setFilter(category);
+
+        MapFragment mapFragment = (MapFragment) adapter.fragmentList.get(1);
+        if (mapFragment instanceof MapFragment) {
+            ((MapFragment) mapFragment).setFilter(category);
+        }
     }
 
     /// homePage로 이동

@@ -116,7 +116,7 @@ public interface ApiService {
     Call<ApiResponse<MeetingCreateResponse>> createMeeting(@Body MeetingCreateRequest request);
 
     /**
-     * 2. 모임 목록 조회 (지역 필터링)
+     * 2. 모임 목록 조회 (지역 필터링) - Homefragment
      * @param sigungu 시/군/구 (예: "관악구", "강남구")
      * @param category 카테고리 (예: "한식", "중식", "전체")
      * @param status 모임 상태 (기본값: "모집중")
@@ -131,6 +131,35 @@ public interface ApiService {
             @Query("status") String status,
             @Query("page") int page,
             @Query("limit") int limit
+    );
+
+    /**
+     * 2-2. 모임 목록 조회 (위치 기반 필터 — MapFragment용)
+     * @param sigungu  시/군/구 (선택)
+     * @param category 카테고리 (선택)
+     * @param status   모임 상태
+     * @param page     페이지 번호
+     * @param limit    페이지당 개수
+     * @param lat      중심 위도 (Bbox + Haversine 활성화)
+     * @param lng      중심 경도
+     * @param radius   반경 km
+     * @param orderBy  "distance" → 거리순, null → 기본 정렬
+     *
+     * Retrofit에서 Double(박스타입) 파라미터가 null이면
+     * 쿼리스트링에서 자동으로 생략됨 → 하위 호환 유지
+     */
+    // MapFragment용 (신규)
+    @GET("api/meeting/list.php")
+    Call<ApiResponse<MeetingListResponse>> getMeetingList(
+            @Query("sigungu") String sigungu,
+            @Query("category") String category,
+            @Query("status") String status,
+            @Query("page") int page,
+            @Query("limit") int limit,
+            @Query("lat") Double lat,
+            @Query("lng") Double lng,
+            @Query("radius") Double radius,
+            @Query("order_by") String orderBy
     );
 
     /**

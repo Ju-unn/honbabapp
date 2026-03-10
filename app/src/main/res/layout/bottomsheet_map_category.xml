@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="24dp"
+    android:background="@color/white">
+
+    <!-- 핸들바 -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bottom_sheet_handle_background" />
+
+    <!-- 타이틀 + 닫기 버튼 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="음식 카테고리"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_100" />
+
+        <ImageButton
+            android:id="@+id/btn_close"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_close"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            android:scaleType="centerInside" />
+
+    </LinearLayout>
+
+    <!-- 카테고리 칩 버튼 1행: 전체, 한식, 중식, 일식 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="8dp">
+
+        <Button
+            android:id="@+id/btn_category_all"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="전체"
+            android:textSize="13sp"
+            android:background="@drawable/chip_button_background"
+            android:textColor="@drawable/chip_button_text_color" />
+
+        <Button
+            android:id="@+id/btn_category_korean"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="한식"
+            android:textSize="13sp"
+            android:background="@drawable/chip_button_background"
+            android:textColor="@drawable/chip_button_text_color" />
+
+        <Button
+            android:id="@+id/btn_category_chinese"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="중식"
+            android:textSize="13sp"
+            android:background="@drawable/chip_button_background"
+            android:textColor="@drawable/chip_button_text_color" />
+
+        <Button
+            android:id="@+id/btn_category_japanese"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="일식"
+            android:textSize="13sp"
+            android:background="@drawable/chip_button_background"
+            android:textColor="@drawable/chip_button_text_color" />
+
+    </LinearLayout>
+
+    <!-- 카테고리 칩 버튼 2행: 양식, 오마카세, 술집, 카페 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="8dp">
+
+        <Button
+            android:id="@+id/btn_category_western"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="양식"
+            android:textSize="13sp"
+            android:background="@drawable/chip_button_background"
+            android:textColor="@drawable/chip_button_text_color" />
+
+        <Button
+            android:id="@+id/btn_category_omakase"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="오마카세"
+            android:textSize="11sp"
+            android:background="@drawable/chip_button_background"
+            android:textColor="@drawable/chip_button_text_color" />
+
+        <Button
+            android:id="@+id/btn_category_pub"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="술집"
+            android:textSize="13sp"
+            android:background="@drawable/chip_button_background"
+            android:textColor="@drawable/chip_button_text_color" />
+
+        <Button
+            android:id="@+id/btn_category_cafe"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="카페"
+            android:textSize="13sp"
+            android:background="@drawable/chip_button_background"
+            android:textColor="@drawable/chip_button_text_color" />
+
+    </LinearLayout>
+
+</LinearLayout>
