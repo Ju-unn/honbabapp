@@ -77,7 +77,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     /// 상태관리 /////////////////////////////////////////////////////////////////////////////////
     private Set<String> currentFilterCategories = new HashSet<>();
     private int currentMinPrice = 0;
-    private int currentMaxPrice = 50000;
+    private int currentMaxPrice = 100000;
     private String currentSortOption = "전체";
 
     /// 상태관리 /////////////////////////////////////////////////////////////////////////////////
@@ -228,24 +228,30 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private void loadMeetingsOnMap () {
         //set에서 1개면 api에게 전달 0개 2개 이상이면 서버에서 전체 조회
-        String categoryParam = null;
-        if (currentFilterCategories.size() == 1) {
-            categoryParam = currentFilterCategories.iterator().next();
+        String categories = null;
+        if (!currentFilterCategories.isEmpty()) {
+            categories = String.join(",", currentFilterCategories);
         }
 
+        // 가격 필터: 기본값(0원, 100000원) 그대로면 null → 필터 비활성
+        Integer minPrice = (currentMinPrice > 0) ? currentMinPrice : null;
+        Integer maxPrice = (currentMaxPrice < 100000) ? currentMaxPrice : null;
+
         // 정렬 옵션 변환
-        String orderByParam = "거리순".equals(currentSortOption) ? "distance" : null ;
+        String orderBy = "거리순".equals(currentSortOption) ? "distance" : null ;
 
         Call<ApiResponse<MeetingListResponse>> call = apiService.getMeetingList(
                 null,
-                categoryParam,
+                categories,
                 "모집중",
                 1,
                 50,
                 currentLat,
                 currentLng,
                 DEFAULT_RADIUS_KM,
-                orderByParam
+                orderBy,
+                minPrice,
+                maxPrice
         );
 
         call.enqueue(new Callback<ApiResponse<MeetingListResponse>>() {
@@ -322,6 +328,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private void showFilterDialog(@Nullable String preSelectedCategory) {
         MapFilterBottomSheetDialog dialog = new MapFilterBottomSheetDialog();
         dialog.preSelectedCategory = preSelectedCategory;
+
+        // 이전 필터 상태
+        dialog.initialSelectedCategories = new HashSet<>(currentFilterCategories);
+        dialog.initialMinPrice = currentMinPrice;
+        dialog.initialMaxPrice = currentMaxPrice;
+
+
         dialog.listener = ((categories, minPrice, maxPrice, date, time) -> {
             currentFilterCategories = new HashSet<>(categories);
             currentMinPrice = minPrice;
@@ -377,10 +390,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         binding.btnSort.setOnClickListener(v -> showSortButtonSheet());
 
         // 필터 버튼
-        binding.btnFilter.setOnClickListener(v -> {
-            MapFilterBottomSheetDialog dialog = new MapFilterBottomSheetDialog();
-            dialog.show(getChildFragmentManager(), "mapFilterDialog");
-        });
+        binding.btnFilter.setOnClickListener(v -> showFilterDialog(null));
     }
 
     private void showSortButtonSheet() {

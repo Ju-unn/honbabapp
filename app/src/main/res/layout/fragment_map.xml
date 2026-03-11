@@ -81,34 +81,7 @@
 
         </LinearLayout>
 
-        <!-- 날짜·인원 버튼 -->
-        <LinearLayout
-            android:id="@+id/btn_date_people"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:background="@drawable/button_primary_background"
-            android:paddingHorizontal="12dp"
-            android:clickable="true"
-            android:focusable="true">
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_calendar"
-                app:tint="@color/white" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=" 날짜 "
-                android:textColor="@color/white"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:layout_marginStart="4dp" />
-
-        </LinearLayout>
 
     </LinearLayout>
 

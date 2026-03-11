@@ -136,7 +136,7 @@ public interface ApiService {
     /**
      * 2-2. 모임 목록 조회 (위치 기반 필터 — MapFragment용)
      * @param sigungu  시/군/구 (선택)
-     * @param category 카테고리 (선택)
+     * @param categories 카테고리 (선택)
      * @param status   모임 상태
      * @param page     페이지 번호
      * @param limit    페이지당 개수
@@ -152,14 +152,16 @@ public interface ApiService {
     @GET("api/meeting/list.php")
     Call<ApiResponse<MeetingListResponse>> getMeetingList(
             @Query("sigungu") String sigungu,
-            @Query("category") String category,
+            @Query("categories") String categories,
             @Query("status") String status,
             @Query("page") int page,
             @Query("limit") int limit,
             @Query("lat") Double lat,
             @Query("lng") Double lng,
             @Query("radius") Double radius,
-            @Query("order_by") String orderBy
+            @Query("order_by") String orderBy,
+             @Query("min_price") Integer minPrice,
+            @Query("max_price") Integer maxPrice
     );
 
     /**

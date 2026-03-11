@@ -3,6 +3,7 @@ package com.example.honbabapp.ui.dialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.honbabapp.R;
 import com.example.honbabapp.databinding.BottomsheetMapFilterBinding;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -44,6 +46,12 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
     // ──────────────────────────────────────────────
     public String preSelectedCategory = null;
 
+    // 필터 재오픈 시 이전 상태 복원용
+    public Set<String> initialSelectedCategories = null;
+    public int initialMinPrice = 0;
+    public int initialMaxPrice = 100000;
+    // 필터 재오픈 시 이전 상태 복원용
+
     private final Set<String> selectedCategories = new HashSet<>();
     private int minPrice = 0;
     private int maxPrice = 100000;
@@ -52,6 +60,9 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
 
     private List<String> categoryNames;
     private List<Button> categoryButtons;
+
+    private List<Button> priceButtons;
+    private Button selectedPriceButton = null;
 
     @NonNull
     @Override
@@ -101,10 +112,17 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
             dismiss();
         });
 
-        // home에서 넘어온 카테고리 자동 선택
+        // 필터 버튼 재클릭시 기존 카테고리 등록
         if (preSelectedCategory != null && !preSelectedCategory.equals("전체")) {
             toggleCategory(preSelectedCategory);
+        } else if (initialSelectedCategories != null) {
+            for (String cat : initialSelectedCategories) {
+                toggleCategory(cat);
+            }
         }
+
+        // 가격 슬라이더는 항상 이전 값으로 복원 (Home에서 왔을 때도 유지)
+        setPrice(initialMinPrice, initialMaxPrice);
 
         return binding.getRoot();
     }
@@ -150,7 +168,7 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
             addChip(category);
         }
         // 휴지통 가시성 업데이트
-        binding.btnTrash.setVisibility(
+        binding.layoutChipArea.setVisibility(
                 selectedCategories.isEmpty() ? View.GONE : View.VISIBLE
         );
     }
@@ -171,7 +189,13 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
     // tag에 카테고리명 저장 → removeChip에서 찾을 때 사용
     // ──────────────────────────────────────────────
     private void addChip(String category) {
-        Chip chip = new Chip(requireContext());
+        Chip chip = new Chip(requireContext() , null , com.google.android.material.R.attr.chipStyle);
+        chip.setChipBackgroundColorResource(R.color.primary_100);
+        chip.setChipStrokeWidth(0f);
+        chip.setTextColor(getResources().getColor(R.color.white, null));
+        chip.setCloseIconTint(ColorStateList.valueOf(
+                getResources().getColor(R.color.white, null)));
+        chip.setChipCornerRadius(50f); // 완전 둥글게
         chip.setText(category);
         chip.setTag(category);
         chip.setCloseIconVisible(true);
@@ -202,7 +226,7 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
             btn.setSelected(false);
         }
         binding.chipGroupSelected.removeAllViews();
-        binding.btnTrash.setVisibility(View.GONE);
+        binding.layoutChipArea.setVisibility(View.GONE);
     }
 
     // ──────────────────────────────────────────────
@@ -211,17 +235,37 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
     // 빠른 선택 버튼 클릭 시 슬라이더 포인터도 함께 이동
     // ──────────────────────────────────────────────
     private void setupPriceSlider() {
+        // 가격 빠른선택 버튼 목록
+        priceButtons = Arrays.asList(
+                binding.btnPrice10k20k,
+                binding.btnPrice20k30k,
+                binding.btnPriceUpper50k
+        );
+
         // 슬라이더 실시간 변경 리스너
         binding.priceRangeSlider.addOnChangeListener((slider, value, fromUser) -> {
+            if (fromUser) {
+                clearPriceButtonSelection(); // 슬라이더 직접 건드리면 버튼 선택 해제
+            }
+
             List<Float> values = slider.getValues();
             minPrice = values.get(0).intValue();
             maxPrice = values.get(1).intValue();
             updatePriceText();
         });
         // 빠른 선택 버튼들
-        binding.btnPrice10k20k.setOnClickListener(v -> setPrice(10000, 20000));
-        binding.btnPrice20k30k.setOnClickListener(v -> setPrice(20000, 30000));
-        binding.btnPriceUpper50k.setOnClickListener(v -> setPrice(40000, 50000));
+        binding.btnPrice10k20k.setOnClickListener(v -> {
+            selectPriceButton(binding.btnPrice10k20k);
+            setPrice(10000, 20000);
+        });
+        binding.btnPrice20k30k.setOnClickListener(v -> {
+            selectPriceButton(binding.btnPrice20k30k);
+            setPrice(20000, 30000);
+        });
+        binding.btnPriceUpper50k.setOnClickListener(v -> {
+            selectPriceButton(binding.btnPriceUpper50k);
+            setPrice(50000, 100000);
+        });
     }
 
     // 가격설정 + 슬라이더 + 텍스트 동시 업데이트
@@ -235,6 +279,29 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
     private void updatePriceText() {
         binding.tvMinPrice.setText(String.format("%,d원", minPrice));
         binding.tvMaxPrice.setText(String.format("%,d원", maxPrice));
+    }
+
+    // 가격 버튼 단일 선택 토글
+    // 이미 선택된 버튼 재클릭 → 선택 해제
+    private void selectPriceButton(Button button) {
+        if (selectedPriceButton == button) {
+            // 재클릭 → 선택 해제
+            button.setSelected(false);
+            selectedPriceButton = null;
+        } else {
+            // 기존 선택 해제 후 새 버튼 선택
+            clearPriceButtonSelection();
+            button.setSelected(true);
+            selectedPriceButton = button;
+        }
+    }
+
+    // 모든 가격 버튼 선택 해제
+    private void clearPriceButtonSelection() {
+        for (Button btn : priceButtons) {
+            btn.setSelected(false);
+        }
+        selectedPriceButton = null;
     }
 
     // ──────────────────────────────────────────────
