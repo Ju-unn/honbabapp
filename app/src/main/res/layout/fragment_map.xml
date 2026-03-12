@@ -12,50 +12,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- 네이버 지도가 여기 들어갈 예정 -->
-        <View
+        <!-- MapView-->
+        <com.naver.maps.map.MapView
+            android:id="@+id/map_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#E0E0E0" />
-
-        <!-- 지도 위에 표시될 핀들 (나중에 네이버 API로 대체) -->
-        <FrameLayout
-            android:id="@+id/pin_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="200dp"
-            android:layout_marginStart="50dp"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:text="🍖"
-                android:textSize="28sp"
-                android:gravity="center"
-                android:background="@drawable/map_pin_background"
-                android:elevation="4dp" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/pin_2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="350dp"
-            android:layout_marginStart="200dp"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:text="🍣"
-                android:textSize="28sp"
-                android:gravity="center"
-                android:background="@drawable/map_pin_inactive_background"
-                android:elevation="4dp" />
-        </FrameLayout>
+            android:layout_height="match_parent" />
 
     </FrameLayout>
 
@@ -120,53 +81,9 @@
 
         </LinearLayout>
 
-        <!-- 날짜·인원 버튼 -->
-        <LinearLayout
-            android:id="@+id/btn_date_people"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:background="@drawable/button_primary_background"
-            android:paddingHorizontal="12dp"
-            android:clickable="true"
-            android:focusable="true">
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_calendar"
-                app:tint="@color/white" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=" 날짜 "
-                android:textColor="@color/white"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:layout_marginStart="4dp" />
-
-        </LinearLayout>
 
     </LinearLayout>
-
-    <!-- 현재 위치 버튼 (지도 위에 floating - BottomSheet 영향 안받음) -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_current_location"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start|center_vertical"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="80dp"
-        app:backgroundTint="@color/white"
-        android:elevation="6dp"
-        android:src="@drawable/ic_location"
-        app:fabSize="mini"
-        app:fabCustomSize="40dp"
-        app:maxImageSize="20dp"
-        app:tint="@color/primary_100"
-        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Honbab.FAB.Circle"/>
 
     <!-- BottomSheet: 카테고리 + 모임 리스트 -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout

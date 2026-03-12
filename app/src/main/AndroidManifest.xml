@@ -23,6 +23,10 @@
         android:theme="@style/Theme.Honbabapp"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <meta-data
+            android:name="com.naver.maps.map.NCP_KEY_ID"
+            android:value="${NAVER_MAPS_CLIENT_ID}" />
+
         <activity
             android:name=".activity.meeting.PlaceSearchActivity"
             android:exported="false"

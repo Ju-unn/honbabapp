@@ -45,6 +45,9 @@ android {
             "NAVER_MAPS_CLIENT_SECRET",
             "\"${properties.getProperty("NAVER_MAPS_CLIENT_SECRET", "")}\""
         )
+
+        manifestPlaceholders["NAVER_MAPS_CLIENT_ID"] =
+            properties.getProperty("NAVER_MAPS_CLIENT_ID", "")
     }
 
     buildTypes {
@@ -75,6 +78,7 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
     implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.naver.maps:map-sdk:3.23.1")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)

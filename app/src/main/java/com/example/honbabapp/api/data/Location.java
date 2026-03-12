@@ -8,6 +8,19 @@ public class Location {
     private String sigungu;
     private String dong;
     private String map_x;
+    private String map_y;
+    private String category;
+    private String phone_number;
+
+    public Double getDistance_km() {
+        return distance_km;
+    }
+
+    public void setDistance_km(Double distance_km) {
+        this.distance_km = distance_km;
+    }
+
+    private Double distance_km;
 
     public int getLocation_id() {
         return location_id;
@@ -89,7 +102,4 @@ public class Location {
         this.phone_number = phone_number;
     }
 
-    private String map_y;
-    private String category;
-    private String phone_number;
 }
