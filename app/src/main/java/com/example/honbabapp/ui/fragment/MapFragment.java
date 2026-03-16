@@ -227,7 +227,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
      */
 
     private void loadMeetingsOnMap () {
-        //set에서 1개면 api에게 전달 0개 2개 이상이면 서버에서 전체 조회
         String categories = null;
         if (!currentFilterCategories.isEmpty()) {
             categories = String.join(",", currentFilterCategories);
