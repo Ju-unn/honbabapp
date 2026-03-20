@@ -18,6 +18,9 @@ package com.example.honbabapp.api.data;
 
 public class ImageUploadData {
     private String profile_image_url;
+
+    // 모임 이미지
+    private String image_url;
     private String file_name;
     private long file_size;
     private String mime_type;
@@ -39,6 +42,14 @@ public class ImageUploadData {
 
     public void setProfile_image_url(String profile_image_url) {
         this.profile_image_url = profile_image_url;
+    }
+
+    public String getImage_url() {
+        return image_url;
+    }
+
+    public void setImage_url(String image_url) {
+        this.image_url = image_url;
     }
 
     public String getFile_name() {

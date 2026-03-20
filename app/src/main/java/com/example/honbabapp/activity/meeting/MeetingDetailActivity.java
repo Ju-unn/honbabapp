@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.honbabapp.R;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.meeting.Meeting;
@@ -23,7 +22,6 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
 import com.example.honbabapp.databinding.PageMeetingDetailBinding;
 import com.example.honbabapp.ui.adapter.ParticipantListAdapter;
-import com.bumptech.glide.Glide;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,7 +37,6 @@ import retrofit2.Response;
  */
 
 public class MeetingDetailActivity extends AppCompatActivity {
-
     private String TAG = "MeetingDetailActivity";
     private PageMeetingDetailBinding binding;
     private ApiService apiService;

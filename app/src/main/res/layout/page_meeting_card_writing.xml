@@ -16,7 +16,6 @@
         android:background="@color/bg_100"
         android:elevation="2dp">
 
-        <!-- 뒤로가기 버튼 -->
         <ImageButton
             android:id="@+id/btn_back"
             android:layout_width="44dp"
@@ -26,7 +25,6 @@
             android:background="@color/white"
             android:layout_marginEnd="12dp" />
 
-        <!-- 제목 -->
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -54,7 +52,7 @@
             android:orientation="vertical"
             android:padding="18dp">
 
-            <!-- 사진 선택 -->
+            <!-- ========== 1. 사진 미리보기 ========== -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -63,54 +61,155 @@
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@color/white">
 
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp">
+
+                    <!-- 사진 없을 때 placeholder (가게 선택 전) -->
+                    <LinearLayout
+                        android:id="@+id/layout_photo_placeholder"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/photo_upload_background">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📸"
+                            android:textSize="40sp"
+                            android:layout_marginBottom="8dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="가게를 선택하면 사진이 자동으로 채워져요"
+                            android:textColor="@color/text_200"
+                            android:textSize="13sp"/>
+
+                    </LinearLayout>
+
+                    <!-- 가게 선택 후 자동으로 채워지는 사진 (기본: gone) -->
+                    <ImageView
+                        android:id="@+id/iv_meeting_photo_preview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone"/>
+
+                </FrameLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- ========== 2. 가게 찾기 ========== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="가게 찾기"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:background="@drawable/photo_upload_background"
-                    android:padding="32dp"
-                    android:gravity="center">
+                    android:orientation="horizontal">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📸"
-                        android:textSize="48sp"
-                        android:layout_marginBottom="12dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="모임 대표 사진을 첨부하세요!"
+                    <EditText
+                        android:id="@+id/et_store_search"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="2"
+                        android:hint="가게명 또는 주소 입력"
+                        android:textColorHint="@color/text_200"
                         android:textColor="@color/text_100"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="8dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="맛있는 음식 사진이 더 많은 관심을 받아요"
-                        android:textColor="@color/text_200"
-                        android:textSize="13sp"
-                        android:layout_marginBottom="16dp" />
+                        android:textSize="15sp"
+                        android:background="@drawable/edittext_background"
+                        android:paddingHorizontal="16dp"
+                        android:layout_marginEnd="8dp"
+                        android:inputType="text" />
 
                     <Button
-                        android:id="@+id/btn_select_photo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:text="사진 선택"
+                        android:id="@+id/btn_search_store"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:text="검색"
                         android:textColor="@color/white"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:background="@drawable/button_primary_background"
-                        android:paddingHorizontal="20dp" />
+                        android:minWidth="0dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- ========== 3. 선택된 가게 정보 (검색 후 나타남) ========== -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/selected_store_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:visibility="gone"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="@color/bg_300">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="선택된 가게"
+                        android:textColor="@color/text_200"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tv_selected_store"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="돼지 먹고 싶은날"
+                        android:textColor="@color/text_100"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="가게 주소"
+                        android:textColor="@color/text_200"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tv_selected_store_address"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="신림동 108-00번지"
+                        android:textColor="@color/text_100"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
 
-            <!-- ========== 카테고리 선택 (RadioButton 방식) ========== -->
+            <!-- ========== 4. 카테고리 선택 (RadioButton 방식) ========== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -126,7 +225,6 @@
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp"/>
 
-                <!-- 카테고리 선택 버튼들 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -252,7 +350,7 @@
 
             </LinearLayout>
 
-            <!-- 모임명 -->
+            <!-- ========== 5. 모임명 ========== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -283,7 +381,7 @@
 
             </LinearLayout>
 
-            <!-- 모임 설명 -->
+            <!-- ========== 6. 모임 설명 ========== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -316,7 +414,7 @@
 
             </LinearLayout>
 
-            <!-- ========== 날짜/시간 분리  ========== -->
+            <!-- ========== 7. 날짜 ========== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -349,6 +447,7 @@
 
             </LinearLayout>
 
+            <!-- ========== 8. 시간 ========== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -381,7 +480,7 @@
 
             </LinearLayout>
 
-            <!-- 모집 인원 (수정: ImageButton으로 변경하여 아이콘 표시) -->
+            <!-- ========== 9. 모집 인원 ========== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -403,7 +502,6 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <!-- 마이너스 버튼 (ImageButton으로 변경) -->
                     <ImageButton
                         android:id="@+id/btn_decrease_count"
                         android:layout_width="44dp"
@@ -425,7 +523,6 @@
                         android:textStyle="bold"
                         android:gravity="center" />
 
-                    <!-- 플러스 버튼 (ImageButton으로 변경) -->
                     <ImageButton
                         android:id="@+id/btn_increase_count"
                         android:layout_width="44dp"
@@ -449,15 +546,13 @@
 
             </LinearLayout>
 
-            <!-- ========== 예상 비용 (추가) ========== -->
-            <!-- 가격대 선택 섹션 -->
+            <!-- ========== 10. 가격대 선택 ========== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_marginBottom="20dp">
 
-                <!-- 제목 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -467,7 +562,6 @@
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp"/>
 
-                <!-- 선택된 가격 표시 -->
                 <TextView
                     android:id="@+id/tv_price_range_display"
                     android:layout_width="wrap_content"
@@ -477,7 +571,6 @@
                     android:textColor="@color/text_200"
                     android:layout_marginBottom="8dp"/>
 
-                <!-- RangeSlider -->
                 <com.google.android.material.slider.RangeSlider
                     android:id="@+id/range_slider_price"
                     android:layout_width="match_parent"
@@ -488,7 +581,6 @@
                     app:values="@array/initial_price_range"
                     app:labelBehavior="gone"/>
 
-                <!-- 가격 범위 안내 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -509,118 +601,10 @@
                         android:text="100,000원"
                         android:textSize="12sp"
                         android:textColor="@color/text_100"/>
-                </LinearLayout>
-
-            </LinearLayout>
-
-
-
-            <!-- 가게 찾기 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="가게 찾기"
-                    android:textColor="@color/text_200"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/et_store_search"
-                        android:layout_width="0dp"
-                        android:layout_height="50dp"
-                        android:layout_weight="2"
-                        android:hint="가게명 또는 주소 입력"
-                        android:textColorHint="@color/text_200"
-                        android:textColor="@color/text_100"
-                        android:textSize="15sp"
-                        android:background="@drawable/edittext_background"
-                        android:paddingHorizontal="16dp"
-                        android:layout_marginEnd="8dp"
-                        android:inputType="text" />
-
-                    <Button
-                        android:id="@+id/btn_search_store"
-                        android:layout_width="0dp"
-                        android:layout_height="50dp"
-                        android:layout_weight="1"
-                        android:text="검색"
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/button_primary_background"
-                        android:minWidth="0dp" />
 
                 </LinearLayout>
 
             </LinearLayout>
-
-            <!-- 선택된 가게 정보 (검색 후 나타남) -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/selected_store_card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:visibility="gone"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="1dp"
-                app:cardBackgroundColor="@color/bg_300">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="선택된 가게"
-                        android:textColor="@color/text_200"
-                        android:textSize="12sp"
-                        android:layout_marginBottom="4dp" />
-
-                    <TextView
-                        android:id="@+id/tv_selected_store"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="돼지 먹고 싶은날"
-                        android:textColor="@color/text_100"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="12dp"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="가게 주소"
-                        android:textColor="@color/text_200"
-                        android:textSize="12sp"
-                        android:layout_marginBottom="4dp" />
-
-                    <TextView
-                        android:id="@+id/tv_selected_store_address"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="신림동 108-00번지"
-                        android:textColor="@color/text_100"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 

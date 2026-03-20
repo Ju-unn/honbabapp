@@ -202,7 +202,19 @@ public interface ApiService {
     @POST("api/meeting/approve.php")
     Call<ApiResponse<ApproveResponse>> approveMeeting(@Body ApproveMeetingRequest request);
 
-
+    /**
+     * 가게 선택 시 네이버 이미지 검색으로 가져온 사진을 S3에 업로드
+     * - 네이버 이미지 URL → OkHttp 다운로드 → 임시 파일 → 이 API로 업로드
+     * - 업로드 성공 시 반환된 meeting_image_url을 MeetingCreateRequest에 담아서 create.php로 전송
+     *
+     * @param image MultipartBody.Part (파라미터명: "meeting_image")
+     * @return ApiResponse<ImageUploadData> - image_url (S3 URL)
+     */
+    @Multipart
+    @POST("api/meeting/upload_meeting_image.php")
+    Call<ApiResponse<ImageUploadData>> uploadMeetingImage(
+            @Part MultipartBody.Part image
+    );
 
 
 

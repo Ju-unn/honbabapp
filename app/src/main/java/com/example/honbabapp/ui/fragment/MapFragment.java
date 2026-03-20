@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -26,6 +27,7 @@ import com.example.honbabapp.ui.dialog.MapFilterBottomSheetDialog;
 import com.example.honbabapp.ui.dialog.MapSortBottomSheetDialog;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.LocationTrackingMode;
@@ -139,6 +141,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         setupSearchBar();
         onBackButtonClick();
         initSortButton();
+        setupBottomSheetCallback();
     }
 
 
@@ -172,7 +175,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         if (pendingCategory != null) {
             String cat = pendingCategory;
             pendingCategory = null;
-            showFilterDialog(cat);
+
+            currentFilterCategories = new HashSet<>();
+            if (!"전체".equals(cat)) {
+                currentFilterCategories.add(cat);
+            }
         }
 
         // 현재 위치로 카메라 이동 후 첫 api 호출
@@ -259,6 +266,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Meeting> meetings = response.body().getData().getMeetings();
                     Log.i(TAG, "모임 로드: " + meetings.size() + "개");
+
+                    // 인기순
+                    if ("인기순".equals(currentSortOption)) {
+                        meetings.sort((a , b) -> b.getMeeting_view_count() - a.getMeeting_view_count());
+                    }
 
                     // 마커 업데이트
                     updateMarkersOnMap(meetings);
@@ -358,7 +370,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         if (!"전체".equals(category)) {
             currentFilterCategories.add(category);
         }
-        showFilterDialog(category);
+        loadMeetingsOnMap();
+    }
+
+    // ──────────────────────────────────────────────
+    // Hot미팅
+    // ──────────────────────────────────────────────
+    public void setFilterHot() {
+        if (naverMap == null) {
+            pendingCategory = "전체";
+            return;
+        }
+        currentFilterCategories = new HashSet<>();
+        currentSortOption = "인기순";
+        updateSortButtonText();
         loadMeetingsOnMap();
     }
 
@@ -390,6 +415,34 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         // 필터 버튼
         binding.btnFilter.setOnClickListener(v -> showFilterDialog(null));
+    }
+
+    private void setupBottomSheetCallback() {
+        BottomSheetBehavior<LinearLayout> behavior =
+                BottomSheetBehavior.from(binding.bottomSheet);
+
+        behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                if (naverMap == null) return;
+
+                // 현재 BottomSheet 실제 높이 계산
+                // slideOffset : 0.0 = peekHeight, 1.0 = .완전히 펼친 상태
+                int sheetHeight = bottomSheet.getHeight();
+                int peekHeight = behavior.getPeekHeight();
+
+                // 현재 보이는 높이
+                int visibleHeight = (int) (peekHeight + (sheetHeight - peekHeight) * slideOffset);
+
+                // Naver 지도 UI 버튼 위치를 visibleHeight 만큼 위로 이동
+                naverMap.setContentPadding(0 , 0 , 0, visibleHeight);
+            }
+
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+
+            }
+        });
     }
 
     private void showSortButtonSheet() {
