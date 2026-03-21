@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_200">
+
+    <!-- 상단 헤더 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:background="@color/bg_100"
+        android:elevation="2dp">
+
+        <!-- 뒤로가기 버튼 -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_arrow_back"
+            android:scaleType="centerCrop"
+            android:background="@color/white"
+            android:layout_marginEnd="12dp" />
+
+        <!-- 제목 -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="대표 사진 선택"
+            android:textColor="@color/primary_200"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:letterSpacing="-0.05"
+            android:layout_marginEnd="56dp"/>
+
+    </LinearLayout>
+
+    <!-- 안내 문구 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="사진을 선택하거나 직접 올려주세요"
+        android:textColor="@color/text_200"
+        android:textSize="13sp"
+        android:paddingVertical="14dp" />
+
+    <!-- 이미지 그리드 (2열) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_images"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingHorizontal="12dp"
+        android:clipToPadding="false" />
+
+    <!-- 검색 결과 없음 -->
+    <LinearLayout
+        android:id="@+id/layout_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="10"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="이미지를 불러오지 못했어요"
+            android:textColor="@color/text_200"
+            android:textSize="15sp" />
+
+    </LinearLayout>
+
+    <!-- 하단 버튼 영역 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/bg_100"
+        android:padding="18dp"
+        android:elevation="4dp">
+
+        <!-- 선택 완료 버튼 (이미지 선택 시 활성화) -->
+        <Button
+            android:id="@+id/btn_confirm"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="이 사진으로 선택"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_primary_background"
+            android:enabled="false"
+            android:layout_marginBottom="10dp" />
+
+        <!-- 갤러리에서 직접 선택 -->
+        <Button
+            android:id="@+id/btn_gallery"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="사진 보관함에서 올리기"
+            android:textColor="@color/primary_200"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_secondary_background"
+            app:backgroundTint="@null" />
+
+    </LinearLayout>
+
+</LinearLayout>

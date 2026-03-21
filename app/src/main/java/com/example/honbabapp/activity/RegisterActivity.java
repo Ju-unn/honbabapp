@@ -1,11 +1,11 @@
 package com.example.honbabapp.activity;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -22,7 +22,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import android.Manifest;
+import com.example.honbabapp.BuildConfig;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.NaverMapsApiService;
 import com.example.honbabapp.api.NaverMapsRetrofitClient;
@@ -35,15 +35,11 @@ import com.example.honbabapp.api.data.request.RegisterRequest;
 import com.example.honbabapp.api.data.request.SendVerificationRequest;
 import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
+import com.example.honbabapp.api.data.response.naver.NaverReverseGeoResponse;
 import com.example.honbabapp.databinding.PageRegisterBinding;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.Priority;
-import com.example.honbabapp.BuildConfig;
-import com.example.honbabapp.api.data.response.naver.NaverReverseGeoResponse;
 
 import java.io.File;
 import java.io.FileOutputStream;

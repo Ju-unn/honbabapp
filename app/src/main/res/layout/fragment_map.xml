@@ -99,7 +99,7 @@
             android:background="@drawable/bottom_sheet_background"
             android:elevation="12dp"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-            app:behavior_peekHeight="200dp"
+            app:behavior_peekHeight="70dp"
             app:behavior_hideable="false">
 
             <!-- BottomSheet 핸들 -->

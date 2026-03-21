@@ -1,5 +1,6 @@
 package com.example.honbabapp.api;
 
+import com.example.honbabapp.api.data.response.naver.NaverImageSearchResponse;
 import com.example.honbabapp.api.data.response.naver.NaverLocalSearchResponse;
 
 import retrofit2.Call;
@@ -36,6 +37,13 @@ public interface NaverApiService {
             @Query("sort") String sort
     );
 
-
+    @GET("v1/search/image")
+    Call<NaverImageSearchResponse> searchImage (
+            @Header("X-Naver-Client-Id") String clientId,
+            @Header("X-Naver-Client-Secret") String clientSecret,
+            @Query("query") String query,
+            @Query("display") int display,
+            @Query("sort") String sort
+    );
 
 }

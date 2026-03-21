@@ -46,10 +46,6 @@ public class HomeHotMeetingListAdapter extends RecyclerView.Adapter<HomeHotMeeti
         return hotMeetingList.size();
     }
 
-    /**
-     * 데이터 업데이트 메서드
-     * is_hot=true인 모임만 필터링해서 전달받음
-     */
     public void updateMeetings(List<Meeting> meetings) {
         if (meetings == null) {
             Log.w(TAG, "updateMeetings: meetings is null");

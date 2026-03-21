@@ -24,6 +24,7 @@ public class MeetingCreateRequest {
     private String meeting_date;
     private int meeting_max_participants;
     private String meeting_price_range;
+    private String meeting_image;
     private LocationRequest location;
 
     // 내부 클래스: location 객체
@@ -55,7 +56,10 @@ public class MeetingCreateRequest {
         }
     }
 
+    // ──────────────────────────────────────────────
     // Constructor
+    // meeting_image 없이 생성 시 null로 초기화됨
+    // ──────────────────────────────────────────────
     public MeetingCreateRequest(int user_id, String meeting_title, String meeting_description,
                                 String meeting_category, String meeting_date,
                                 int meeting_max_participants, String meeting_price_range,
@@ -67,6 +71,26 @@ public class MeetingCreateRequest {
         this.meeting_date = meeting_date;
         this.meeting_max_participants = meeting_max_participants;
         this.meeting_price_range = meeting_price_range;
+        this.meeting_image = null;  // 이미지 없이 생성 시 기본값
+        this.location = location;
+    }
+
+    // ──────────────────────────────────────────────
+    // Constructor (meeting_image 포함)
+    // 가게 선택 → 이미지 자동 업로드 완료 후 이 생성자 사용
+    // ──────────────────────────────────────────────
+    public MeetingCreateRequest(int user_id, String meeting_title, String meeting_description,
+                                String meeting_category, String meeting_date,
+                                int meeting_max_participants, String meeting_price_range,
+                                String meeting_image, LocationRequest location) {
+        this.user_id = user_id;
+        this.meeting_title = meeting_title;
+        this.meeting_description = meeting_description;
+        this.meeting_category = meeting_category;
+        this.meeting_date = meeting_date;
+        this.meeting_max_participants = meeting_max_participants;
+        this.meeting_price_range = meeting_price_range;
+        this.meeting_image = meeting_image;
         this.location = location;
     }
 
@@ -126,6 +150,8 @@ public class MeetingCreateRequest {
     public void setMeeting_price_range(String meeting_price_range) {
         this.meeting_price_range = meeting_price_range;
     }
+    public String getMeeting_image() { return meeting_image; }
+    public void setMeeting_image(String meeting_image) { this.meeting_image = meeting_image; }
 
     public LocationRequest getLocation() {
         return location;

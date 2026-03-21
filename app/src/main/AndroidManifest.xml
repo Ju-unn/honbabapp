@@ -31,6 +31,8 @@
             android:name=".activity.meeting.PlaceSearchActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".activity.meeting.PlaceSearchImageSelectActivity"
+                  android:exported="false"/>
         <activity
             android:name=".activity.NotificationActivity"
             android:exported="false" />

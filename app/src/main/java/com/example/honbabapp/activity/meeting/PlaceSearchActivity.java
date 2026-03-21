@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.honbabapp.BuildConfig;
 import com.example.honbabapp.api.NaverApiService;
@@ -33,6 +35,19 @@ public class PlaceSearchActivity extends AppCompatActivity {
     private NaverApiService naverApiService;
     private PlaceSearchAdapter adapter;
 
+    //PlaceSearchLauncher
+    private final ActivityResultLauncher<Intent> imageSelectLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                            // place 정보 + selected_url 상위 전달
+                            setResult(RESULT_OK, result.getData());
+                            finish();
+                        }
+                    }
+            );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +59,13 @@ public class PlaceSearchActivity extends AppCompatActivity {
 
         // UI 설정
         setupUI();
+
+        // MeetingCardWritingActivity에서 검색어 전달받은 경우 자동 검색
+        String searchQuery = getIntent().getStringExtra("search_query");
+        if (searchQuery != null && !searchQuery.isEmpty()) {
+            binding.etSearch.setText(searchQuery);
+            searchPlace(searchQuery);
+        }
     }
 
     /**
@@ -60,19 +82,19 @@ public class PlaceSearchActivity extends AppCompatActivity {
         // 장소 클릭 리스너
         adapter.setOnPlaceClickListener(place -> {
             // 선택한 장소 정보를 MeetingCardWritingActivity로 전달
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra("place_name", place.getCleanTitle());
-            resultIntent.putExtra("address", place.getAddress());
-            resultIntent.putExtra("road_address", place.getRoadAddress());
-            resultIntent.putExtra("sigungu", place.getSigungu());
-            resultIntent.putExtra("dong", place.getDong());
-            resultIntent.putExtra("map_x", place.getMapxDouble());
-            resultIntent.putExtra("map_y", place.getMapyDouble());
-            resultIntent.putExtra("category", place.getCategory());
-            resultIntent.putExtra("phone", place.getTelephone());
+            Intent intent = new Intent(this,  PlaceSearchImageSelectActivity.class);
+            intent.putExtra("place_name", place.getCleanTitle());
+            intent.putExtra("address", place.getAddress());
+            intent.putExtra("road_address", place.getRoadAddress());
+            intent.putExtra("sigungu", place.getSigungu());
+            intent.putExtra("dong", place.getDong());
+            intent.putExtra("map_x", place.getMapxDouble());
+            intent.putExtra("map_y", place.getMapyDouble());
+            intent.putExtra("category", place.getCategory());
+            intent.putExtra("phone", place.getTelephone());
 
-            setResult(RESULT_OK, resultIntent);
-            finish();
+            //
+            imageSelectLauncher.launch(intent);
         });
 
         // 검색 버튼
