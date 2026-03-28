@@ -119,14 +119,12 @@ public class HomeAllMeetingListAdapter extends RecyclerView.Adapter<HomeAllMeeti
             // 6. 게시 시간 (TODO: 나중에 실제 계산 로직 추가)
 
             // 7. 이미지
-            String imageUrl = meeting.getMeeting_image();
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                Glide.with(itemView.getContext())
-                        .load(imageUrl)
-                        .placeholder(R.drawable.placeholder_meeting_image)
-                        .centerCrop()
-                        .into(binding.ivMeetingImage);
-            }
+            Glide.with(itemView.getContext())
+                    .load(meeting.getMeeting_image())
+                    .placeholder(R.drawable.placeholder_meeting_image)
+                    .error(R.drawable.placeholder_meeting_image)
+                    .centerCrop()
+                    .into(binding.ivMeetingImage);
         }
 
         /**

@@ -105,14 +105,12 @@ public class HomeHotMeetingListAdapter extends RecyclerView.Adapter<HomeHotMeeti
             binding.tvParticipants.setText(participantsText);
 
             // 5. 이미지
-            String imageUrl = meeting.getMeeting_image();
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                Glide.with(itemView.getContext())
-                        .load(imageUrl)
-                        .placeholder(R.drawable.placeholder_meeting_image)
-                        .centerCrop()
-                        .into(binding.ivMeetingImage);
-            }
+            Glide.with(itemView.getContext())
+                    .load(meeting.getMeeting_image())
+                    .placeholder(R.drawable.placeholder_meeting_image)
+                    .error(R.drawable.placeholder_meeting_image)
+                    .centerCrop()
+                    .into(binding.ivMeetingImage);
         }
 
         /**
