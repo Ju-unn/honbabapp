@@ -25,6 +25,7 @@ import com.example.honbabapp.api.data.request.MeetingCreateRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.MeetingCreateResponse;
 import com.example.honbabapp.databinding.PageMeetingCardWritingBinding;
+import com.google.android.gms.common.util.IOUtils;
 import com.google.android.material.slider.RangeSlider;
 
 import java.io.File;
@@ -295,8 +296,9 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
                         return;
                     }
                     tmpFile = File.createTempFile("meeting_gallery_", ".jpg", getCacheDir());
-                    new FileOutputStream(tmpFile).write(is.readAllBytes());
-                    is.close();
+                    try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
+                        fos.write(IOUtils.toByteArray(is));
+                    }
 
                 } else {
                     // 네이버 URL → OkHttp 다운로드 → 임시 파일
@@ -308,7 +310,9 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
                         return;
                     }
                     tmpFile = File.createTempFile("meeting_img_", ".jpg", getCacheDir());
-                    new FileOutputStream(tmpFile).write(body.bytes());
+                    try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
+                        fos.write(body.bytes());
+                    }
                 }
 
                 // Multipart S3 업로드
