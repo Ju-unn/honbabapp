@@ -73,6 +73,18 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "모임이 생성되었습니다!", Toast.LENGTH_SHORT).show();
             }
         }
+
+        // Mini 지도 클릭시 이동
+        if (intent.getBooleanExtra("move_to_map", false)) {
+            double lat = intent.getDoubleExtra("map_lat", 37.5665);
+            double lng = intent.getDoubleExtra("map_lng", 126.9780);
+
+            binding.viewPager.setCurrentItem(1, false); // 지도 탭 전환
+            MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("f1");
+            if (mapFragment != null) {
+                mapFragment.moveToLocation(lat, lng);
+            }
+        }
     }
 
     /// mapPage로 이동

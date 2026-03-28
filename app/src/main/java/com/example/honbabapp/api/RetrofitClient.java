@@ -5,16 +5,17 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
     private static String BASE_URL = "http://3.37.127.69/";
-    private static Retrofit retrofit = null;
+    private RetrofitClient() {} // 외부 생성 방지
 
-    // Retrofit 인스턴스 반환
+    private static class LazyHolder {
+        private static final Retrofit INSTANCE =
+                new Retrofit.Builder()
+                        .baseUrl(BASE_URL)
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+    }
+
     public static Retrofit getClient() {
-        if (retrofit == null) {
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create()) // json 변환
-                    .build();
-        }
-        return retrofit;
+        return LazyHolder.INSTANCE;
     }
 }

@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.example.honbabapp.R;
 import com.example.honbabapp.activity.meeting.MeetingDetailActivity;
 import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.databinding.RvMapMeetingCardBinding;
@@ -119,7 +121,15 @@ public class HomeAllMeetingListAdapter extends RecyclerView.Adapter<HomeAllMeeti
 
             // 6. 게시 시간 (TODO: 나중에 실제 계산 로직 추가)
 
-            // 7. 이미지 (TODO: Glide로 로딩)
+            // 7. 이미지
+            String imageUrl = meeting.getMeeting_image();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(imageUrl)
+                        .placeholder(R.drawable.placeholder_meeting_image)
+                        .centerCrop()
+                        .into(binding.ivMeetingImage);
+            }
         }
 
         /**
@@ -163,33 +173,3 @@ public class HomeAllMeetingListAdapter extends RecyclerView.Adapter<HomeAllMeeti
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

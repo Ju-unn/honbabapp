@@ -2,6 +2,7 @@ package com.example.honbabapp.activity.meeting;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +14,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+import com.example.honbabapp.R;
+import com.example.honbabapp.activity.MainActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.meeting.Meeting;
@@ -177,7 +181,34 @@ public class MeetingDetailActivity extends AppCompatActivity {
         // 참여자 목록
         setupParticipantsRecyclerView();
 
-        // 9. 이미지 (TODO: 이미지 불러오기)
+        // 9. 이미지
+        String imageUrl = meeting.getMeeting_image();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.placeholder_meeting_image)
+                    .centerCrop()
+                    .into(binding.ivMeetingImage);
+        }
+
+        // 10. MiniMap
+        if (meeting.getLocation() != null) {
+            binding.miniMap.setOnClickListener(v -> {
+                try {
+                    double lat = Double.parseDouble(meeting.getLocation().getMap_y()); // 위도
+                    double lng = Double.parseDouble(meeting.getLocation().getMap_x()); // 경도
+
+                    Intent intent = new Intent(this , MainActivity.class);
+                    intent.putExtra("move_to_map" , true);
+                    intent.putExtra("map_lat" , lat);
+                    intent.putExtra("map_lng" , lng);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); //MainActivity 새로 안 만들고 재사용
+                    startActivity(intent);
+                } catch (NumberFormatException e) {
+                    Log.e(TAG , "좌표 파싱 실패" + e.getMessage());
+                }
+            });
+        }
     }
 
     /**

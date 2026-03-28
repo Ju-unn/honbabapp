@@ -16,14 +16,14 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-<!--        &lt;!&ndash; 모임 이미지 (높이 증가) &ndash;&gt;-->
-<!--        <ImageView-->
-<!--            android:id="@+id/iv_meeting_image"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="80dp"-->
-<!--            android:scaleType="centerCrop"-->
-<!--            android:background="@color/bg_300"-->
-<!--            android:src="@drawable/placeholder_meeting_image" />-->
+        <!-- 모임 이미지 (높이 증가) -->
+        <ImageView
+            android:id="@+id/iv_meeting_image"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:scaleType="centerCrop"
+            android:background="@color/bg_300"
+            android:src="@drawable/placeholder_meeting_image" />
 
         <!-- 모임 정보 -->
         <LinearLayout

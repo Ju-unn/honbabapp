@@ -64,6 +64,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     //현재 위치 중심 좌표 (서울 시청 기본값)
     private double currentLat = 37.5665;
     private double currentLng = 126.9780;
+    private Double pendingLat = null;
+    private Double pendingLng = null;
 
     // onMapReady에서 호출 , map 초기화 안 될 수도 있으니 바로 호출하면 에러 날 확률방지
     private String pendingCategory = null;
@@ -180,6 +182,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             if (!"전체".equals(cat)) {
                 currentFilterCategories.add(cat);
             }
+        }
+
+        if (pendingLat != null && pendingLng != null) {
+            double lat = pendingLat;
+            double lng = pendingLng;
+            pendingLat = null;
+            pendingLng = null;
+            moveCameraTo(lat , lng);
+            loadMeetingsOnMap();
+            return;
         }
 
         // 현재 위치로 카메라 이동 후 첫 api 호출
@@ -358,6 +370,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     // ──────────────────────────────────────────────
     // 외부에서 호출 (HomeFragment → MainActivity → 여기)
     // ──────────────────────────────────────────────
+
+    public void moveToLocation(double lat , double lng) {
+        currentLat = lat;
+        currentLng = lng;
+
+        if (naverMap == null) {
+            // 지도 아직 준비 안 됐으면 pending 처리
+            pendingLat = lat;
+            pendingLng = lng;
+            return;
+        }
+
+        moveCameraTo(lat , lng);
+        loadMeetingsOnMap();
+    }
 
     public void setFilter(String category) {
         if (naverMap == null){

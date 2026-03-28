@@ -21,6 +21,7 @@ import java.util.List;
  *   "meeting_is_hot": true,
  *   "meeting_view_count": 45,
  *   "meeting_created_at": "2025-12-21 10:00:00",
+ *   "meeting_image": "https://...",
  *   "location": { ... },
  *   "host": { ... },
  *   "participants": [ ... ]
@@ -39,6 +40,7 @@ public class Meeting {
     private boolean meeting_is_hot;
     private int meeting_view_count;
     private String meeting_created_at;
+    private String meeting_image;
     private String my_participation_status;
 
     // 연관 객체
@@ -46,6 +48,12 @@ public class Meeting {
     private MeetingHost host;
     private List<MeetingParticipant> participants;
 
+    public String getMeeting_image() {
+        return meeting_image;
+    }
+    public void setMeeting_image(String meeting_image) {
+        this.meeting_image = meeting_image;
+    }
     public String getMy_participation_status() {
         return my_participation_status;
     }

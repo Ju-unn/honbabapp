@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.example.honbabapp.R;
 import com.example.honbabapp.activity.meeting.MeetingDetailActivity;
 import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.databinding.RvHotMeetingBinding;
@@ -102,7 +104,15 @@ public class HomeHotMeetingListAdapter extends RecyclerView.Adapter<HomeHotMeeti
             String participantsText = current + "/" + max + "명 참여";
             binding.tvParticipants.setText(participantsText);
 
-            // 5. 이미지 (TODO: Glide로 로딩)
+            // 5. 이미지
+            String imageUrl = meeting.getMeeting_image();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(imageUrl)
+                        .placeholder(R.drawable.placeholder_meeting_image)
+                        .centerCrop()
+                        .into(binding.ivMeetingImage);
+            }
         }
 
         /**
