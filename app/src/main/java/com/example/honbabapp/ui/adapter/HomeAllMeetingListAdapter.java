@@ -30,18 +30,15 @@ public class HomeAllMeetingListAdapter extends RecyclerView.Adapter<HomeAllMeeti
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-
-        /// allMeetingList
-        RvMapMeetingCardBinding binding = RvMapMeetingCardBinding.inflate(layoutInflater,parent,false);
-        ViewHolder viewHolder = new ViewHolder(binding);
-        return viewHolder;
+        RvMapMeetingCardBinding binding = RvMapMeetingCardBinding.inflate(
+                LayoutInflater.from(parent.getContext()) , parent , false
+        );
+        return new ViewHolder(binding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Meeting meeting = meetingList.get(position);
-        holder.bind(meeting);
+        holder.bind(meetingList.get(position));
     }
 
     @Override

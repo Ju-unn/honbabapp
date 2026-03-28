@@ -15,6 +15,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.naver.maps.map.MapView;
+import com.naver.maps.map.NaverMap;
+import com.naver.maps.map.OnMapReadyCallback;
+import com.naver.maps.map.CameraUpdate;
+import com.naver.maps.geometry.LatLng;
+import com.naver.maps.map.overlay.Marker;
+import com.naver.maps.map.UiSettings;
 import com.example.honbabapp.R;
 import com.example.honbabapp.activity.MainActivity;
 import com.example.honbabapp.api.ApiService;
@@ -49,6 +56,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
     private int meetingId;
     private int currentUserId;
     private Meeting meeting;
+    private NaverMap miniNaverMap;
 
 
     @Override
@@ -56,6 +64,9 @@ public class MeetingDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageMeetingDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Naver Mini Map
+        binding.miniMap.onCreate(savedInstanceState);
 
         // API 초기화
         apiService = RetrofitClient.getClient().create(ApiService.class);
@@ -183,6 +194,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
 
         // 9. 이미지
         String imageUrl = meeting.getMeeting_image();
+        Log.e(TAG , "모임 이미지 : " + imageUrl  );
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(this)
                     .load(imageUrl)
@@ -192,22 +204,48 @@ public class MeetingDetailActivity extends AppCompatActivity {
         }
 
         // 10. MiniMap
+        // 10. MiniMap
         if (meeting.getLocation() != null) {
-            binding.miniMap.setOnClickListener(v -> {
-                try {
-                    double lat = Double.parseDouble(meeting.getLocation().getMap_y()); // 위도
-                    double lng = Double.parseDouble(meeting.getLocation().getMap_x()); // 경도
+            try {
+                double lat = Double.parseDouble(meeting.getLocation().getMap_y());
+                double lng = Double.parseDouble(meeting.getLocation().getMap_x());
 
-                    Intent intent = new Intent(this , MainActivity.class);
-                    intent.putExtra("move_to_map" , true);
-                    intent.putExtra("map_lat" , lat);
-                    intent.putExtra("map_lng" , lng);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); //MainActivity 새로 안 만들고 재사용
+                binding.miniMap.getMapAsync(naverMap -> {
+                    miniNaverMap = naverMap;
+
+                    // 인터랙션 비활성화 (미니맵이므로)
+                    UiSettings ui = naverMap.getUiSettings();
+                    ui.setZoomControlEnabled(false);
+                    ui.setCompassEnabled(false);
+                    ui.setScaleBarEnabled(false);
+                    ui.setScrollGesturesEnabled(false);
+                    ui.setZoomGesturesEnabled(false);
+                    ui.setRotateGesturesEnabled(false);
+                    ui.setTiltGesturesEnabled(false);
+                    ui.setLogoClickEnabled(false);
+
+                    // 마커 추가
+                    LatLng position = new LatLng(lat, lng);
+                    Marker marker = new Marker();
+                    marker.setPosition(position);
+                    marker.setMap(naverMap);
+
+                    // 카메라 이동
+                    naverMap.moveCamera(CameraUpdate.scrollAndZoomTo(position, 15));
+                });
+
+                // 클릭 시 MapFragment로 이동 (기존 로직 유지)
+                binding.miniMap.setOnClickListener(v -> {
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.putExtra("move_to_map", true);
+                    intent.putExtra("map_lat", lat);
+                    intent.putExtra("map_lng", lng);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
-                } catch (NumberFormatException e) {
-                    Log.e(TAG , "좌표 파싱 실패" + e.getMessage());
-                }
-            });
+                });
+            } catch (NumberFormatException e) {
+                Log.e(TAG, "좌표 파싱 실패" + e.getMessage());
+            }
         }
     }
 
@@ -471,8 +509,45 @@ public class MeetingDetailActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        binding.miniMap.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        binding.miniMap.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        binding.miniMap.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        binding.miniMap.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (binding != null) binding.miniMap.onDestroy();
         binding = null;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        binding.miniMap.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        binding.miniMap.onLowMemory();
     }
 }
