@@ -1,5 +1,6 @@
 package com.example.honbabapp.ui.adapter;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.R;
+import com.example.honbabapp.activity.meeting.MeetingDetailActivity;
 import com.example.honbabapp.api.data.response.MyMeetingItem;
 import com.example.honbabapp.databinding.RvProfileMeetingItemBinding;
 
@@ -34,41 +36,7 @@ public class ProfileMyMeetingAdapter extends RecyclerView.Adapter<ProfileMyMeeti
 
     @Override
     public void onBindViewHolder(@NonNull ProfileMyMeetingAdapter.ViewHolder holder, int position) {
-        MyMeetingItem item = meetings.get(position);
-
-        // 제목
-        holder.binding.tvMeetingTitle.setText(item.getMeeting_title());
-
-        // 카테고리
-        holder.binding.tvMeetingCategory.setText(item.getMeeting_category());
-
-        // 날짜 앞 10자리만
-        String date = item.getMeeting_date();
-        holder.binding.tvMeetingDate.setText(date != null && date.length() >= 10 ? date.substring(0, 10) : date);
-
-        // 인원
-        holder.binding.tvParticipants.setText(
-                item.getMeeting_current_participants() + "/"
-                        + item.getMeeting_max_participants() + "명");
-
-        // 상태
-        holder.binding.tvMeetingStatus.setText(item.getMeeting_status());
-
-        // 역할 배지
-        boolean isHost = "host".equals(item.getUser_role());
-        holder.binding.tvRoleBadge.setText(isHost ? "호스트" : "참여자");
-
-        // 모임 이미지
-        String imageUrl = item.getMeeting_image();
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            Glide.with(holder.binding.getRoot().getContext())
-                    .load(imageUrl)
-                    .centerCrop()
-                    .placeholder(R.drawable.placeholder_meeting_image)
-                    .into(holder.binding.ivMeetingImage);
-        } else {
-            holder.binding.ivMeetingImage.setImageResource(R.drawable.placeholder_meeting_image);
-        }
+        holder.bind(meetings.get(position));
     }
 
     @Override
@@ -82,6 +50,50 @@ public class ProfileMyMeetingAdapter extends RecyclerView.Adapter<ProfileMyMeeti
         public ViewHolder(@NonNull RvProfileMeetingItemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
+        }
+
+        public void bind(MyMeetingItem item) {
+
+            // 클릭 이벤트
+            binding.getRoot().setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext() , MeetingDetailActivity.class);
+                intent.putExtra("meeting_id" , item.getMeeting_id());
+                v.getContext().startActivity(intent);
+            });
+
+            // 제목
+            binding.tvMeetingTitle.setText(item.getMeeting_title());
+
+            // 카테고리
+            binding.tvMeetingCategory.setText(item.getMeeting_category());
+
+            // 날짜 앞 10자리만
+            String date = item.getMeeting_date();
+            binding.tvMeetingDate.setText(date != null && date.length() >= 10 ? date.substring(0, 10) : date);
+
+            // 인원
+            binding.tvParticipants.setText(
+                    item.getMeeting_current_participants() + "/"
+                            + item.getMeeting_max_participants() + "명");
+
+            // 상태
+            binding.tvMeetingStatus.setText(item.getMeeting_status());
+
+            // 역할 배지
+            boolean isHost = "host".equals(item.getUser_role());
+            binding.tvRoleBadge.setText(isHost ? "호스트" : "참여자");
+
+            // 모임 이미지
+            String imageUrl = item.getMeeting_image();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(binding.getRoot().getContext())
+                        .load(imageUrl)
+                        .centerCrop()
+                        .placeholder(R.drawable.placeholder_meeting_image)
+                        .into(binding.ivMeetingImage);
+            } else {
+                binding.ivMeetingImage.setImageResource(R.drawable.placeholder_meeting_image);
+            }
         }
     }
 }

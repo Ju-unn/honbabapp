@@ -41,23 +41,7 @@ public class ParticipantListAdapter extends RecyclerView.Adapter<ParticipantList
 
     @Override
     public void onBindViewHolder(@NonNull ParticipantListAdapter.ViewHolder holder, int position) {
-        MeetingParticipant participant = participants.get(position);
-
-        holder.binding.tvParticipantName.setText(participant.getUser_nickname());
-        holder.binding.tvParticipantManner.setText("매너점수 " + String.format("%.1f", participant.getUser_manner_score()));
-
-        // 호스트 배지
-        if (participant.getUser_nickname().equals(hostNickName)) {
-            holder.binding.tvHostBadge.setVisibility(View.VISIBLE);
-        } else {
-            holder.binding.tvHostBadge.setVisibility(View.GONE);
-        }
-
-        Glide.with(holder.binding.getRoot().getContext())
-                .load(participant.getUser_profile_image())
-                .placeholder(R.drawable.ic_person)
-                .circleCrop()
-                .into(holder.binding.ivParticipantAvatar);
+        holder.bind(participants.get(position));
     }
 
     @Override
@@ -70,6 +54,25 @@ public class ParticipantListAdapter extends RecyclerView.Adapter<ParticipantList
         public ViewHolder(RvMeetingParticipantItemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
+        }
+
+        public void bind(MeetingParticipant participant) {
+
+            binding.tvParticipantName.setText(participant.getUser_nickname());
+            binding.tvParticipantManner.setText("매너점수 " + String.format("%.1f", participant.getUser_manner_score()));
+
+            // 호스트 배지
+            if (participant.getUser_nickname().equals(hostNickName)) {
+                binding.tvHostBadge.setVisibility(View.VISIBLE);
+            } else {
+                binding.tvHostBadge.setVisibility(View.GONE);
+            }
+
+            Glide.with(binding.getRoot().getContext())
+                    .load(participant.getUser_profile_image())
+                    .placeholder(R.drawable.ic_person)
+                    .circleCrop()
+                    .into(binding.ivParticipantAvatar);
         }
     }
 }

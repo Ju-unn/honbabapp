@@ -87,9 +87,8 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
         binding.tvPasswordMatch.setVisibility(android.view.View.VISIBLE);
 
         if (newPw.equals(confirmPw)) {
-            binding.tvPasswordMatch.setText("비밀번호가 일치합니다");
-            binding.tvPasswordMatch.setTextColor(ContextCompat.getColor(this, R.color.primary_200));
             binding.btnChangePassword.setEnabled(true);
+            binding.tvPasswordMatch.setVisibility(View.GONE);
         }  else {
             binding.tvPasswordMatch.setText("비밀번호가 일치하지 않습니다");
             binding.tvPasswordMatch.setTextColor(

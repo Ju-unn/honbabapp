@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        testCode();
         initViewPager();
         initNavigation();
         handleIntent(getIntent());
@@ -106,31 +105,6 @@ public class MainActivity extends AppCompatActivity {
     /// homePage로 이동
     public void navigationToHome() {
         binding.viewPager.setCurrentItem(0);
-    }
-
-    private void testCode() {
-        ArrayList<Meeting> meetingArrayList = MockData.getMeetingList();
-        String user0InMeeting0;
-        String user0InMeeeting1;
-        User user0Meeting0;
-        User user0Meeting1;
-
-        user0InMeeting0 = meetingArrayList
-                .get(0)
-                .meeting_user_list
-                .get(0)
-                .user_nickname;
-        user0InMeeeting1 = meetingArrayList.get(1).meeting_user_list.get(0).user_nickname;
-
-        user0Meeting0 = meetingArrayList.get(0).meeting_user_list.get(0);
-        user0Meeting1 = meetingArrayList.get(1).meeting_user_list.get(0);
-
-
-        boolean isSameUser = user0Meeting0 == user0Meeting1;
-
-        Log.i("TestLog","값 : " + isSameUser + " // " + user0Meeting0.user_nickname + " // " + user0Meeting1.user_nickname );
-
-
     }
 
 
