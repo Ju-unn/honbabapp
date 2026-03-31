@@ -117,13 +117,13 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
 
                             // 기존 프로필 이미지
                             String imageUrl = profile.getUser_profile_image();
-                            if (imageUrl != null && !imageUrl.isEmpty()) {
-                                Glide.with(ProfileProfileSettingActivity.this)
-                                        .load(imageUrl)
-                                        .circleCrop()
-                                        .placeholder(R.drawable.ic_user)
-                                        .into(binding.ivProfileAvatar);
-                            }
+
+                            Glide.with(ProfileProfileSettingActivity.this)
+                                    .load(imageUrl)
+                                    .circleCrop()
+                                    .placeholder(R.drawable.ic_user)
+                                    .into(binding.ivProfileAvatar);
+
                         }
                     }
 

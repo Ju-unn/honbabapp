@@ -125,13 +125,12 @@ public class ProfileFragment extends Fragment {
 
         // 프로필 이미지
         String imageUrl = profile.getUser_profile_image();
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            Glide.with(requireContext())
-                    .load(imageUrl)
-                    .circleCrop()
-                    .placeholder(R.drawable.ic_user)
-                    .into(binding.ivProfileAvatar);
-        }
+
+        Glide.with(requireContext())
+                .load(imageUrl)
+                .circleCrop()
+                .placeholder(R.drawable.ic_user)
+                .into(binding.ivProfileAvatar);
     }
 
     /// 내 모임 관리 클릭 이벤트
