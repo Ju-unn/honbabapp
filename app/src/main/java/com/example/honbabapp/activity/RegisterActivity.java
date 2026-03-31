@@ -67,6 +67,8 @@ import retrofit2.Response;
  */
 
 public class RegisterActivity extends AppCompatActivity {
+    // TODO: 닉네임 중복 확인 및 특수문자 불가 처리
+    // TODO: 회원가입에 필수검증 조건 재확인 필요
     private PageRegisterBinding registerBinding;
     private ApiService apiService;
     private static final String TAG = "RegisterActivity";

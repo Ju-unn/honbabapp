@@ -1,5 +1,10 @@
 package com.example.honbabapp.api;
 
+import com.example.honbabapp.api.data.request.ChangePasswordRequest;
+import com.example.honbabapp.api.data.request.DeleteAccountRequest;
+import com.example.honbabapp.api.data.request.UpdateProfileRequest;
+import com.example.honbabapp.api.data.response.MyMeetingItem;
+import com.example.honbabapp.api.data.response.UserProfileResponse;
 import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
 import com.example.honbabapp.api.data.response.meeting.ApproveResponse;
 import com.example.honbabapp.api.data.AvailabilityData;
@@ -19,6 +24,8 @@ import com.example.honbabapp.api.data.request.RegisterRequest;
 import com.example.honbabapp.api.data.request.SendVerificationRequest;
 import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
+
+import java.util.List;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -215,6 +222,46 @@ public interface ApiService {
     Call<ApiResponse<ImageUploadData>> uploadMeetingImage(
             @Part MultipartBody.Part image
     );
+
+    // ==================== User API (Profile)====================
+
+    /**
+     * 1. 프로필 조회
+     */
+    @GET("api/user/profile.php")
+    Call<ApiResponse<UserProfileResponse>> getUserProfile(@Query("user_id") int userId);
+
+    /**
+     * 2. 프로필 수정 (닉네임, 상태메시지, 프로필이미지 선택적)
+     */
+    @POST("api/user/update_profile.php")
+    Call<ApiResponse<Void>> updateProfile(@Body UpdateProfileRequest request);
+
+    /**
+     * 3. 비밀번호 변경
+     */
+    @POST("api/user/change_password.php")
+    Call<ApiResponse<Void>> changePassword(@Body ChangePasswordRequest request);
+
+    /**
+     * 4. 회원 탈퇴
+     */
+    @POST("api/user/delete_account.php")
+    Call<ApiResponse<Void>> deleteAccount(@Body DeleteAccountRequest request);
+
+
+    /**
+     * 5. 내 모임 목록 (host + participant 전체)
+     */
+    @GET("api/user/my_meetings.php")
+    Call<ApiResponse<List<MyMeetingItem>>> getMyMeetings(@Query("user_id") int userId);
+
+
+
+
+
+
+
 
 
 

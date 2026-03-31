@@ -102,20 +102,16 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/toggle_meeting_notification" />
+                app:layout_constraintEnd_toStartOf="@id/switch_meeting_notification" />
 
-            <ImageView
-                android:id="@+id/toggle_meeting_notification"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="2dp"
-                android:src="@drawable/notification_toggle_selector"
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_meeting_notification"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -150,18 +146,13 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/toggle_chat_notification" />
+                app:layout_constraintEnd_toStartOf="@id/switch_chat_notification" />
 
-            <ImageView
-                android:id="@+id/toggle_chat_notification"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/notification_toggle_selector"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="2dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:layout_marginStart="12dp"
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_chat_notification"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
@@ -199,18 +190,13 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/toggle_event_notification" />
+                app:layout_constraintEnd_toStartOf="@id/switch_event_notification" />
 
-            <ImageView
-                android:id="@+id/toggle_event_notification"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/notification_toggle_selector"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="2dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:layout_marginStart="12dp"
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_event_notification"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />

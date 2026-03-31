@@ -160,7 +160,6 @@
                     android:id="@+id/et_status_message"
                     android:layout_width="match_parent"
                     android:layout_height="80dp"
-                    android:text="맛집 탐방과 혼밥을 좋아해요!"
                     android:textColor="@color/text_100"
                     android:textSize="15sp"
                     android:background="@drawable/edittext_background"

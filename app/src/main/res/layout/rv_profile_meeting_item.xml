@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/bg_100">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <!-- 모임 이미지 -->
+        <ImageView
+            android:id="@+id/iv_meeting_image"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:src="@drawable/placeholder_meeting_image"
+            android:scaleType="centerCrop"
+            android:background="@drawable/profile_avatar_background" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:gravity="center_vertical">
+
+            <!-- 모임 정보 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- 역할 배지 + 제목 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+                    <TextView
+                        android:id="@+id/tv_role_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="호스트"
+                        android:textSize="10sp"
+                        android:textColor="@color/white"
+                        android:background="@drawable/button_primary_background"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="2dp"
+                        android:layout_marginEnd="8dp"/>
+
+                    <TextView
+                        android:id="@+id/tv_meeting_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="모임 제목"
+                        android:textColor="@color/text_100"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:maxLines="1"
+                        android:ellipsize="end"/>
+
+                </LinearLayout>
+
+                <!-- 카테고리 -->
+                <TextView
+                    android:id="@+id/tv_meeting_category"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="한식"
+                    android:textColor="@color/text_200"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="4dp"/>
+
+                <!-- 날짜 -->
+                <TextView
+                    android:id="@+id/tv_meeting_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2024-01-01"
+                    android:textColor="@color/text_200"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="4dp"/>
+
+                <!-- 인원 + 상태 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tv_participants"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="2/4명"
+                        android:textColor="@color/text_200"
+                        android:textSize="12sp"/>
+
+                    <TextView
+                        android:id="@+id/tv_meeting_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="모집중"
+                        android:textSize="11sp"
+                        android:textColor="@color/primary_100"
+                        android:textStyle="bold"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+
+</androidx.cardview.widget.CardView>

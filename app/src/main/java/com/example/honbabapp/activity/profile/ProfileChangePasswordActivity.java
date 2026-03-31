@@ -1,16 +1,36 @@
 package com.example.honbabapp.activity.profile;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
+import com.example.honbabapp.R;
+import com.example.honbabapp.api.ApiService;
+import com.example.honbabapp.api.RetrofitClient;
+import com.example.honbabapp.api.data.request.ChangePasswordRequest;
+import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageProfileAccountsettingBinding;
 import com.example.honbabapp.databinding.PageProfileChangePasswordBinding;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class ProfileChangePasswordActivity extends AppCompatActivity {
 
+
+    private static final String TAG = "ProfileChangePassword";
     private PageProfileChangePasswordBinding binding;
+    private ApiService apiService;
+
+    private static final String PREF_NAME = "honbabapp_prefs";
+    private static final String KEY_USER_ID = "user_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,17 +38,144 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
         binding = PageProfileChangePasswordBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // 뒤로가기 버튼
-        onBackButtonClick();
+        apiService = RetrofitClient.getClient().create(ApiService.class);
+
+        // 뒤로가기
+        binding.btnBack.setOnClickListener(v ->
+                getOnBackPressedDispatcher().onBackPressed());
+
+        // 새 비밀번호 확인 - 실시간 일치 여부 체크
+        setupPasswordMatchWatcher();
+
+        // 변경 버튼
+        binding.btnChangePassword.setOnClickListener(v -> changePassword());
     }
 
-    /// 뒤로가기 버튼
-    public void onBackButtonClick(){
-        binding.btnBack.setOnClickListener(new View.OnClickListener() {
+    private void setupPasswordMatchWatcher() {
+        TextWatcher watcher = new TextWatcher() {
             @Override
-            public void onClick(View v) {
-                getOnBackPressedDispatcher().onBackPressed();
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
             }
-        });
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkPasswordMatch();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        };
+
+        // 두 EditText 모두 같은 watcher 달기
+        binding.etNewPassword.addTextChangedListener(watcher);
+        binding.etConfirmPassword.addTextChangedListener(watcher);
     }
+
+    private void checkPasswordMatch() {
+        String newPw = binding.etNewPassword.getText().toString();
+        String confirmPw = binding.etConfirmPassword.getText().toString();
+
+        // 둘 다 입력 중일 때만 표시
+        if (confirmPw.isEmpty()) {
+            binding.tvPasswordMatch.setVisibility(View.GONE);
+            return;
+        }
+
+        binding.tvPasswordMatch.setVisibility(android.view.View.VISIBLE);
+
+        if (newPw.equals(confirmPw)) {
+            binding.tvPasswordMatch.setText("비밀번호가 일치합니다");
+            binding.tvPasswordMatch.setTextColor(ContextCompat.getColor(this, R.color.primary_200));
+            binding.btnChangePassword.setEnabled(true);
+        }  else {
+            binding.tvPasswordMatch.setText("비밀번호가 일치하지 않습니다");
+            binding.tvPasswordMatch.setTextColor(
+                    ContextCompat.getColor(this, R.color.error_red));
+            binding.btnChangePassword.setEnabled(false);
+        }
+    }
+
+    private void changePassword() {
+        int userId = getSharedPreferences(PREF_NAME, 0).getInt(KEY_USER_ID, -1);
+        if (userId == -1) return;
+
+        String currentPw = binding.etCurrentPassword.getText().toString().trim();
+        String newPw = binding.etNewPassword.getText().toString().trim();
+        String confirmPw = binding.etConfirmPassword.getText().toString().trim();
+
+        if (currentPw.isEmpty()) {
+            binding.etCurrentPassword.setError("현재 비밀번호를 입력해주세요");
+            return;
+        }
+
+        // 비밀번호 검증
+        if (!validateNewPassword(newPw)) return;
+        binding.btnChangePassword.setEnabled(false);
+        
+        // 2차 검증 1차비번 2차비번 맞는지 확인
+        if (!newPw.equals(confirmPw)) {
+            binding.etConfirmPassword.setError("비밀번호가 일치하지 않습니다");
+            return;
+        }
+
+
+        ChangePasswordRequest request = new ChangePasswordRequest(userId , currentPw , newPw);
+
+        apiService.changePassword(request)
+                .enqueue(new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                        binding.btnChangePassword.setEnabled(true);
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            Toast.makeText(ProfileChangePasswordActivity.this, "비밀번호가 변경되었습니다", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            // 현재 비밀번호 틀림 등 서버 에러 메시지 표시
+                            String msg = response.body() != null
+                                    ? response.body().getMessage() : "변경 실패";
+                            binding.etCurrentPassword.setError(msg);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                        binding.btnChangePassword.setEnabled(true);
+                        Log.e(TAG, "비밀번호 변경 실패: " + t.getMessage());
+                        Toast.makeText(ProfileChangePasswordActivity.this,
+                                "네트워크 오류", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+    }
+
+    private boolean validateNewPassword(String password) {
+        if (password.length() < 8) {
+            binding.etNewPassword.setError("최소 8자 이상");
+            return false;
+        }
+        if (password.contains(" ")) {
+            binding.etNewPassword.setError("공백 사용 불가");
+            return false;
+        }
+        if (!password.matches(".*[a-zA-Z].*")) {
+            binding.etNewPassword.setError("영문 포함 필수");
+            return false;
+        }
+        if (!password.matches(".*\\d.*")) {
+            binding.etNewPassword.setError("숫자 포함 필수");
+            return false;
+        }
+        String validPattern = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{}|;:,.<>?]+$";
+        if (!password.matches(validPattern)) {
+            binding.etNewPassword.setError("영문, 숫자, 특수문자만 사용 가능");
+            return false;
+        }
+        return true;
+    }
+
+
+
 }
