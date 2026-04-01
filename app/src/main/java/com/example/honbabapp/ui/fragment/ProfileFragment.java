@@ -123,6 +123,9 @@ public class ProfileFragment extends Fragment {
         // 참여 횟수
         binding.tvParticipationCount.setText(profile.getUser_participation_count() + "회");
 
+        // 이번달 요약
+        binding.tvMonthlySummary.setText(profile.getUser_participation_count() + "회 모임 참여 , 매너점수 " + profile.getUser_manner_score() + " 유지 중!");
+
         // 프로필 이미지
         String imageUrl = profile.getUser_profile_image();
 
