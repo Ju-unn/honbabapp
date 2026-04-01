@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.PixelCopy;
 import android.view.View;
@@ -12,11 +14,13 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.R;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
+import com.example.honbabapp.api.data.AvailabilityData;
 import com.example.honbabapp.api.data.ImageUploadData;
 import com.example.honbabapp.api.data.request.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
@@ -47,6 +51,14 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
 
     // 선택된 이미지 S3 URL (null이면 이미지 변경 안 한 것)
     private String selectedImageUrl = null;
+
+    ///  닉네임
+    private boolean isNicknameChecked = false;
+    private String originalNickname = "";
+
+    // 닉네임 허용 패턴: 한글, 영문, 숫자만
+    private static final String NICKNAME_PATTERN = "^[가-힣a-zA-Z0-9]+$";
+
 
     // 갤러리에서 이미지 선택 결과 처리
     private final ActivityResultLauncher<Intent> galleryLauncher =
@@ -83,8 +95,13 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
 
         // 뒤로가기
         binding.btnBack.setOnClickListener(v ->
-                getOnBackPressedDispatcher().onBackPressed()
-        );
+                getOnBackPressedDispatcher().onBackPressed());
+
+        // 닉네임 변경 감지
+        setupNicknameWatcher();
+
+        // 중복확인 버튼
+        binding.btnCheckNickname.setOnClickListener(v -> checkNicknameDuplicate());
 
         // 카메라 버튼 -> 갤러리 열기
         binding.btnChangeAvatar.setOnClickListener(v -> openGalley());
@@ -93,6 +110,88 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
         binding.btnEditProfile.setOnClickListener(v -> saveProfile());
 
     }
+
+    private void setupNicknameWatcher() {
+        binding.etNickname.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // 닉네임이 바뀌면 중복확인 초기화
+                isNicknameChecked = false;
+                binding.tvNicknameCheckResult.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+    }
+
+    private void checkNicknameDuplicate() {
+        String nickname = binding.etNickname.getText().toString().trim();
+
+        // 1. 길이 검증
+        if (nickname.isEmpty() || nickname.length() < 2) {
+            showNicknameResult(false, "닉네임은 2자 이상 입력해주세요");
+            return;
+        }
+        if (nickname.length() > 10) {
+            showNicknameResult(false, "닉네임은 10자 이하로 입력해주세요");
+            return;
+        }
+
+        // 2. 특수문자 검증 (한글/영문/숫자만 허용)
+        if (!nickname.matches(NICKNAME_PATTERN)) {
+            showNicknameResult(false, "특수문자는 사용할 수 없습니다");
+            return;
+        }
+
+        // 3. 원래 닉네임과 동일하면 중복확인 스킵 (자기 자신 닉네임은 사용 가능)
+        if (nickname.equals(originalNickname)) {
+            isNicknameChecked = true;
+            showNicknameResult(true, "현재 닉네임입니다");
+            return;
+        }
+
+        // 4. 서버에 중복홗인
+        apiService.checkNickname(nickname)
+                .enqueue(new Callback<ApiResponse<AvailabilityData>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<AvailabilityData>> call, Response<ApiResponse<AvailabilityData>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            boolean available = response.body().isSuccess() && response.body().getData() != null && response.body().getData().isAvailable();
+                            if (available) {
+                                isNicknameChecked = true;
+                                showNicknameResult(true, "사용 가능한 닉네임입니다");
+                            } else {
+                                isNicknameChecked = false;
+                                showNicknameResult(false, "이미 사용중인 닉네임입니다");
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<AvailabilityData>> call, Throwable t) {
+                        Log.e(TAG, "닉네임 중복확인 실패: " + t.getMessage());
+                        Toast.makeText(ProfileProfileSettingActivity.this, "네트워크 오류", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    // 결과 TextView 색상 + 텍스트 표시 헬퍼
+    private void showNicknameResult(boolean success, String message) {
+        binding.tvNicknameCheckResult.setVisibility(View.VISIBLE);
+        binding.tvNicknameCheckResult.setText(message);
+        binding.tvNicknameCheckResult.setTextColor(
+                ContextCompat.getColor(this, success ? R.color.success_green : R.color.error_red));
+    }
+
+
 
     // 현재 프로필 불러와서 EditText에 채우기
     private void loadCurrentProfile() {
@@ -106,9 +205,14 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                             UserProfileResponse profile = response.body().getData();
 
+                            // 원래 닉네임 저장 (자기 닉네임 중복확인 스킵용)
+                            originalNickname = profile.getUser_nickname();
+
                             // 기존 데이터 EditText에 채우기
                             binding.etNickname.setText(profile.getUser_nickname());
                             binding.tvCurrentNickname.setText(profile.getUser_nickname());
+
+                            isNicknameChecked = true;
 
                             String status = profile.getUser_status_message();
                             if (status != null) {
@@ -207,14 +311,25 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
         String nickname = binding.etNickname.getText().toString().trim();
         String statusMessage = binding.etStatusMessage.getText().toString().trim();
 
-        // 닉네임 길이 체크
-        // TODO : 닉네임에 특수문자 X
-        // TODO : 중복체크 마우스 커서 이동시 중복체크하기
+        // 길이 검증 (버그 수정: > 11 → > 10)
         if (nickname.isEmpty() || nickname.length() < 2) {
             binding.etNickname.setError("닉네임은 2자 이상 입력해주세요");
             return;
-        } else if (nickname.length() > 11) {
+        }
+        if (nickname.length() > 10) {
             binding.etNickname.setError("닉네임은 10자 이하로 입력해주세요");
+            return;
+        }
+
+        // 특수문자 검증
+        if (!nickname.matches(NICKNAME_PATTERN)) {
+            binding.etNickname.setError("특수문자는 사용할 수 없습니다");
+            return;
+        }
+
+        // 중복확인 완료 여부 체크 ← 핵심 추가!
+        if (!isNicknameChecked) {
+            Toast.makeText(this, "닉네임 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
             return;
         }
 

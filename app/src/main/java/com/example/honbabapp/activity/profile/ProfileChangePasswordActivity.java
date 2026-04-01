@@ -14,6 +14,7 @@ import com.example.honbabapp.R;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.request.ChangePasswordRequest;
+import com.example.honbabapp.api.data.request.CheckCurrentPasswordRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageProfileAccountsettingBinding;
 import com.example.honbabapp.databinding.PageProfileChangePasswordBinding;
@@ -32,6 +33,9 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
     private static final String PREF_NAME = "honbabapp_prefs";
     private static final String KEY_USER_ID = "user_id";
 
+    // 현재 비밀번호 검증상태
+    private boolean isCurrentPasswordVerified = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,11 +48,84 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
         binding.btnBack.setOnClickListener(v ->
                 getOnBackPressedDispatcher().onBackPressed());
 
+        // 현재 비밀번호 포커스 잃을때 서버 검증
+        setupCurrentPasswordVerification();
+
         // 새 비밀번호 확인 - 실시간 일치 여부 체크
         setupPasswordMatchWatcher();
 
         // 변경 버튼
         binding.btnChangePassword.setOnClickListener(v -> changePassword());
+    }
+
+    // 현재 비밀번호 입력란 검사
+    private void setupCurrentPasswordVerification() {
+
+        // 입력값이 바뀌면 검증 상태 리셋
+        binding.etCurrentPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //  타이핑 시작하면 이전 검증 결과 초기화
+                isCurrentPasswordVerified = false;
+                binding.tvCurrentPasswordStatus.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+
+        // 포커스 잃을때 서버에 확인
+        binding.etCurrentPassword.setOnFocusChangeListener((v , hasFocus) -> {
+            if (!hasFocus) {
+                String pw = binding.etCurrentPassword.getText().toString().trim();
+                if (!pw.isEmpty()) {
+                    checkCurrentPassword(pw);
+                }
+            }
+        });
+    }
+
+    // 현재 비밀번호 서버에서 검사
+    private void checkCurrentPassword(String currentPassword) {
+        int userId = getSharedPreferences(PREF_NAME, 0).getInt(KEY_USER_ID, -1);
+        if (userId == -1) return;
+
+        CheckCurrentPasswordRequest request = new CheckCurrentPasswordRequest(userId , currentPassword);
+
+        apiService.checkCurrentPassword(request)
+                .enqueue(new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+
+                            isCurrentPasswordVerified = true;
+                            binding.tvCurrentPasswordStatus.setVisibility(View.VISIBLE);
+                            binding.tvCurrentPasswordStatus.setText("현재 비밀번호가 확인되었습니다");
+                            binding.tvCurrentPasswordStatus.setTextColor(
+                                    ContextCompat.getColor(ProfileChangePasswordActivity.this, R.color.success_green));
+                        } else {
+                            isCurrentPasswordVerified = false;
+                            binding.tvCurrentPasswordStatus.setVisibility(View.VISIBLE);
+                            binding.tvCurrentPasswordStatus.setText("현재 비밀번호가 일치하지 않습니다");
+                            binding.tvCurrentPasswordStatus.setTextColor(
+                                    ContextCompat.getColor(ProfileChangePasswordActivity.this,
+                                            R.color.error_red));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                        Log.e(TAG, "현재 비밀번호 확인 실패: " + t.getMessage());
+                    }
+                });
     }
 
     private void setupPasswordMatchWatcher() {
@@ -60,6 +137,7 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validateNewPassword(binding.etNewPassword.getText().toString().trim());
                 checkPasswordMatch();
             }
 
@@ -105,8 +183,20 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
         String newPw = binding.etNewPassword.getText().toString().trim();
         String confirmPw = binding.etConfirmPassword.getText().toString().trim();
 
+        if (currentPw.equals(newPw)) {
+            Toast.makeText(this, "현재 비밀번호와 동일 합니다", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (currentPw.isEmpty()) {
             binding.etCurrentPassword.setError("현재 비밀번호를 입력해주세요");
+            return;
+        }
+
+        // 현재 비밀번호 검증 완료 여부 체크
+        if (!isCurrentPasswordVerified) {
+            Toast.makeText(this, "현재 비밀번호를 먼저 확인해주세요", Toast.LENGTH_SHORT).show();
+            binding.etCurrentPassword.requestFocus(); // 현재 비밀번호 칸으로 포커스 이동
             return;
         }
 

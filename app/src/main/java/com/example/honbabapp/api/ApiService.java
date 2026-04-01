@@ -1,6 +1,7 @@
 package com.example.honbabapp.api;
 
 import com.example.honbabapp.api.data.request.ChangePasswordRequest;
+import com.example.honbabapp.api.data.request.CheckCurrentPasswordRequest;
 import com.example.honbabapp.api.data.request.DeleteAccountRequest;
 import com.example.honbabapp.api.data.request.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.MyMeetingItem;
@@ -24,6 +25,7 @@ import com.example.honbabapp.api.data.request.RegisterRequest;
 import com.example.honbabapp.api.data.request.SendVerificationRequest;
 import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
+import com.google.android.gms.common.api.Api;
 
 import java.util.List;
 
@@ -242,6 +244,12 @@ public interface ApiService {
      */
     @POST("api/user/change_password.php")
     Call<ApiResponse<Void>> changePassword(@Body ChangePasswordRequest request);
+
+    /**
+     * 3-1. 현재 비밀번호 확인 (비밀번호 변경 전 실시간 검증용)
+     */
+    @POST("api/user/check_current_password.php")
+    Call<ApiResponse<Void>> checkCurrentPassword(@Body CheckCurrentPasswordRequest request);
 
     /**
      * 4. 회원 탈퇴

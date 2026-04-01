@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.example.honbabapp.BuildConfig;
+import com.example.honbabapp.R;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.NaverMapsApiService;
 import com.example.honbabapp.api.NaverMapsRetrofitClient;
@@ -127,6 +128,9 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 전화번호 중복확인
         registerBinding.btnCheckPhone.setOnClickListener(v -> checkPhoneDuplicate());
+
+        // 닉네임 중복확인
+        registerBinding.btnCheckNickname.setOnClickListener(v -> checkNicknameDuplicate());
 
         // 위치 서비스 초기화 (onCreate에서 바로 실행)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -778,6 +782,67 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
+     * 닉네임 중복확인
+     */
+    private void checkNicknameDuplicate() {
+        String nickname = registerBinding.etNickname.getText().toString().trim();
+
+        // 1. 길이 검증
+        if (nickname.isEmpty() || nickname.length() < 2) {
+            showNicknameResult(false, "닉네임은 2자 이상 입력해주세요");
+            return;
+        }
+        if (nickname.length() > 10) {
+            showNicknameResult(false, "닉네임은 10자 이하로 입력해주세요");
+            return;
+        }
+
+        // 2. 특수문자 검증 (한글/영문/숫자만 허용)
+        if (!nickname.matches("^[가-힣a-zA-Z0-9]+$")) {
+            showNicknameResult(false, "특수문자는 사용할 수 없습니다");
+            return;
+        }
+
+        // 3. 서버에 중복 확인
+        apiService.checkNickname(nickname)
+                .enqueue(new Callback<ApiResponse<AvailabilityData>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<AvailabilityData>> call,
+                                           Response<ApiResponse<AvailabilityData>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            boolean available = response.body().isSuccess()
+                                    && response.body().getData() != null
+                                    && response.body().getData().isAvailable();
+
+                            if (available) {
+                                isNicknameChecked = true;
+                                showNicknameResult(true, "사용 가능한 닉네임입니다");
+                            } else {
+                                isNicknameChecked = false;
+                                showNicknameResult(false, "이미 사용중인 닉네임입니다");
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<AvailabilityData>> call, Throwable t) {
+                        Log.e(TAG, "닉네임 중복확인 실패: " + t.getMessage());
+                        Toast.makeText(RegisterActivity.this,
+                                "네트워크 오류", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    // 닉네임 결과 TextView 표시 헬퍼
+    private void showNicknameResult(boolean success, String message) {
+        registerBinding.tvNicknameCheckResult.setVisibility(
+                android.view.View.VISIBLE);
+        registerBinding.tvNicknameCheckResult.setText(message);
+        registerBinding.tvNicknameCheckResult.setTextColor(
+                ContextCompat.getColor(this, success ? R.color.success_green : R.color.error_red));
+    }
+
+    /**
      * 최종 회원가입
      */
     private void performRegister() {
@@ -789,6 +854,17 @@ public class RegisterActivity extends AppCompatActivity {
 
         if (!isPasswordConfirmed) {
             Toast.makeText(this, "비밀번호 확인이 필요합니다", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!isNicknameChecked) {
+            Toast.makeText(this, "닉네임 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 전화번호 중복확인 체크
+        if (!isPhoneChecked) {
+            Toast.makeText(this, "전화번호 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
