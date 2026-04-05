@@ -7,7 +7,6 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.PixelCopy;
 import android.view.View;
 import android.widget.Toast;
 
@@ -22,15 +21,13 @@ import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.AvailabilityData;
 import com.example.honbabapp.api.data.ImageUploadData;
-import com.example.honbabapp.api.data.request.UpdateProfileRequest;
+import com.example.honbabapp.api.data.request.user.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
-import com.example.honbabapp.api.data.response.UserProfileResponse;
+import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageProfileProfilesettingBinding;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import okhttp3.MediaType;

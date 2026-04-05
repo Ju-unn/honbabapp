@@ -1,4 +1,4 @@
-package com.example.honbabapp.api.data.request;
+package com.example.honbabapp.api.data.request.meeting;
 
 /**
  * 신청 승인/거절 요청

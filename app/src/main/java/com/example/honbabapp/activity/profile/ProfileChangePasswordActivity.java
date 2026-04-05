@@ -13,10 +13,9 @@ import androidx.core.content.ContextCompat;
 import com.example.honbabapp.R;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
-import com.example.honbabapp.api.data.request.ChangePasswordRequest;
-import com.example.honbabapp.api.data.request.CheckCurrentPasswordRequest;
+import com.example.honbabapp.api.data.request.user.ChangePasswordRequest;
+import com.example.honbabapp.api.data.request.user.CheckCurrentPasswordRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
-import com.example.honbabapp.databinding.PageProfileAccountsettingBinding;
 import com.example.honbabapp.databinding.PageProfileChangePasswordBinding;
 
 import retrofit2.Call;

@@ -1,4 +1,4 @@
-package com.example.honbabapp.api.data.response;
+package com.example.honbabapp.api.data.response.user;
 
 public class UserProfileResponse {
     private int user_id;

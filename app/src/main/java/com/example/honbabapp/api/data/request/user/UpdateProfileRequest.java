@@ -1,4 +1,4 @@
-package com.example.honbabapp.api.data.request;
+package com.example.honbabapp.api.data.request.user;
 
 public class UpdateProfileRequest {
     // Gson이 이 필드명을 그대로 JSON 키로 변환

@@ -1,4 +1,4 @@
-package com.example.honbabapp.api.data.request;
+package com.example.honbabapp.api.data.request.user;
 
 public class ChangePasswordRequest {
     private int user_id;

@@ -13,9 +13,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.honbabapp.activity.LoginActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
-import com.example.honbabapp.api.data.request.DeleteAccountRequest;
+import com.example.honbabapp.api.data.request.user.DeleteAccountRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
-import com.example.honbabapp.databinding.PageProfileAccountsettingBinding;
 import com.example.honbabapp.databinding.PageProfileDeleteAccountBinding;
 
 import retrofit2.Call;

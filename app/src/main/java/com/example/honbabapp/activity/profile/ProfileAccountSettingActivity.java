@@ -3,14 +3,13 @@ package com.example.honbabapp.activity.profile;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.response.ApiResponse;
-import com.example.honbabapp.api.data.response.UserProfileResponse;
+import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageProfileAccountsettingBinding;
 
 import retrofit2.Call;

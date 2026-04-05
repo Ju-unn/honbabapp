@@ -153,6 +153,50 @@
 
                 </LinearLayout>
 
+                <!-- ========== 전화번호 (추가) ========== -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="전화번호"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="7dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/et_phone_number"
+                        android:layout_width="0dp"
+                        android:layout_weight="2"
+                        android:layout_height="45dp"
+                        android:hint="010-1234-5678"
+                        android:textColorHint="@color/text_200"
+                        android:textColor="@color/text_100"
+                        android:textSize="14sp"
+                        android:inputType="phone"
+                        android:background="@drawable/edittext_background"
+                        android:paddingHorizontal="14dp"
+                        android:layout_marginBottom="18dp"
+                        android:layout_marginEnd="10dp"
+                        android:maxLength="13"/>
+
+                    <Button
+                        android:id="@+id/btn_check_phone"
+                        android:layout_width="0dp"
+                        android:layout_height="45dp"
+                        android:layout_weight="1"
+                        android:text="중복확인"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/button_primary_background" />
+
+                </LinearLayout>
+
                 <!-- 닉네임 -->
                 <TextView
                     android:layout_width="wrap_content"
@@ -388,77 +432,46 @@
 
                 </LinearLayout>
 
-                <!-- ========== 전화번호 (추가) ========== -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="전화번호"
-                    android:textColor="@color/text_200"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="7dp" />
 
                 <LinearLayout
+                    android:id="@+id/layout_birthday"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="18dp">
+                    android:orientation="vertical">
+
+                    <!-- 생년월일 -->
+                    <TextView
+                        android:id="@+id/tv_label_birthday"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="생년월일"
+                        android:textColor="@color/text_200"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="7dp" />
 
                     <EditText
-                        android:id="@+id/et_phone_number"
-                        android:layout_width="0dp"
-                        android:layout_weight="2"
+                        android:id="@+id/et_birthdate"
+                        android:layout_width="match_parent"
                         android:layout_height="45dp"
-                        android:hint="010-1234-5678"
+                        android:hint="20250701"
                         android:textColorHint="@color/text_200"
                         android:textColor="@color/text_100"
                         android:textSize="14sp"
-                        android:inputType="phone"
+                        android:inputType="date"
                         android:background="@drawable/edittext_background"
                         android:paddingHorizontal="14dp"
                         android:layout_marginBottom="18dp"
-                        android:layout_marginEnd="10dp"
-                        android:maxLength="13"/>
-
-                    <Button
-                        android:id="@+id/btn_check_phone"
-                        android:layout_width="0dp"
-                        android:layout_height="45dp"
-                        android:layout_weight="1"
-                        android:text="중복확인"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/button_primary_background" />
+                        android:focusable="false"
+                        android:clickable="true" />
 
                 </LinearLayout>
 
-
-
-                <!-- 생년월일 -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="생년월일"
-                    android:textColor="@color/text_200"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="7dp" />
-
-                <EditText
-                    android:id="@+id/et_birthdate"
+                <LinearLayout
+                    android:id="@+id/layout_gender"
                     android:layout_width="match_parent"
-                    android:layout_height="45dp"
-                    android:hint="20250701"
-                    android:textColorHint="@color/text_200"
-                    android:textColor="@color/text_100"
-                    android:textSize="14sp"
-                    android:inputType="date"
-                    android:background="@drawable/edittext_background"
-                    android:paddingHorizontal="14dp"
-                    android:layout_marginBottom="18dp"
-                    android:focusable="false"
-                    android:clickable="true" />
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
                 <!-- 성별 -->
                 <TextView
@@ -470,49 +483,51 @@
                     android:textStyle="bold"
                     android:layout_marginBottom="7dp" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="18dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="18dp">
 
-                    <!-- 남성 버튼 -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_gender_male"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="45dp"
-                        android:layout_weight="1"
-                        android:text="남성"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        app:backgroundTint="@color/gender_button_background_tint"
-                        app:strokeColor="@color/gender_button_stroke_color"
-                        app:strokeWidth="1dp"
-                        android:textColor="@color/gender_button_text_color"
-                        app:cornerRadius="8dp"
-                        android:layout_marginEnd="5dp" />
+                        <!-- 남성 버튼 -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_gender_male"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="45dp"
+                            android:layout_weight="1"
+                            android:text="남성"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:backgroundTint="@color/gender_button_background_tint"
+                            app:strokeColor="@color/gender_button_stroke_color"
+                            app:strokeWidth="1dp"
+                            android:textColor="@color/gender_button_text_color"
+                            app:cornerRadius="8dp"
+                            android:layout_marginEnd="5dp" />
 
-                    <!-- 여성 버튼 -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_gender_female"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="45dp"
-                        android:layout_weight="1"
-                        android:text="여성"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        app:backgroundTint="@color/gender_button_background_tint"
-                        app:strokeColor="@color/gender_button_stroke_color"
-                        app:strokeWidth="1dp"
-                        android:textColor="@color/gender_button_text_color"
-                        app:cornerRadius="8dp"
-                        android:layout_marginStart="5dp" />
+                        <!-- 여성 버튼 -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_gender_female"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="45dp"
+                            android:layout_weight="1"
+                            android:text="여성"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:backgroundTint="@color/gender_button_background_tint"
+                            app:strokeColor="@color/gender_button_stroke_color"
+                            app:strokeWidth="1dp"
+                            android:textColor="@color/gender_button_text_color"
+                            app:cornerRadius="8dp"
+                            android:layout_marginStart="5dp" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 

@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
-import com.example.honbabapp.api.data.request.ApproveMeetingRequest;
+import com.example.honbabapp.api.data.request.meeting.ApproveMeetingRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
 import com.example.honbabapp.api.data.response.meeting.ApproveResponse;

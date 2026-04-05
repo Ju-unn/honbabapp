@@ -21,7 +21,7 @@ import com.example.honbabapp.activity.MainActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.ImageUploadData;
-import com.example.honbabapp.api.data.request.MeetingCreateRequest;
+import com.example.honbabapp.api.data.request.meeting.MeetingCreateRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.MeetingCreateResponse;
 import com.example.honbabapp.databinding.PageMeetingCardWritingBinding;

@@ -2,10 +2,10 @@ package com.example.honbabapp.activity.meeting;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -15,9 +15,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.naver.maps.map.MapView;
+import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
 import com.naver.maps.map.NaverMap;
-import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.overlay.Marker;
@@ -28,7 +27,7 @@ import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.api.data.meeting.MeetingParticipant;
-import com.example.honbabapp.api.data.request.JoinMeetingRequest;
+import com.example.honbabapp.api.data.request.meeting.JoinMeetingRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
 import com.example.honbabapp.databinding.PageMeetingDetailBinding;
@@ -353,7 +352,10 @@ public class MeetingDetailActivity extends AppCompatActivity {
         } else if (meeting.getMeeting_status().equals("모집완료")) {
             binding.btnJoinMeeting.setText("모집 완료");
             binding.btnJoinMeeting.setEnabled(false);
-        }  else {
+        } else if (meeting.getMeeting_status().equals("취소")) {   // ← 추가
+            binding.btnJoinMeeting.setText("취소된 모임");
+            binding.btnJoinMeeting.setEnabled(false);
+        } else {
             // 참여 신청 버튼 클릭
             binding.btnJoinMeeting.setOnClickListener(v -> {
                 showJoinConfirmDialog();
@@ -488,12 +490,31 @@ public class MeetingDetailActivity extends AppCompatActivity {
             );
 
     /**
+     * editMeetingLauncher
+     */
+
+    private final ActivityResultLauncher<Intent> editMeetingLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult() ,
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK) {
+                            loadMeetingDetail();
+
+                            // 홈도 새로고침 신호
+                            Intent intent = new Intent(MeetingDetailActivity.this, MainActivity.class);
+                            intent.putExtra("refresh_home", true);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                            startActivity(intent);
+                        }
+                    }
+            );
+
+    /**
      * 호스트용 관리 버튼 표시
      */
     private void showHostManagermentButton() {
         // 버튼 컨테이너 다시 표시
         binding.joinButtonContainer.setVisibility(View.VISIBLE);
-
         // 버튼 텍스트 변경
         binding.btnJoinMeeting.setText("신청자 목록");
         binding.btnJoinMeeting.setEnabled(true);
@@ -505,6 +526,62 @@ public class MeetingDetailActivity extends AppCompatActivity {
             intent.putExtra("meeting_id" , meetingId);
             intent.putExtra("meeting_title" , meeting.getMeeting_title());
             applicantListLauncher.launch(intent);
+        });
+
+        // 삭제 / 편집 버튼
+        binding.btnMoreOptions.setVisibility(View.VISIBLE);
+        binding.btnMoreOptions.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(this , binding.btnMoreOptions);
+            popup.getMenuInflater().inflate(R.menu.menu_meeting_detail , popup.getMenu());
+            popup.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.action_edit_meeting) {
+                    Intent intent = new Intent(this, MeetingEditActivity.class);
+                    intent.putExtra("meeting_id", meetingId);
+                    editMeetingLauncher.launch(intent);
+                    return true;
+                } else if (id == R.id.action_delete_meeting) {
+                    showDeleteConfirmDialog();
+                    return true;
+                }
+                return false;
+            });
+            popup.show();
+        });
+    }
+
+    private void showDeleteConfirmDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("모임 삭제")
+                .setMessage("모임을 삭제하시겠습니까?\n참가자들의 신청이 모두 취소됩니다.")
+                .setPositiveButton("삭제", (dialog, which) -> deleteMeeting())
+                .setNegativeButton("취소", null)
+                .show();
+    }
+
+    private void deleteMeeting() {
+        DeleteMeetingRequest request = new DeleteMeetingRequest(meetingId, currentUserId);
+        apiService.deleteMeeting(request).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Toast.makeText(MeetingDetailActivity.this, "모임이 삭제되었습니다.", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MeetingDetailActivity.this , MainActivity.class);
+                    intent.putExtra("refresh_home" ,true);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    String msg = (response.body() != null) ? response.body().getMessage() : "삭제에 실패했습니다.";
+                    Toast.makeText(MeetingDetailActivity.this, msg, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                Toast.makeText(MeetingDetailActivity.this, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+            }
+
         });
     }
 

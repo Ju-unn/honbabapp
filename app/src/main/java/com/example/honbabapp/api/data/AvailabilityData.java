@@ -11,11 +11,13 @@ public class AvailabilityData {
      *   "message": "사용 가능한 닉네임입니다",
      *   "data": {
      *     "available": true
+     *     "is_restored": true  // 탈퇴 유저인지 확인
      *   }
      * }
      */
 
     private  boolean available;
+    private boolean is_restored;
 
     public AvailabilityData() {
     }
@@ -30,5 +32,13 @@ public class AvailabilityData {
 
     public void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    public boolean isIs_restored() {
+        return is_restored;
+    }
+
+    public void setIs_restored(boolean is_restored) {
+        this.is_restored = is_restored;
     }
 }

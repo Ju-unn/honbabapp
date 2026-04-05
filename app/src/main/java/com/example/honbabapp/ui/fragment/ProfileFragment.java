@@ -22,7 +22,7 @@ import com.example.honbabapp.activity.profile.ProfileProfileSettingActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.response.ApiResponse;
-import com.example.honbabapp.api.data.response.UserProfileResponse;
+import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.FragmentProfileBinding;
 
 import retrofit2.Call;

@@ -1,11 +1,13 @@
 package com.example.honbabapp.api;
 
-import com.example.honbabapp.api.data.request.ChangePasswordRequest;
-import com.example.honbabapp.api.data.request.CheckCurrentPasswordRequest;
-import com.example.honbabapp.api.data.request.DeleteAccountRequest;
-import com.example.honbabapp.api.data.request.UpdateProfileRequest;
+import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
+import com.example.honbabapp.api.data.request.meeting.UpdateMeetingRequest;
+import com.example.honbabapp.api.data.request.user.ChangePasswordRequest;
+import com.example.honbabapp.api.data.request.user.CheckCurrentPasswordRequest;
+import com.example.honbabapp.api.data.request.user.DeleteAccountRequest;
+import com.example.honbabapp.api.data.request.user.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.MyMeetingItem;
-import com.example.honbabapp.api.data.response.UserProfileResponse;
+import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
 import com.example.honbabapp.api.data.response.meeting.ApproveResponse;
 import com.example.honbabapp.api.data.AvailabilityData;
@@ -17,15 +19,14 @@ import com.example.honbabapp.api.data.response.meeting.MeetingListResponse;
 import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
 import com.example.honbabapp.api.data.VerificationData;
 import com.example.honbabapp.api.data.VerifiedData;
-import com.example.honbabapp.api.data.request.ApproveMeetingRequest;
-import com.example.honbabapp.api.data.request.JoinMeetingRequest;
+import com.example.honbabapp.api.data.request.meeting.ApproveMeetingRequest;
+import com.example.honbabapp.api.data.request.meeting.JoinMeetingRequest;
 import com.example.honbabapp.api.data.request.LoginRequest;
-import com.example.honbabapp.api.data.request.MeetingCreateRequest;
+import com.example.honbabapp.api.data.request.meeting.MeetingCreateRequest;
 import com.example.honbabapp.api.data.request.RegisterRequest;
 import com.example.honbabapp.api.data.request.SendVerificationRequest;
 import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
-import com.google.android.gms.common.api.Api;
 
 import java.util.List;
 
@@ -224,6 +225,12 @@ public interface ApiService {
     Call<ApiResponse<ImageUploadData>> uploadMeetingImage(
             @Part MultipartBody.Part image
     );
+
+    @POST("api/meeting/delete.php")
+    Call<ApiResponse<Void>> deleteMeeting(@Body DeleteMeetingRequest request);
+
+    @POST("api/meeting/update.php")
+    Call<ApiResponse<Void>> updateMeeting(@Body UpdateMeetingRequest request);
 
     // ==================== User API (Profile)====================
 

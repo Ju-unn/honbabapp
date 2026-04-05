@@ -14,11 +14,13 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Patterns;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -68,8 +70,6 @@ import retrofit2.Response;
  */
 
 public class RegisterActivity extends AppCompatActivity {
-    // TODO: 닉네임 중복 확인 및 특수문자 불가 처리
-    // TODO: 회원가입에 필수검증 조건 재확인 필요
     private PageRegisterBinding registerBinding;
     private ApiService apiService;
     private static final String TAG = "RegisterActivity";
@@ -86,6 +86,7 @@ public class RegisterActivity extends AppCompatActivity {
     private boolean isEmailVerified = false;
     private boolean isPasswordConfirmed = false;
     private boolean isPhoneChecked = false;
+    private boolean isRestored = false;
 
     // 입력 데이터
     private String selectedGender = "남성"; // 기본값
@@ -740,12 +741,14 @@ public class RegisterActivity extends AppCompatActivity {
 
                     if (apiResponse.isSuccess()) {
                         if (apiResponse.getData().isAvailable()) {
-                            // 사용 가능한 전화번호
-                            Toast.makeText(RegisterActivity.this,
-                                    "사용 가능한 전화번호입니다",
-                                    Toast.LENGTH_SHORT).show();
                             isPhoneChecked = true;
-
+                            if (apiResponse.getData().isIs_restored()) { // 복원 계정이면
+                                isRestored = true;
+                                showRestoredAccountDialog();
+                            } else {
+                                isRestored = false;
+                                Toast.makeText(RegisterActivity.this, "사용 가능한 전화번호입니다", Toast.LENGTH_SHORT).show();
+                            }
                         } else {
                             // 이미 사용중인 전화번호
                             Toast.makeText(RegisterActivity.this,
@@ -779,6 +782,19 @@ public class RegisterActivity extends AppCompatActivity {
                 isPhoneChecked = false;
             }
         });
+    }
+
+    private void showRestoredAccountDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("탈퇴한 유저 입니다.")
+                .setMessage("이전에 사용하시던 계정이 있습니다. \n" +
+                        "복원을 진행하겠습니다\n" + "닉네임과 비밀번호를 새로 설정해주세요.")
+                .setPositiveButton("확인" , (dialog, which) -> {
+                    registerBinding.layoutBirthday.setVisibility(View.GONE);
+                    registerBinding.layoutGender.setVisibility(View.GONE);
+                })
+                .setCancelable(false)
+                .show();
     }
 
     /**
@@ -897,9 +913,17 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        if (birthday.isEmpty()) {
-            Toast.makeText(this, "생년월일을 선택해주세요", Toast.LENGTH_SHORT).show();
-            return;
+        if (!isRestored) {
+            // birthday 검증
+            if (birthday == null || birthday.isEmpty()) {
+                Toast.makeText(this, "생년월일을 입력해주세요", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            // gender 검증
+            if (selectedGender == null) {
+                Toast.makeText(this, "성별을 선택해주세요", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
         // 프로필 이미지가 있으면 먼저 업로드!

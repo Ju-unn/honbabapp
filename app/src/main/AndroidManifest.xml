@@ -23,6 +23,10 @@
         android:theme="@style/Theme.Honbabapp"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".activity.meeting.MeetingEditActivity"
+            android:exported="false" />
+
         <meta-data
             android:name="com.naver.maps.map.NCP_KEY_ID"
             android:value="${NAVER_MAPS_CLIENT_ID}" />
@@ -30,9 +34,10 @@
         <activity
             android:name=".activity.meeting.PlaceSearchActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize"/>
-        <activity android:name=".activity.meeting.PlaceSearchImageSelectActivity"
-                  android:exported="false"/>
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".activity.meeting.PlaceSearchImageSelectActivity"
+            android:exported="false" />
         <activity
             android:name=".activity.NotificationActivity"
             android:exported="false" />
