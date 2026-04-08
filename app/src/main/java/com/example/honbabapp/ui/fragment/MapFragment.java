@@ -276,8 +276,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onResponse(Call<ApiResponse<MeetingListResponse>> call, Response<ApiResponse<MeetingListResponse>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    List<Meeting> meetings = response.body().getData().getMeetings();
+
+                    List<Meeting> rawMeetings = response.body().getData().getMeetings();
+
+                    // 만료된 미팅 클라이언트 필터링
+                    List<Meeting> meetings = new ArrayList<>();
+                    for (Meeting m : rawMeetings) {
+                        if (!m.isExpired()) {
+                            meetings.add(m);
+                        }
+                    }
+
                     Log.i(TAG, "모임 로드: " + meetings.size() + "개");
+
+
 
                     // 인기순
                     if ("인기순".equals(currentSortOption)) {

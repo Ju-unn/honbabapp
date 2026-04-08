@@ -143,7 +143,16 @@ public class HomeFragment extends Fragment {
                     if (apiResponse.isSuccess()) {
                         // 데이터 받아오기 성공
                         MeetingListResponse data = apiResponse.getData();
-                        allMeetings = data.getMeetings();
+
+                        List<Meeting> rawMeetings = data.getMeetings();
+
+                        // 만료된 미팅 클라이언트 필터링 (백엔드 이중 안전망)
+                        allMeetings = new ArrayList<>();
+                        for (Meeting m : rawMeetings) {
+                            if (!m.isExpired()) {
+                                allMeetings.add(m);
+                            }
+                        }
 
                         Log.i(TAG, "모임 목록 로드 성공: " + allMeetings.size() + "개");
 

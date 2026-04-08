@@ -3,6 +3,10 @@ package com.example.honbabapp.api.data.meeting;
 import com.example.honbabapp.api.data.Location;
 
 import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * 모임 정보 모델
@@ -176,5 +180,16 @@ public class Meeting {
 
     public void setParticipants(List<MeetingParticipant> participants) {
         this.participants = participants;
+    }
+
+    public boolean isExpired() {
+        if (meeting_date == null) return false;
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+            Date meetingDate = sdf.parse(meeting_date);
+            return meetingDate != null && meetingDate.before(new Date());
+        } catch (ParseException e) {
+            return false;
+        }
     }
 }

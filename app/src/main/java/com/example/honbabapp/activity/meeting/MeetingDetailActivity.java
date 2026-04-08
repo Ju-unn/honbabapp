@@ -324,6 +324,14 @@ public class MeetingDetailActivity extends AppCompatActivity {
      * 참여 신청 버튼 설정
      */
     private void setupJoinButton() {
+
+        // 만료된 미팅 처리 — 호스트/참여자 구분 없이 버튼 숨김
+        if (meeting.isExpired()) {
+            binding.joinButtonContainer.setVisibility(View.GONE);
+            binding.btnMoreOptions.setVisibility(View.GONE);
+            return;  // 이후 로직 실행 안 함
+        }
+
         // 호스트 인 경우 버튼 숨김
         if (meeting.getHost() != null && meeting.getHost().getUser_id() == currentUserId) {
             

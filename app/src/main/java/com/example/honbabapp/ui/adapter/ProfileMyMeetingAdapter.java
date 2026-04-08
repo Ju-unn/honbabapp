@@ -77,7 +77,8 @@ public class ProfileMyMeetingAdapter extends RecyclerView.Adapter<ProfileMyMeeti
                             + item.getMeeting_max_participants() + "명");
 
             // 상태
-            binding.tvMeetingStatus.setText(item.getMeeting_status());
+            boolean isExpired = item.isIs_past() || "모집완료".equals(item.getMeeting_status());
+            binding.tvMeetingStatus.setText(isExpired ? "모집완료" : "모집중");
 
             // 역할 배지
             boolean isHost = "host".equals(item.getUser_role());
@@ -95,5 +96,7 @@ public class ProfileMyMeetingAdapter extends RecyclerView.Adapter<ProfileMyMeeti
                 binding.ivMeetingImage.setImageResource(R.drawable.placeholder_meeting_image);
             }
         }
+
+
     }
 }
