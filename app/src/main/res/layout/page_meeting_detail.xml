@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@color/bg_200">
 
-<!--    상단 헤더-->
+    <!--    상단 헤더-->
     <LinearLayout
         android:id="@+id/header_layout"
         android:layout_width="0dp"
@@ -65,7 +65,7 @@
 
     </LinearLayout>
 
-<!--    스크롤-->
+    <!--    스크롤-->
     <ScrollView
         android:id="@+id/scroll_view"
         android:layout_width="0dp"
@@ -77,12 +77,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/join_button_container">
 
-<!--        스크롤 내용 구성-->
+        <!--        스크롤 내용 구성-->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-<!--            모임 이미지-->
+            <!--            모임 이미지-->
             <FrameLayout
                 android:id="@+id/image_container"
                 android:layout_width="0dp"
@@ -101,7 +101,7 @@
 
             </FrameLayout>
 
-<!--            가게 이름-->
+            <!--            가게 이름-->
             <TextView
                 android:id="@+id/tv_meeting_title"
                 android:layout_width="0dp"
@@ -149,7 +149,7 @@
 
             </LinearLayout>
 
-<!--            가게 카테고리-->
+            <!--            가게 카테고리-->
             <TextView
                 android:id="@+id/tv_store_category"
                 android:layout_width="0dp"
@@ -164,7 +164,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
-<!--            가게 주소-->
+            <!--            가게 주소-->
             <TextView
                 android:id="@+id/tv_store_address"
                 android:layout_width="0dp"
@@ -179,7 +179,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
-<!--            가격 정보-->
+            <!--            가격 정보-->
             <TextView
                 android:id="@+id/tv_price_range"
                 android:layout_width="0dp"

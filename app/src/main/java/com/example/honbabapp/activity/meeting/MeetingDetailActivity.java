@@ -334,7 +334,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
 
         // 호스트 인 경우 버튼 숨김
         if (meeting.getHost() != null && meeting.getHost().getUser_id() == currentUserId) {
-            
+
             // 참여 신청 버튼 숨김
             binding.joinButtonContainer.setVisibility(View.GONE);
 
