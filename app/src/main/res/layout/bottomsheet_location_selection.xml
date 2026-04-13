@@ -38,6 +38,7 @@
         android:textColor="@color/text_200"
         android:textSize="13sp" />
 
+
     <!-- GPS 감지 버튼 -->
     <Button
         android:id="@+id/btn_gps_detect"

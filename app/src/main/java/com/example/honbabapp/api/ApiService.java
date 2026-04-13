@@ -5,6 +5,7 @@ import com.example.honbabapp.api.data.request.meeting.UpdateMeetingRequest;
 import com.example.honbabapp.api.data.request.user.ChangePasswordRequest;
 import com.example.honbabapp.api.data.request.user.CheckCurrentPasswordRequest;
 import com.example.honbabapp.api.data.request.user.DeleteAccountRequest;
+import com.example.honbabapp.api.data.request.user.UpdateLocationRequest;
 import com.example.honbabapp.api.data.request.user.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.MyMeetingItem;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
@@ -271,6 +272,11 @@ public interface ApiService {
     @GET("api/user/my_meetings.php")
     Call<ApiResponse<List<MyMeetingItem>>> getMyMeetings(@Query("user_id") int userId);
 
+    /**
+     * 6. 내 위치 업데이트
+     */
+    @POST("api/user/update_location.php")
+    Call<ApiResponse<Void>> updateLocation(@Body UpdateLocationRequest request);
 
 
 

@@ -1,7 +1,9 @@
 package com.example.honbabapp.ui.fragment;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -12,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -21,8 +24,10 @@ import com.example.honbabapp.activity.MainActivity;
 import com.example.honbabapp.activity.NotificationActivity;
 import com.example.honbabapp.activity.meeting.MeetingCardWritingActivity;
 import com.example.honbabapp.api.ApiService;
+import com.example.honbabapp.api.NaverMapsApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.meeting.Meeting;
+import com.example.honbabapp.api.data.request.user.UpdateLocationRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.MeetingListResponse;
 import com.example.honbabapp.databinding.FragmentHomeBinding;
@@ -31,8 +36,6 @@ import com.example.honbabapp.ui.adapter.HomeHotMeetingListAdapter;
 import com.example.honbabapp.ui.dialog.LocationSelectionBottomSheetDialog;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import android.content.Context;
-import android.content.SharedPreferences;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +82,9 @@ public class HomeFragment extends Fragment {
         //GPS 클라이언트 초기화
         fusedClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
+        // 위치 설정 버튼 클릭시
+        binding.btnLocation.setOnClickListener(v -> openLocationSelectionDialog());
+
         return binding.getRoot();
     }
 
@@ -102,32 +108,29 @@ public class HomeFragment extends Fragment {
         // 알림버튼 클릭
         notificationButtonOnClick();
 
-        // 위치 선택 클릭
-        showLocationBottomSheet();
-
         // 더보기 버튼 클릭 이벤트
         binding.tvHotMeetingsMore.setOnClickListener(v -> navigateToMapHot());
         binding.tvAllMeetingsMore.setOnClickListener(v -> navigateToMap("전체"));
     }
 
     /**
-     * 위치 버튼 클릭 → LocationSelectionBottomSheetDialog 표시
+     * 위치 설정 버튼 클릭시
      */
-    private void showLocationBottomSheet() {
-        binding.btnLocation.setOnClickListener(v -> {
-            LocationSelectionBottomSheetDialog dialog = new LocationSelectionBottomSheetDialog();
-            dialog.currentLocationText = prefs.getString(KEY_DONG, currentSigungu);
-            dialog.listener = (sigungu, dong) -> {
-                currentSigungu = sigungu;
-                prefs.edit()
-                        .putString(KEY_SIGUNGU, sigungu)
-                        .putString(KEY_DONG, dong)
-                        .apply();
-                binding.btnLocation.setText(dong);
-                loadMeetings();
-            };
-            dialog.show(getChildFragmentManager(), "locationDialog");
-        });
+
+    private void openLocationSelectionDialog() {
+        LocationSelectionBottomSheetDialog dialog = new LocationSelectionBottomSheetDialog();
+        dialog.currentLocationText = prefs.getString(KEY_DONG, currentSigungu);
+        dialog.listener = (sigungu, dong) -> {
+            currentSigungu = sigungu;
+            prefs.edit()
+                    .putString(KEY_SIGUNGU, sigungu)
+                    .putString(KEY_DONG, dong)
+                    .apply();
+            binding.btnLocation.setText(dong);
+            loadMeetings();
+            updateLocationInDB(sigungu + " " + dong);
+        };
+        dialog.show(getChildFragmentManager(), "locationDialog");
     }
 
     /**
@@ -393,6 +396,35 @@ public class HomeFragment extends Fragment {
         } catch (Exception e) {
             Log.e(TAG, "Geocoder 오류: " + e.getMessage());
         }
+    }
+
+    /**
+     * 위치 업데이트
+     * @param location
+     */
+    private void updateLocationInDB(String location) {
+        int userId = prefs.getInt("user_id", -1);
+        if (userId == -1) {
+            return;
+        }
+
+        UpdateLocationRequest request = new UpdateLocationRequest(userId, location);
+
+        apiService.updateLocation(request).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Log.i(TAG, "위치 DB 업데이트 성공: " + location);
+                } else {
+                    Log.e(TAG, "위치 DB 업데이트 실패");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                Log.e(TAG, "위치 DB 업데이트 네트워크 오류: " + t.getMessage());
+            }
+        });
     }
 
 
