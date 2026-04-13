@@ -5,7 +5,9 @@ import com.example.honbabapp.R;
 import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,10 +15,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.activity.meeting.MeetingDetailActivity;
 import com.example.honbabapp.api.data.meeting.Meeting;
+import com.example.honbabapp.api.data.meeting.MeetingParticipant;
 import com.example.honbabapp.databinding.RvMeetingCardBinding;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class MapAllMeetingListAdapter extends RecyclerView.Adapter<MapAllMeetingListAdapter.ViewHolder> {
 
@@ -100,12 +108,13 @@ public class MapAllMeetingListAdapter extends RecyclerView.Adapter<MapAllMeeting
             if (needed > 0) {
                 binding.tvParticipantsNeeded.setText("+" + needed + "명 더 필요");
             } else {
-                binding.tvParticipantsNeeded.setText("모집 완료");
+                binding.tvParticipantsNeeded.setText("정원 최대");
             }
 
-            // 6. 게시 시간 (TODO: 나중에 실제 계산 로직 추가)
+            // 6. 게시 시간
+            binding.tvPostTime.setText(getPostTimeText(meeting));
 
-            // 7. 이미지
+            // 7. 모임 이미지
             Glide.with(itemView.getContext())
                     .load(meeting.getMeeting_image())
                     .placeholder(R.drawable.placeholder_meeting_image)
@@ -113,6 +122,33 @@ public class MapAllMeetingListAdapter extends RecyclerView.Adapter<MapAllMeeting
                     .centerCrop()
                     .into(binding.ivMeetingImage);
 
+            // 8. 참여자 이미지 최대3개
+            ImageView[] avatars = {
+                    binding.ivAvatar1,
+                    binding.ivAvatar2,
+                    binding.ivAvatar3
+            };
+
+            List<MeetingParticipant> participants = meeting.getParticipants();
+            int count = (participants != null) ? Math.min(participants.size(), 3) : 0;
+
+            for (int i = 0; i < 3; i++) {
+                if (i < count) {
+                    avatars[i].setVisibility(View.VISIBLE);
+                    String imageUrl = participants.get(i).getUser_profile_image();
+                    if (imageUrl != null && !imageUrl.isEmpty()) {
+                        Glide.with(itemView.getContext())
+                                .load(imageUrl)
+                                .placeholder(R.drawable.ic_profile)
+                                .circleCrop()
+                                .into(avatars[i]);
+                    } else {
+                        avatars[i].setImageResource(R.drawable.ic_profile);
+                    }
+                } else {
+                    avatars[i].setVisibility(View.GONE);
+                }
+            }
         }
 
         private String formatLocation(Meeting meeting) {
@@ -145,6 +181,40 @@ public class MapAllMeetingListAdapter extends RecyclerView.Adapter<MapAllMeeting
             }
 
             return datetime;
+        }
+
+        /**
+         * 게시 시간 포맷팅
+         * 만료 미팅 → "모집완료"
+         * 아니면 created_at 기준 상대 시간 ("방금", "5분 전", "3시간 전" 등)
+         */
+        private String getPostTimeText(Meeting meeting) {
+            if (meeting.isExpired()) {
+                return "모집완료";
+            }
+
+            if (meeting.getMeeting_created_at() == null) return "";
+
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                Date createdAt = sdf.parse(meeting.getMeeting_created_at());
+                if (createdAt == null) return "";
+
+                long diffMs = new Date().getTime() - createdAt.getTime();
+                long diffMin = diffMs / (1000 * 60);
+                long diffHour = diffMs / (1000 * 60 * 60);
+                long diffDay = diffMs / (1000 * 60 * 60 * 24);
+
+                if (diffMin < 1) return "방금";
+                if (diffMin < 60) return diffMin + "분 전";
+                if (diffHour < 24) return diffHour + "시간 전";
+                if (diffDay == 1) return "하루 전";
+                return diffDay + "일 전";
+
+            } catch (ParseException e) {
+                return "";
+            }
         }
     }
 }

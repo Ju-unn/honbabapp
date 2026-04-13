@@ -30,6 +30,8 @@ import com.example.honbabapp.ui.adapter.HomeAllMeetingListAdapter;
 import com.example.honbabapp.ui.adapter.HomeHotMeetingListAdapter;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import android.content.Context;
+import android.content.SharedPreferences;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +55,12 @@ public class HomeFragment extends Fragment {
     // 위치 관련
     private FusedLocationProviderClient fusedClient;
     private String currentSigungu = "관악구"; // 위치 로드 전 기본값
+
+    // SharedPreferences
+    private SharedPreferences prefs;
+    private static final String PREFS_NAME  = "honbabapp_prefs";
+    private static final String KEY_SIGUNGU = "user_sigungu";
+    private static final String KEY_DONG    = "user_dong";
 
     public HomeFragment() {
         Log.i( TAG, "생성");
@@ -276,80 +284,94 @@ public class HomeFragment extends Fragment {
     }
 
     /**
-     * GPS 위치로 구/동 가져온 뒤 loadMeetings() 호출
-     * 권한 없거나 위치 못 받으면 기본값(currentSigungu = "관악구")으로 진행
+     * Step1: SharedPreferences에서 즉시 로드
+     * Step2: GPS 백그라운드 보완
      */
     private void loadCurrentLocationAndMeetings() {
-        // 위치 권한 확인
+        prefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+
+        // Step1: 저장된 위치 즉시 읽기
+        String savedSigungu = prefs.getString(KEY_SIGUNGU, null);
+        String savedDong    = prefs.getString(KEY_DONG, null);
+
+        if (savedSigungu != null) {
+            // 저장된 위치 있음 → 즉시 표시 + API 호출
+            currentSigungu = savedSigungu;
+            binding.btnLocation.setText(savedDong != null ? savedDong : savedSigungu);
+            loadMeetings();
+        } else {
+            // 저장된 위치 없음 (첫 실행 등) → 기본값으로 일단 호출
+            Log.w(TAG, "저장된 위치 없음 → 기본값(" + currentSigungu + ")으로 로드");
+            loadMeetings();
+        }
+
+        // Step2: GPS 백그라운드 보완
+        requestGpsInBackground(savedSigungu);
+    }
+
+    /**
+     * GPS를 백그라운드에서 요청 (권한 없으면 스킵)
+     */
+    private void requestGpsInBackground(String currentSaved) {
         boolean hasPermission = ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
+                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED;
 
         if (!hasPermission) {
-            Log.w(TAG, "위치 권한 없음 → 기본값(" + currentSigungu + ")으로 로드");
-            loadMeetings();
+            Log.w(TAG, "위치 권한 없음 → GPS 스킵");
             return;
         }
 
         try {
             fusedClient.getLastLocation().addOnSuccessListener(location -> {
-                if (location != null) {
-                    parseAddressFromLocation(location.getLatitude(), location.getLongitude());
-                } else {
-                    // 캐시된 위치 없음 — 기본값으로 진행
-                    Log.w(TAG, "위치 캐시 없음 → 기본값(" + currentSigungu + ")으로 로드");
-                    loadMeetings();
-                }
-            }).addOnFailureListener(e -> {
-                Log.e(TAG, "위치 가져오기 실패: " + e.getMessage());
-                loadMeetings();
+                if (location == null) return;
+                parseAddressAndUpdateIfChanged(
+                        location.getLatitude(), location.getLongitude(), currentSaved
+                );
             });
         } catch (SecurityException e) {
-            Log.e(TAG, "위치 권한 오류: " + e.getMessage());
-            loadMeetings();
+            Log.e(TAG, "GPS 오류: " + e.getMessage());
         }
     }
 
     /**
-     * 위경도 → 구/동 추출 → btn_location 텍스트 업데이트 → loadMeetings()
+     * 위경도 → 구/동 파싱
+     * 이전 sigungu와 다를 때만 UI + API 재조회
      */
-
-    private void parseAddressFromLocation(double lat , double lng) {
+    private void parseAddressAndUpdateIfChanged(double lat, double lng, String prevSigungu) {
         try {
-            Geocoder geocoder = new Geocoder(requireContext() , new Locale("ko" , "KR"));
-            List<Address> addresses = geocoder.getFromLocation(lat , lng , 1);
+            Geocoder geocoder = new Geocoder(requireContext(), new Locale("ko", "KR"));
+            List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
+            if (addresses == null || addresses.isEmpty()) return;
 
-            if (addresses != null && !addresses.isEmpty()) {
-                Address address = addresses.get(0);
+            Address address = addresses.get(0);
+            String gpsSigungu = address.getSubAdminArea();
+            String gpsDong    = address.getThoroughfare();
+            if (gpsDong == null || gpsDong.isEmpty()) gpsDong = address.getSubLocality();
 
-                // 구
-                String sigungu = address.getSubAdminArea();
-                // 동
-                String dong = address.getThoroughfare();
-                if (dong == null || dong.isEmpty()) {
-                    dong = address.getSubLocality();
-                }
+            if (gpsSigungu == null || gpsSigungu.isEmpty()) return;
 
-                if (sigungu != null && !sigungu.isEmpty()) {
-                    currentSigungu = sigungu;
-                }
+            // SharedPreferences 항상 최신 GPS값으로 갱신
+            prefs.edit()
+                    .putString(KEY_SIGUNGU, gpsSigungu)
+                    .putString(KEY_DONG, gpsDong != null ? gpsDong : gpsSigungu)
+                    .apply();
 
-                // btn_location 동 표시
-                String locationText = (dong != null && !dong.isEmpty()) ? dong : currentSigungu;
-                binding.btnLocation.setText(locationText);
-
-                Log.i(TAG, "위치 파싱 성공: " + currentSigungu + " / " + locationText);
-            } else {
-                Log.w(TAG, "주소 결과 없음 → 기본값 유지");
+            // 구가 달라진 경우에만 UI + API 재조회
+            if (!gpsSigungu.equals(prevSigungu)) {
+                currentSigungu = gpsSigungu;
+                String finalDong = gpsDong != null ? gpsDong : gpsSigungu;
+                binding.btnLocation.setText(finalDong);
+                loadMeetings();
+                Log.i(TAG, "GPS 위치 변경 감지: " + prevSigungu + " → " + gpsSigungu);
             }
+
         } catch (Exception e) {
             Log.e(TAG, "Geocoder 오류: " + e.getMessage());
         }
-
-        // 주소 파싱 성공/실패 관계없이 loadMeetings() 호출
-        loadMeetings();
     }
+
+
 
     /// flaoting 버트 클릭시 미팅 작성 페이지 이동
     public void meetingCardWritingOnClick() {

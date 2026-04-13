@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.honbabapp.activity.MainActivity;
 import com.example.honbabapp.activity.SearchViewActivity;
+import com.example.honbabapp.activity.meeting.MeetingDetailActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.meeting.Meeting;
@@ -22,7 +23,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.MeetingListResponse;
 import com.example.honbabapp.databinding.FragmentMapBinding;
 import com.example.honbabapp.ui.adapter.MapAllMeetingListAdapter;
-import com.example.honbabapp.ui.dialog.MapCategoryBottomSheetDialog;
+import com.example.honbabapp.ui.dialog.MapClusterBottomSheetDialog;
 import com.example.honbabapp.ui.dialog.MapFilterBottomSheetDialog;
 import com.example.honbabapp.ui.dialog.MapSortBottomSheetDialog;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -34,12 +35,25 @@ import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.MapView;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
+import android.os.Handler;
+import android.os.Looper;
+
+import com.naver.maps.map.clustering.Clusterer;
+import com.naver.maps.map.clustering.ClusteringKey;
 import com.naver.maps.map.overlay.Marker;
+import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.util.FusedLocationSource;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import retrofit2.Call;
@@ -99,8 +113,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private ApiService apiService;
     private MapAllMeetingListAdapter allMeetingListAdapter;
 
-    // 현재 지도에 표시된 마커 목록 - 새 데이터 로드 시 기 존 마커 제거용
-    private List<Marker> activeMarkers = new ArrayList<>();
+
+    // Clusterer: SDK 내장 클러스터링 관리자
+    private Clusterer<MeetingKey> clusterer;
+
+    // debounce용 Handler (카메라 이동 시 API 과다 호출 방지)
+    private final Handler debounceHandler = new Handler(Looper.getMainLooper());
+    private Runnable debounceRunnable;
 
     /// API  Adapter /////////////////////////////////////////////////////////////////////////////////
 
@@ -152,6 +171,49 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         Log.i(TAG, "onMapReady");
         this.naverMap = naverMap;
 
+        // ── Clusterer 초기화 ──────────────────────────────
+        clusterer = new Clusterer.Builder<MeetingKey>()
+                // 클러스트 마커 (여러 개 묶인 상태) 스타일
+                        .clusterMarkerUpdater((info , marker) -> {
+                            marker.setIcon(OverlayImage.fromBitmap(makeClusterIcon(info.getSize())));
+                            marker.setCaptionText("");
+                            marker.setZIndex(1);
+
+                            // 클러스터 클릭 → 해당 모임 리스트 BottomSheet 표시
+                            marker.setOnClickListener(o -> {
+
+                                // 클러스터 안의 모임 목록 추출
+                                List<Meeting> clusterMeetings = new ArrayList<>();
+                                for (ClusteringKey key : info.getLeafItems().keySet()) {
+                                    clusterMeetings.add(((MeetingKey) key).getMeeting());
+                                }
+
+                                // Dialog 생성 후 데이터 주입
+                                MapClusterBottomSheetDialog dialog = new MapClusterBottomSheetDialog();
+                                dialog.meetings = clusterMeetings;
+                                dialog.show(getChildFragmentManager(), "clusterDialog");
+
+                                return true;
+                            });
+                        })
+                // 개별 마커 스타일 + 클릭 이벤트
+                        .leafMarkerUpdater((info , marker) -> {
+                            Meeting meeting = ((MeetingKey) info.getKey()).getMeeting();
+
+                            // 기본 아이콘으로 초기화 (클러스터 아이콘이 남아있는 현상 방지)
+                            marker.setIcon(Marker.DEFAULT_ICON);
+
+                            marker.setCaptionText(meeting.getMeeting_title());
+                            marker.setOnClickListener(o -> {
+                                Intent intent = new Intent(requireContext(), MeetingDetailActivity.class);
+                                intent.putExtra("meeting_id", meeting.getMeeting_id());
+                                startActivity(intent);
+                                return true;
+                            });
+                        })
+                        .build();
+        clusterer.setMap(naverMap);
+
         // Naver SDK에 위치 소스 연결
         naverMap.setLocationSource(locationSource);
 
@@ -166,11 +228,27 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 return;
             }
 
-            // 현재 카메라 중심 좌표로 업데이트 후 재조회
             LatLng center = naverMap.getCameraPosition().target;
             currentLat = center.latitude;
             currentLng = center.longitude;
-            loadMeetingsOnMap ();
+
+            // ── debounce 시작 ──────────────────────
+
+            // 1단계: 이미 예약된 게 있으면 취소
+            if (debounceRunnable != null) {
+                debounceHandler.removeCallbacks(debounceRunnable);
+            }
+
+            // 2단계: 새로 예약 (500ms 후에 API 호출)
+            debounceRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    loadMeetingsOnMap();
+                }
+            };
+            debounceHandler.postDelayed(debounceRunnable, 500);
+
+            // ── debounce 끝 ──────────────────────
         });
 
         // pendingCategory setFilet()가 onMapReady() 전에 호출됐다면 여기서 처리
@@ -317,43 +395,59 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     /**
      * 지도 마커 업데이트
      * 기존 마커를 모두 제거하고 새 마커를 추가
-     *
      */
-
     private void updateMarkersOnMap(List<Meeting> meetings) {
-        if (naverMap == null) return;
+        if (clusterer == null) return;
 
-        // 기존 마커 전부 지도에서 제거
-        for (Marker marker : activeMarkers) {
-            marker.setMap(null);
-        }
-        activeMarkers.clear();
+        // 기존 클러스터 데이터 전부 제거
+        clusterer.clear();
 
-        // 새 마커 추가
+        // Meeting → MeetingKey 변환 후 일괄 추가
+        Map<MeetingKey, Void> keyMap = new HashMap<>();
         for (Meeting meeting : meetings) {
             if (meeting.getLocation() == null) continue;
-
-            String mapX = meeting.getLocation().getMap_x(); //경도
-            String mapY = meeting.getLocation().getMap_y(); //위도
-
-            // map_x, map_y가 String으로 저장되므로 Double로 변환 필요
-            // try-catch: DB에 잘못된 값이 있을 때 앱 크래시 방지
-
             try {
-                double lng = Double.parseDouble(mapX);
-                double lat = Double.parseDouble(mapY);
-
-                Marker marker = new Marker();
-                marker.setPosition(new LatLng(lat , lng));
-                marker.setCaptionText(meeting.getMeeting_title()); // 마커 위에 모임 제목 표시
-                marker.setMap(naverMap); // 지도에 마커 표시
-
-                activeMarkers.add(marker); // 나중에 제거할 수 있도록 목록에 추가
-
+                Double.parseDouble(meeting.getLocation().getMap_y());
+                Double.parseDouble(meeting.getLocation().getMap_x());
+                keyMap.put(new MeetingKey(meeting), null);
             } catch (NumberFormatException e) {
-                Log.w(TAG, "좌표 파싱 실패: " + meeting.getLocation().getMap_x());
+                Log.w(TAG, "좌표 파싱 실패: " + meeting.getMeeting_id());
             }
         }
+        clusterer.addAll(keyMap);
+    }
+
+    /**
+     * 클러스터 마커 아이콘 생성
+     * 숫자가 표시된 원형 배지
+     */
+    private Bitmap makeClusterIcon(int count) {
+        int sizePx = 96;
+        Bitmap bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
+
+        // 1단계: 주황색 원 그리기
+        Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        circlePaint.setColor(Color.parseColor("#FF6B35"));
+        canvas.drawCircle(sizePx / 2f, sizePx / 2f, sizePx / 2f, circlePaint);
+
+        // 2단계: 흰색 테두리 그리기
+        Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        borderPaint.setColor(Color.WHITE);
+        borderPaint.setStyle(Paint.Style.STROKE);
+        borderPaint.setStrokeWidth(5f);
+        canvas.drawCircle(sizePx / 2f, sizePx / 2f, (sizePx / 2f) - 3f, borderPaint);
+
+        // 3단계: 숫자 텍스트 그리기
+        Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        textPaint.setTextSize(count >= 10 ? 28f : 34f);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        float textY = sizePx / 2f - (textPaint.descent() + textPaint.ascent()) / 2f;
+        canvas.drawText(String.valueOf(count), sizePx / 2f, textY, textPaint);
+
+        return bmp;
     }
 
     // ──────────────────────────────────────────────
@@ -495,6 +589,29 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         dialog.show(getChildFragmentManager(), "mapSortDialog");
     }
 
+    // ──────────────────────────────────────────────
+    // MeetingKey - Clusterer용 키 클래스
+    // ──────────────────────────────────────────────
+    private static class MeetingKey implements ClusteringKey {
+        private final Meeting meeting;
+
+        MeetingKey(Meeting meeting) {
+            this.meeting = meeting;
+        }
+
+        @NonNull
+        @Override
+        public LatLng getPosition() {
+            double lat = Double.parseDouble(meeting.getLocation().getMap_y());
+            double lng = Double.parseDouble(meeting.getLocation().getMap_x());
+            return new LatLng(lat, lng);
+        }
+
+        public Meeting getMeeting() {
+            return meeting;
+        }
+    }
+
     private void updateSortButtonText() {
         if (binding != null) {
             binding.tvSortOption.setText(currentSortOption);
@@ -534,7 +651,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // MapView 파괴 — OpenGL 컨텍스트 해제
+        if (clusterer != null) {
+            clusterer.setMap(null);  // 지도에서 분리 → 메모리 해제
+            clusterer = null;
+        }
+        if (debounceRunnable != null) {
+            debounceHandler.removeCallbacks(debounceRunnable);  // 대기 중인 API 호출 취소
+        }
         mapView.onDestroy();
         binding = null;
     }
@@ -544,5 +667,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         super.onLowMemory();
         mapView.onLowMemory();
     }
+
+
 }
+
+
 

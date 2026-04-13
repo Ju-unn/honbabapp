@@ -40,6 +40,8 @@ public class LoginActivity extends AppCompatActivity {
     private static final String PREF_NAME = "honbabapp_prefs";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_USER_ID = "user_id";
+    private static final String KEY_SIGUNGU = "user_sigungu";
+    private static final String KEY_DONG    = "user_dong";
 
 
 
@@ -207,8 +209,16 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
 //        editor.putBoolean(KEY_IS_LOGGED_IN , true);
         editor.putInt(KEY_USER_ID , loginData.getUser_id());
+
+        // user_location 파싱해서 저장
+        String userLocation = loginData.getUser_location();
+        String[] parsed = parseLocation(userLocation);
+        editor.putString(KEY_SIGUNGU, parsed[0]);
+        editor.putString(KEY_DONG,    parsed[1]);
+
         editor.apply();
-//
+
+        Log.d(TAG, "위치 저장: sigungu=" + parsed[0] + ", dong=" + parsed[1]);
         Log.d(TAG, "SharedPreferences 저장 완료: user_id=" + loginData.getUser_id());
 
         // 환영 메시지 (서버에서 받은 데이터로 표시)
@@ -218,6 +228,27 @@ public class LoginActivity extends AppCompatActivity {
 
         // 메인 화면으로 이동
         goToMainActivity();
+    }
+
+    /**
+     * user_location 문자열을 [sigungu, dong] 배열로 파싱
+     * 예시: "관악구" → ["관악구", "관악구"]
+     * 예시: "서울특별시 관악구 대학동" → ["관악구", "대학동"]
+     */
+    private String[] parseLocation(String location) {
+        if (location == null || location.isEmpty()) {
+            return new String[]{"전체", "전체"};
+        }
+
+        String[] parts = location.trim().split(" ");
+
+        if (parts.length >= 2) {
+            // "관악구 서림동" → ["관악구", "서림동"]
+            return new String[]{parts[0], parts[1]};
+        } else {
+            // 혹시 "관악구" 만 있는 경우
+            return new String[]{parts[0], parts[0]};
+        }
     }
 
     /**
