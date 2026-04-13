@@ -28,6 +28,7 @@ import com.example.honbabapp.api.data.response.meeting.MeetingListResponse;
 import com.example.honbabapp.databinding.FragmentHomeBinding;
 import com.example.honbabapp.ui.adapter.HomeAllMeetingListAdapter;
 import com.example.honbabapp.ui.adapter.HomeHotMeetingListAdapter;
+import com.example.honbabapp.ui.dialog.LocationSelectionBottomSheetDialog;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import android.content.Context;
@@ -101,9 +102,32 @@ public class HomeFragment extends Fragment {
         // 알림버튼 클릭
         notificationButtonOnClick();
 
+        // 위치 선택 클릭
+        showLocationBottomSheet();
+
         // 더보기 버튼 클릭 이벤트
         binding.tvHotMeetingsMore.setOnClickListener(v -> navigateToMapHot());
         binding.tvAllMeetingsMore.setOnClickListener(v -> navigateToMap("전체"));
+    }
+
+    /**
+     * 위치 버튼 클릭 → LocationSelectionBottomSheetDialog 표시
+     */
+    private void showLocationBottomSheet() {
+        binding.btnLocation.setOnClickListener(v -> {
+            LocationSelectionBottomSheetDialog dialog = new LocationSelectionBottomSheetDialog();
+            dialog.currentLocationText = prefs.getString(KEY_DONG, currentSigungu);
+            dialog.listener = (sigungu, dong) -> {
+                currentSigungu = sigungu;
+                prefs.edit()
+                        .putString(KEY_SIGUNGU, sigungu)
+                        .putString(KEY_DONG, dong)
+                        .apply();
+                binding.btnLocation.setText(dong);
+                loadMeetings();
+            };
+            dialog.show(getChildFragmentManager(), "locationDialog");
+        });
     }
 
     /**

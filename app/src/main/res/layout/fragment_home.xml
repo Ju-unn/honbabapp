@@ -28,11 +28,13 @@
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:background="@drawable/button_primary_background"
+            android:gravity="center"
             android:paddingHorizontal="14dp"
             android:text="00동"
             android:textColor="@color/white"
             android:textSize="13sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            />
 
         <!-- 앱 타이틀 -->
         <TextView

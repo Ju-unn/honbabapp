@@ -88,6 +88,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     // API를 두 번 호출하는 문제 방지용 플래그
     private boolean isInitialLoad = true;
 
+    // Clusterer: SDK 내장 클러스터링 관리자
+    private Clusterer<MeetingKey> clusterer;
+
+    // debounce용 Handler (카메라 이동 시 API 과다 호출 방지)
+    private final Handler debounceHandler = new Handler(Looper.getMainLooper());
+    private Runnable debounceRunnable;
+
+    private List<Meeting> currentMapMeetings = new ArrayList<>();
+
     /// Naver /////////////////////////////////////////////////////////////////////////////////
 
 
@@ -113,13 +122,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private ApiService apiService;
     private MapAllMeetingListAdapter allMeetingListAdapter;
 
-
-    // Clusterer: SDK 내장 클러스터링 관리자
-    private Clusterer<MeetingKey> clusterer;
-
-    // debounce용 Handler (카메라 이동 시 API 과다 호출 방지)
-    private final Handler debounceHandler = new Handler(Looper.getMainLooper());
-    private Runnable debounceRunnable;
 
     /// API  Adapter /////////////////////////////////////////////////////////////////////////////////
 
@@ -179,20 +181,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                             marker.setCaptionText("");
                             marker.setZIndex(1);
 
-                            // 클러스터 클릭 → 해당 모임 리스트 BottomSheet 표시
+                            final int clusterSize = info.getSize(); // 클러스터 안에 몇 개 묶였는지
+
                             marker.setOnClickListener(o -> {
+                                LatLng clusterPos = marker.getPosition(); // 클러스터 중심 좌표
+                                List<Meeting> clusterMeetings = extractClusterMeetings(clusterPos, clusterSize);
 
-                                // 클러스터 안의 모임 목록 추출
-                                List<Meeting> clusterMeetings = new ArrayList<>();
-                                for (ClusteringKey key : info.getLeafItems().keySet()) {
-                                    clusterMeetings.add(((MeetingKey) key).getMeeting());
-                                }
-
-                                // Dialog 생성 후 데이터 주입
                                 MapClusterBottomSheetDialog dialog = new MapClusterBottomSheetDialog();
                                 dialog.meetings = clusterMeetings;
                                 dialog.show(getChildFragmentManager(), "clusterDialog");
-
                                 return true;
                             });
                         })
@@ -274,6 +271,41 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         // 현재 위치로 카메라 이동 후 첫 api 호출
         moveToCurrentLocation();
+    }
+
+    /**
+     * 클러스터 중심 좌표에서 가장 가까운 N개의 모임을 반환.
+     * Naver Maps SDK가 getLeafItems()를 제공하지 않으므로
+     * 거리 정렬로 해당 클러스터의 모임 목록을 추출.
+     *
+     * @param clusterPos  클러스터 마커 중심 좌표
+     * @param clusterSize 클러스터에 포함된 모임 수
+     */
+    private List<Meeting> extractClusterMeetings(LatLng clusterPos, int clusterSize) {
+        List<Meeting> sorted = new ArrayList<>(currentMapMeetings);
+
+        sorted.sort((a, b) -> {
+            double dA = squaredDistToCluster(a, clusterPos);
+            double dB = squaredDistToCluster(b, clusterPos);
+            return Double.compare(dA, dB);
+        });
+
+        int count = Math.min(clusterSize, sorted.size());
+        return new ArrayList<>(sorted.subList(0, count));
+    }
+
+    /** 모임 위치 ↔ 클러스터 중심 간 제곱 거리 (비교용, sqrt 불필요) */
+    private double squaredDistToCluster(Meeting m, LatLng pos) {
+        if (m.getLocation() == null) return Double.MAX_VALUE;
+        try {
+            double lat = Double.parseDouble(m.getLocation().getMap_y());
+            double lng = Double.parseDouble(m.getLocation().getMap_x());
+            double dLat = lat - pos.latitude;
+            double dLng = lng - pos.longitude;
+            return dLat * dLat + dLng * dLng;
+        } catch (NumberFormatException e) {
+            return Double.MAX_VALUE;
+        }
     }
 
     // ──────────────────────────────────────────────
@@ -397,6 +429,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
      * 기존 마커를 모두 제거하고 새 마커를 추가
      */
     private void updateMarkersOnMap(List<Meeting> meetings) {
+        currentMapMeetings = new ArrayList<>(meetings);
         if (clusterer == null) return;
 
         // 기존 클러스터 데이터 전부 제거
