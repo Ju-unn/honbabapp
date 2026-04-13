@@ -266,7 +266,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
 
             // 서버가 받을 key  , file 이름 , 진짜 file
             MultipartBody.Part imagePart = MultipartBody.Part.createFormData(
-                    "image" , tempFile.getName() , requestFile
+                    "profile_image" , tempFile.getName() , requestFile
             );
 
             RequestBody userIdBody = RequestBody.create(
@@ -283,6 +283,9 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                                 selectedImageUrl = response.body().getData().getProfile_image_url();
                                 Log.d(TAG, "이미지 업로드 성공: " + selectedImageUrl);
                                 Toast.makeText(ProfileProfileSettingActivity.this, "이미지 업로드 완료", Toast.LENGTH_SHORT).show();
+                            } else {
+                                String msg = (response.body() != null) ? response.body().getMessage() : "이미지 업로드 실패";
+                                Toast.makeText(ProfileProfileSettingActivity.this, msg, Toast.LENGTH_SHORT).show();
                             }
                         }
 

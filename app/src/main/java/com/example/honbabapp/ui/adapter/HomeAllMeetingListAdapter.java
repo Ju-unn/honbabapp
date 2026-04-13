@@ -121,7 +121,7 @@ public class HomeAllMeetingListAdapter extends RecyclerView.Adapter<HomeAllMeeti
             if (needed > 0) {
                 binding.tvParticipantsNeeded.setText("+" + needed + "명 더 필요");
             } else {
-                binding.tvParticipantsNeeded.setText("모집 완료");
+                binding.tvParticipantsNeeded.setText("정원 최대");
             }
 
             // 6. 게시 시간

@@ -107,7 +107,7 @@ public class ApplicantListAdapter extends RecyclerView.Adapter<ApplicantListAdap
             // 프로필 이미지
             Glide.with(binding.getRoot().getContext())
                     .load(applicant.getUser_profile_image())
-                    .placeholder(R.drawable.ic_kakao)
+                    .placeholder(R.drawable.ic_profile)
                     .circleCrop()
                     .into(binding.ivApplicantAvatar);
         }
