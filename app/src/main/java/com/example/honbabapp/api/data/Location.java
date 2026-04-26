@@ -11,6 +11,7 @@ public class Location {
     private String map_y;
     private String category;
     private String phone_number;
+    private Double distance_km;
 
     public Double getDistance_km() {
         return distance_km;
@@ -19,8 +20,6 @@ public class Location {
     public void setDistance_km(Double distance_km) {
         this.distance_km = distance_km;
     }
-
-    private Double distance_km;
 
     public int getLocation_id() {
         return location_id;

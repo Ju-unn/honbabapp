@@ -175,7 +175,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         // ── Clusterer 초기화 ──────────────────────────────
         clusterer = new Clusterer.Builder<MeetingKey>()
-                // 클러스트 마커 (여러 개 묶인 상태) 스타일
+                        // 클러스트 마커 (여러 개 묶인 상태) 스타일
                         .clusterMarkerUpdater((info , marker) -> {
                             marker.setIcon(OverlayImage.fromBitmap(makeClusterIcon(info.getSize())));
                             marker.setCaptionText("");
@@ -193,7 +193,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                                 return true;
                             });
                         })
-                // 개별 마커 스타일 + 클릭 이벤트
+                        // 개별 마커 스타일 + 클릭 이벤트
                         .leafMarkerUpdater((info , marker) -> {
                             Meeting meeting = ((MeetingKey) info.getKey()).getMeeting();
 

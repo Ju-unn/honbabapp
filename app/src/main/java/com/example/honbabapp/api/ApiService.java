@@ -1,5 +1,10 @@
 package com.example.honbabapp.api;
 
+import com.example.honbabapp.api.data.chat.ChatRoomData;
+import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
+import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
+import com.example.honbabapp.api.data.request.chat.LeaveRoomRequest;
+import com.example.honbabapp.api.data.request.chat.MarkReadRequest;
 import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
 import com.example.honbabapp.api.data.request.meeting.UpdateMeetingRequest;
 import com.example.honbabapp.api.data.request.user.ChangePasswordRequest;
@@ -8,6 +13,8 @@ import com.example.honbabapp.api.data.request.user.DeleteAccountRequest;
 import com.example.honbabapp.api.data.request.user.UpdateLocationRequest;
 import com.example.honbabapp.api.data.request.user.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.MyMeetingItem;
+import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
+import com.example.honbabapp.api.data.response.chat.MessageListResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
 import com.example.honbabapp.api.data.response.meeting.ApproveResponse;
@@ -279,9 +286,48 @@ public interface ApiService {
     Call<ApiResponse<Void>> updateLocation(@Body UpdateLocationRequest request);
 
 
+    // ==================== Chat API ====================
+
+    /**
+     * 1. 내 채팅방 목록 조회
+     */
+    @GET("api/chat/rooms.php")
+    Call<ApiResponse<List<ChatRoomData>>> getChatRooms(@Query("user_id") int userId);
+
+    /**
+     * 2. 채팅방 생성
+     */
+    @POST("api/chat/create_room.php")
+    Call<ApiResponse<CreateRoomResponse>> createRoom(@Body CreateRoomRequest request);
+
+    /**
+     * 3. 메세지 히스토리 조회
+     */
+    @GET("api/chat/messages.php")
+    Call<ApiResponse<MessageListResponse>> getMessages(
+            @Query("room_id") int roomId,
+            @Query("page") int page,
+            @Query("limit") int limit
+    );
+
+    /**
+     * 4. 읽음처리
+     */
+    @POST("api/chat/mark_read.php")
+    Call<ApiResponse<Void>> markRead(@Body MarkReadRequest request);
+
+    /**
+     * 5. 멤버 초대 (그룹방 전용)
+     */
+    @POST("api/chat/invite.php")
+    Call<ApiResponse<Void>> inviteUser(@Body InviteUserRequest request);
 
 
-
+    /**
+     * 6. 채팅방 나가기
+     */
+    @POST("api/chat/leave.php")
+    Call<ApiResponse<Void>> leaveRoom(@Body LeaveRoomRequest request);
 
 
 
