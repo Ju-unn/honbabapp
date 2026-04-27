@@ -2,97 +2,99 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:padding="16dp"
     android:background="?android:attr/selectableItemBackground"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="16dp">
 
-<!--    채팅 아바타-->
+    <!-- 프로필 이미지 (원형) -->
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="14dp">
 
-<!--        프로필-->
-        <ImageView
-            android:id="@+id/im_chat_avatar"
+        <!-- ShapeableImageView로 교체: 원형 처리를 background 없이 직접 처리 -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imgRoomProfile"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/ic_kakao"/>
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_profile"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Honbab.Profile.Circle"
+            xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
     </FrameLayout>
 
-<!--    채팅 정보-->
+    <!-- 채팅 정보 (제목 + 마지막 메시지) -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical">
 
-<!--        채팅방 제목-->
+        <!-- 채팅방 제목 -->
         <TextView
-            android:id="@+id/tv_chat_title"
+            android:id="@+id/textRoomName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="삼겹살 아저씨"
+            android:layout_marginBottom="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="채팅방 이름"
             android:textColor="@color/text_100"
             android:textSize="16sp"
-            android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:layout_marginBottom="2dp"/>
+            android:textStyle="bold" />
 
-<!--        마지막 메세지 미리보기-->
+        <!-- 마지막 메시지 미리보기 -->
         <TextView
-            android:id="@+id/tv_last_message"
+            android:id="@+id/textLastMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="카카오에서 고기 줌"
-            android:textColor="@color/text_200"
-            android:textSize="14sp"
+            android:ellipsize="end"
             android:maxLines="1"
-            android:ellipsize="end"/>
+            android:text=""
+            android:textColor="@color/text_200"
+            android:textSize="14sp" />
 
     </LinearLayout>
 
+    <!-- 시간 + 읽지 않은 수 (오른쪽) -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:gravity="end"
-        android:layout_marginStart="12dp">
+        android:layout_marginStart="12dp"
+        android:orientation="vertical">
 
-<!--        시간-->
+        <!-- 시간 텍스트: id 추가 (Java에서 last_msg_time 바인딩 필요) -->
         <TextView
+            android:id="@+id/textTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="5분전"
+            android:layout_marginBottom="4dp"
+            android:text=""
             android:textColor="@color/text_200"
-            android:textSize="11sp"
-            android:layout_marginBottom="4dp"/>
+            android:textSize="11sp" />
 
-<!--        읽지 않은 메세지 배지-->
+        <!-- 읽지 않은 메시지 뱃지: 기본값 gone으로 변경 (Java에서 조건부 표시) -->
+        <!-- 기존 visibility="visible" → gone: count가 0일 때도 보이는 버그 수정 -->
         <TextView
-            android:id="@+id/tv_unread_count"
+            android:id="@+id/badgeUnread"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="2"
+            android:background="@drawable/unread_badge_background"
+            android:gravity="center"
+            android:minHeight="20dp"
+            android:minWidth="20dp"
+            android:paddingHorizontal="6dp"
+            android:text=""
             android:textColor="@color/white"
             android:textSize="11sp"
             android:textStyle="bold"
-            android:background="@drawable/unread_badge_background"
-            android:gravity="center"
-            android:minWidth="20dp"
-            android:minHeight="20dp"
-            android:paddingHorizontal="6dp"
-            android:visibility="visible"/>
-
-
-
+            android:visibility="gone" />
 
     </LinearLayout>
-
 
 </LinearLayout>

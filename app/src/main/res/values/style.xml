@@ -10,6 +10,12 @@
         <item name="android:color">@android:color/transparent</item>
     </style>
 
+    <!-- 채팅 프로필 이미지 원형 처리용 -->
+    <style name="ShapeAppearanceOverlay.Honbab.Profile.Circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
     <style name="SelectedCategoryChip" parent="Widget.Material3.Chip.Filter">
         <item name="chipBackgroundColor">@color/primary_100</item>
         <item name="chipStrokeColor">@color/primary_100</item>

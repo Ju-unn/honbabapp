@@ -1,0 +1,164 @@
+package com.example.honbabapp.repository;
+
+import com.example.honbabapp.api.ApiService;
+import com.example.honbabapp.api.RetrofitClient;
+import com.example.honbabapp.api.data.chat.ChatRoomData;
+import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
+import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
+import com.example.honbabapp.api.data.request.chat.LeaveRoomRequest;
+import com.example.honbabapp.api.data.request.chat.MarkReadRequest;
+import com.example.honbabapp.api.data.response.ApiResponse;
+import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
+import com.example.honbabapp.api.data.response.chat.MessageListResponse;
+
+import java.util.List;
+
+import retrofit2.Callback;
+
+public class ChatRepository {
+
+    // ─────────────────────────────────────────
+    // 싱글톤
+    // ─────────────────────────────────────────
+    private ChatRepository() {
+        apiService = RetrofitClient.getClient().create(ApiService.class);
+    }
+
+    private static class LazyHolder {
+        private static final ChatRepository INSTANCE = new ChatRepository();
+    }
+
+    public static ChatRepository getInstance() {
+        return LazyHolder.INSTANCE;
+    }
+
+    // ─────────────────────────────────────────
+    // 내부 상태
+    // ─────────────────────────────────────────
+    private final ApiService apiService;
+
+
+    // ─────────────────────────────────────────
+    // 채팅방 목록 조회
+    // ChatFragment.onResume() 에서 호출
+    // ─────────────────────────────────────────
+
+    /**
+     * 내가 속한 채팅방 목록을 가져온다
+     *
+     * @param userId 현재 로그인한 사용자 ID
+     * @param chatRoomDb    성공 시 List<ChatRoomData> 반환
+     */
+    public void getChatRooms(int userId, Callback<ApiResponse<List<ChatRoomData>>> chatRoomDb) {
+        apiService.getChatRooms(userId).enqueue(chatRoomDb);
+    }
+
+    // ─────────────────────────────────────────
+    // 메시지 목록 조회 (페이징)
+    // ChatRoomActivity.onCreate() 에서 호출
+    // ─────────────────────────────────────────
+
+    /**
+     * 채팅방의 메시지 히스토리를 페이지 단위로 가져온다
+     * 한 페이지에 30개씩 가져온다
+     *
+     * @param roomId 채팅방 ID
+     * @param page   페이지 번호 (1부터 시작)
+     * @param chatRoomDb     성공 시 MessageListResponse 반환
+     */
+    public void getMessages(int roomId , int page, Callback<ApiResponse<MessageListResponse>> chatRoomDb) {
+        apiService.getMessages(roomId , page , 30).enqueue(chatRoomDb);
+    }
+
+    // ─────────────────────────────────────────
+    // 채팅방 생성
+    // ─────────────────────────────────────────
+
+    /**
+     * 1:1 채팅방을 생성한다
+     * 이미 채팅방이 있으면 서버가 기존 room_id 를 반환한다 (already_exists: true)
+     *
+     * @param myUserId     내 사용자 ID
+     * @param targetUserId 상대방 사용자 ID
+     * @param roomName     방 이름 (보통 상대방 닉네임)
+     * @param chatRoomDb           성공 시 CreateRoomResponse 반환 (room_id 포함)
+     */
+    public void createDirectRoom(int myUserId , int targetUserId , String roomName ,
+                                 Callback<ApiResponse<CreateRoomResponse>> chatRoomDb) {
+        CreateRoomRequest request = new CreateRoomRequest(myUserId , targetUserId , roomName);
+        apiService.createRoom(request).enqueue(chatRoomDb);
+    }
+
+    /**
+     * 그룹 채팅방을 생성한다
+     * 모임 승인 시 자동으로 호출된다
+     *
+     * @param myUserId   방 생성자(호스트) ID
+     * @param memberIds  초대할 멤버 ID 목록
+     * @param meetingId  연결된 모임 ID
+     * @param roomName   방 이름 (모임 제목)
+     * @param chatRoomDb         성공 시 CreateRoomResponse 반환 (room_id 포함)
+     */
+    public void createGroupRoom(int myUserId , List<Integer> memberIds , int meetingId,
+                                String roomName , Callback<ApiResponse<CreateRoomResponse>> chatRoomDb) {
+        CreateRoomRequest request = new CreateRoomRequest(myUserId , memberIds , meetingId ,roomName);
+        apiService.createRoom(request).enqueue(chatRoomDb);
+
+    }
+
+    // ─────────────────────────────────────────
+    // 읽음 처리
+    // ChatRoomActivity 진입 시 호출
+    // ─────────────────────────────────────────
+
+    /**
+     * 채팅방의 모든 메시지를 읽음 처리한다
+     *
+     * @param roomId 채팅방 ID
+     * @param userId 읽은 사용자 ID
+     * @param chatRoomDb  완료 콜백
+     */
+    public void markRead(int roomId , int userId , Callback<ApiResponse<Void>> chatRoomDb) {
+        MarkReadRequest request = new MarkReadRequest(roomId , userId);
+        apiService.markRead(request).enqueue(chatRoomDb);
+    }
+
+    // ─────────────────────────────────────────
+    // 멤버 초대 (그룹 채팅 전용)
+    // ─────────────────────────────────────────
+
+    /**
+     * 그룹 채팅방에 새 멤버를 초대한다
+     *
+     * @param roomId       채팅방 ID
+     * @param inviterId    초대하는 사람 ID
+     * @param targetUserId 초대받는 사람 ID
+     * @param chatRoomDb   완료 콜백
+     */
+    public void inviteUser(int roomId , int inviterId , int targetUserId ,
+                           Callback<ApiResponse<Void>> chatRoomDb) {
+        InviteUserRequest request = new InviteUserRequest(roomId , inviterId , targetUserId);
+        apiService.inviteUser(request).enqueue(chatRoomDb);
+    }
+
+    // ─────────────────────────────────────────
+    // 채팅방 나가기
+    // ─────────────────────────────────────────
+
+
+    /**
+     * 채팅방에서 나간다
+     * 서버에서 시스템 메시지("XXX님이 나갔습니다.")를 자동으로 브로드캐스트한다
+     *
+     * @param roomId 채팅방 ID
+     * @param userId 나가는 사용자 ID
+     * @param chatRoomDb     완료 콜백
+     */
+    public void leaveRoom(int roomId, int userId, Callback<ApiResponse<Void>> chatRoomDb) {
+        LeaveRoomRequest request = new LeaveRoomRequest(roomId, userId);
+        apiService.leaveRoom(request).enqueue(chatRoomDb);
+    }
+
+
+
+}
