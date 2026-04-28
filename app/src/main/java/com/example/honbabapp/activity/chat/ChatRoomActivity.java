@@ -1,0 +1,322 @@
+package com.example.honbabapp.activity.chat;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Message;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
+import com.example.honbabapp.api.data.chat.MessageData;
+import com.example.honbabapp.api.data.response.ApiResponse;
+import com.example.honbabapp.api.data.response.chat.MessageListResponse;
+import com.example.honbabapp.databinding.PageChatDetailBinding;
+import com.example.honbabapp.network.WebSocketManager;
+import com.example.honbabapp.repository.ChatRepository;
+import com.example.honbabapp.ui.adapter.MessageAdapter;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class ChatRoomActivity extends AppCompatActivity {
+    private PageChatDetailBinding binding;
+    private MessageAdapter adapter;
+
+    private int myUserId = -1;
+    private int roomId = -1;
+    private String roomName = "";
+    private String roomType = "group";
+
+    private final Gson gson = new Gson();
+
+    // ─────────────────────────────────────────
+    // 생명주기
+    // ─────────────────────────────────────────
+
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = PageChatDetailBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        // Intent 데이터 수신
+        roomId   = getIntent().getIntExtra("room_id", -1);
+        roomName = getIntent().getStringExtra("room_name");
+        roomType = getIntent().getStringExtra("room_type");
+        if (roomName == null) roomName = "";
+        if (roomType == null) roomType = "group";
+
+        // 사용자 ID 읽기
+        SharedPreferences prefs = getSharedPreferences("honbabapp_prefs", Context.MODE_PRIVATE);
+        myUserId = prefs.getInt("user_id", -1);
+
+        initToolbar();
+        initRecyclerView();
+        initInputArea();
+        loadMessageHistory();
+        connectWebSocket();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 화면 집입 시 읽음 처리
+        if (roomId != -1 && myUserId != -1) {
+            markRead();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // 채팅방 나갈때 websocket leave 전송
+        if (roomId != -1 && myUserId != -1) {
+            WebSocketManager.getInstance().leaveRoom(roomId , myUserId);
+        }
+    }
+
+    // ─────────────────────────────────────────
+    // 초기화
+    // ─────────────────────────────────────────
+
+    /**
+     * 툴바 설정 (방 이름 + 뒤로가기)
+     */
+    private void initToolbar() {
+        binding.tvChatStatus.setText(roomName);
+
+        // 그룹 채팅이면 부제목 숨김 (필요시 참여자 수 표시)
+        binding.tvChatStatus.setVisibility(View.GONE);
+
+        binding.btnBack.setOnClickListener(v -> finish());
+
+        // 메뉴 버튼 (나가기 등 - 추후 구현)
+        binding.btnMenu.setOnClickListener(v -> {
+            //TODO : 채팅방 메뉴 팝업 (나가기, 초대 등)
+        });
+    }
+
+
+    /**
+     * RecyclerView + MessageAdapter 초기화
+     */
+    private void initRecyclerView() {
+        adapter = new MessageAdapter();
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true); // 최신 메세지가 아래 표시
+        binding.rvMessages.setLayoutManager(layoutManager);
+        binding.rvMessages.setAdapter(adapter);
+    }
+
+    /**
+     * 입력창 + 전송 버튼 초기화
+     */
+    private void initInputArea() {
+        // 전송 버튼 클릭
+        binding.btnSend.setOnClickListener(v -> sendMessage());
+
+        // 키보드 전송 버튼 (imeOptions : actionSend)
+        binding.etMessage.setOnEditorActionListener((v , actionID , event) -> {
+            if (actionID == EditorInfo.IME_ACTION_SEND) {
+                sendMessage();
+                return true;
+            }
+            return false;
+        });
+
+        // 첨부 버튼 (추후 구현)
+        binding.btnAttach.setOnClickListener(v -> {
+            // TODO: 이미지 첨부 기능
+        });
+    }
+
+    // ─────────────────────────────────────────
+    // 메시지 히스토리 로드
+    // ─────────────────────────────────────────
+
+    /**
+     * REST API로 메시지 히스토리 1페이지 로드
+     */
+    private void loadMessageHistory() {
+        if (roomId == -1) return;
+
+        ChatRepository.getInstance().getMessages(roomId, 1,
+                new Callback<ApiResponse<MessageListResponse>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<MessageListResponse>> call, Response<ApiResponse<MessageListResponse>> response) {
+                        if (response.isSuccessful()
+                                && response.body() != null
+                                && response.body().isSuccess()) {
+
+                            MessageListResponse data = response.body().getData();
+                            if (data != null && data.getMessages() != null) {
+                                List<MessageData> history = data.getMessages();
+
+                                // is_mine 플래그 세팅 (서버가 안 주면 직접 판단)
+                                for (MessageData msg : history) {
+                                    msg.setIs_mine(msg.getSender_id() == myUserId);
+                                }
+
+                                adapter.setMessages(history);
+                                scrollToBottom(); // 히스토리 로드 후 맨 아래로
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<MessageListResponse>> call, Throwable t) {
+                        // 히스토리 로드 실패 — 빈 화면으로 진입
+                    }
+                });
+    }
+
+    // ─────────────────────────────────────────
+    // WebSocket 연결 및 메시지 처리
+    // ─────────────────────────────────────────
+
+    private void connectWebSocket() {
+        if (myUserId == -1 || roomId == -1) return;
+
+        WebSocketManager.getInstance().connect(myUserId, new WebSocketManager.MessageListener() {
+            @Override
+            public void onMessage(String json) {
+                handleWebSocketMessage(json);
+            }
+
+            @Override
+            public void onConnected() {
+                // 연결성공 -> 방입장 메세지 전송
+                WebSocketManager.getInstance().joinRoom(roomId , myUserId);
+            }
+
+            @Override
+            public void onDisconnected() {
+                // 연결 끊김
+            }
+        });
+    }
+
+    /**
+     * WebSocket 수신 메시지 분기 처리
+     */
+    private void handleWebSocketMessage(String json) {
+        try {
+            JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
+            String type = obj.get("type").getAsString();
+
+            switch (type) {
+                case "message":
+                case "system" :
+                    // 새 메세지 수신 -> Adapter에 추가
+                    MessageData msg = gson.fromJson(json , MessageData.class);
+                    msg.setIs_mine(msg.getSender_id() == myUserId);
+                    adapter.addMessage(msg);
+                    scrollToBottom();
+
+                    // 화면이 활성화 상태면 즉시 읽음 처리
+                    markRead();
+                    break;
+
+                case "read_update":
+                    // 읽음 업데이트 수신 -> 해당 메세지들의 unread_count 계산
+                    handleReadUpdate(obj);
+                    break;
+            }
+        } catch (Exception e) {
+            // Json 파싱 실패
+        }
+    }
+
+    /**
+     * read_update 처리: message_ids 배열의 각 메시지 읽음 카운트 0으로 갱신
+     */
+    private void handleReadUpdate(JsonObject obj) {
+        if (!obj.has("message_ids")) return;
+
+        for (var element : obj.getAsJsonArray("message_ids")) {
+            int messageId = element.getAsInt();
+            adapter.updateReadCount(messageId , 0);
+        }
+    }
+
+
+    // ─────────────────────────────────────────
+    // 메시지 전송
+    // ─────────────────────────────────────────
+
+    /**
+     * 입력창 내용을 WebSocket으로 전송
+     */
+
+    private void sendMessage() {
+        String content = binding.etMessage.getText().toString().trim();
+        if (content.isEmpty()) return;
+
+        binding.etMessage.setText(""); // 입려강 초기화
+        WebSocketManager.getInstance().sendMessage(roomId , myUserId , content);
+    }
+
+    // ─────────────────────────────────────────
+    // 읽음 처리
+    // ─────────────────────────────────────────
+
+    /**
+     * 읽음 처리 — REST + WebSocket 동시 호출
+     */
+
+    private void markRead() {
+        // REST: 서버 unread_count 초기화
+
+        ChatRepository.getInstance().markRead(roomId, myUserId,
+                new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+
+                    }
+                });
+
+        // WebSocket 다른 참여자들에게 읽음 알림 전파
+        WebSocketManager.getInstance().markRead(roomId, myUserId);
+    }
+
+    // ─────────────────────────────────────────
+    // 유틸
+    // ─────────────────────────────────────────
+
+    /**
+     * RecyclerView 맨 아래로 스크롤
+     */
+    private void scrollToBottom() {
+        int count = adapter.getItemCount();
+        if (count > 0) {
+            binding.rvMessages.scrollToPosition(count - 1);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+}

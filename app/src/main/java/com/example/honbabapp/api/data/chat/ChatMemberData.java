@@ -8,16 +8,16 @@ package com.example.honbabapp.api.data.chat;
  *
  * {
  *   "user_id": 1,
- *   "nickname": "김철수",
- *   "profile_image": "https://...",
+ *   "user_nickname": "김철수",
+ *   "user_profile_image": "https://...",
  *   "last_read_at": "2026-04-17 09:00:00"
  * }
  */
 public class ChatMemberData {
 
     private int user_id;
-    private String nickname;
-    private String profile_image;
+    private String user_nickname;
+    private String user_profile_image;
     private String last_read_at;
 
     // ── Getter / Setter ──────────────────────────
@@ -25,11 +25,11 @@ public class ChatMemberData {
     public int getUser_id() { return user_id; }
     public void setUser_id(int user_id) { this.user_id = user_id; }
 
-    public String getNickname() { return nickname; }
-    public void setNickname(String nickname) { this.nickname = nickname; }
+    public String getUser_nickname() { return user_nickname; }
+    public void setUser_nickname(String user_nickname) { this.user_nickname = user_nickname; }
 
-    public String getProfile_image() { return profile_image; }
-    public void setProfile_image(String profile_image) { this.profile_image = profile_image; }
+    public String getUser_profile_image() { return user_profile_image; }
+    public void setUser_profile_image(String user_profile_image) { this.user_profile_image = user_profile_image; }
 
     public String getLast_read_at() { return last_read_at; }
     public void setLast_read_at(String last_read_at) { this.last_read_at = last_read_at; }

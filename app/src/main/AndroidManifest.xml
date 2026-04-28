@@ -23,6 +23,11 @@
         android:theme="@style/Theme.Honbabapp"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+
+        <activity
+            android:name=".activity.chat.ChatRoomActivity"
+            android:exported="false" />
+
         <activity
             android:name=".activity.meeting.MeetingEditActivity"
             android:exported="false" />

@@ -116,7 +116,7 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
 
             // 프로필 이미지
             if (room.getParticipants() != null && !room.getParticipants().isEmpty()) {
-                String profileUrl = room.getParticipants().get(0).getProfile_image();
+                String profileUrl = room.getParticipants().get(0).getUser_profile_image();
                 Glide.with(binding.getRoot().getContext())
                         .load(profileUrl)
                         .placeholder(R.drawable.ic_profile)
