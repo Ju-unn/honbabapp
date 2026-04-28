@@ -179,8 +179,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
             // 프로필 이미지 Glide 로드
             Glide.with(binding.getRoot().getContext())
-                    .load(msg.getSender_profile_image())
-                    .placeholder(R.drawable.ic_profile)
+                    .load(msg.getSender_profile_image()) // null이어도 OK
+                    .placeholder(R.drawable.ic_profile)  // 로딩 중 표시
+                    .error(R.drawable.ic_profile)        // null 또는 실패 시 표시
                     .circleCrop()
                     .into(binding.imgProfile);
         }

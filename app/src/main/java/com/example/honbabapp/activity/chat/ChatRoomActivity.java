@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
@@ -85,6 +86,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         if (roomId != -1 && myUserId != -1) {
             WebSocketManager.getInstance().leaveRoom(roomId , myUserId);
         }
+        WebSocketManager.getInstance().disconnect();
     }
 
     // ─────────────────────────────────────────
@@ -151,17 +153,23 @@ public class ChatRoomActivity extends AppCompatActivity {
      */
     private void loadMessageHistory() {
         if (roomId == -1) return;
+        Log.d("ChatRoomActivity", "히스토리 로드 시작 roomId=" + roomId);
 
-        ChatRepository.getInstance().getMessages(roomId, 1,
+        ChatRepository.getInstance().getMessages(roomId, myUserId, 1,
                 new Callback<ApiResponse<MessageListResponse>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<MessageListResponse>> call, Response<ApiResponse<MessageListResponse>> response) {
+                        Log.d("ChatRoomActivity", "응답 수신 code=" + response.code());
+                        Log.d("ChatRoomActivity", "body=" + response.body());
+
                         if (response.isSuccessful()
                                 && response.body() != null
                                 && response.body().isSuccess()) {
 
                             MessageListResponse data = response.body().getData();
+                            Log.d("ChatRoomActivity", "data=" + data);
                             if (data != null && data.getMessages() != null) {
+                                Log.d("ChatRoomActivity", "메시지 수=" + data.getMessages().size());
                                 List<MessageData> history = data.getMessages();
 
                                 // is_mine 플래그 세팅 (서버가 안 주면 직접 판단)
@@ -177,6 +185,7 @@ public class ChatRoomActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Call<ApiResponse<MessageListResponse>> call, Throwable t) {
+                        Log.e("ChatRoomActivity", "실패: " + t.getMessage());
                         // 히스토리 로드 실패 — 빈 화면으로 진입
                     }
                 });
@@ -221,6 +230,13 @@ public class ChatRoomActivity extends AppCompatActivity {
                 case "system" :
                     // 새 메세지 수신 -> Adapter에 추가
                     MessageData msg = gson.fromJson(json , MessageData.class);
+
+                    if ("system".equals(msg.getMsg_type()) &&
+                            msg.getContent() != null &&
+                            msg.getContent().contains("연결되었습니다")) {
+                        break;
+                    }
+
                     msg.setIs_mine(msg.getSender_id() == myUserId);
                     adapter.addMessage(msg);
                     scrollToBottom();

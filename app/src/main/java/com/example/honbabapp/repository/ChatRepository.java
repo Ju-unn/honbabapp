@@ -66,8 +66,8 @@ public class ChatRepository {
      * @param page   페이지 번호 (1부터 시작)
      * @param chatRoomDb     성공 시 MessageListResponse 반환
      */
-    public void getMessages(int roomId , int page, Callback<ApiResponse<MessageListResponse>> chatRoomDb) {
-        apiService.getMessages(roomId , page , 30).enqueue(chatRoomDb);
+    public void getMessages(int roomId ,int userId, int page, Callback<ApiResponse<MessageListResponse>> chatRoomDb) {
+        apiService.getMessages(roomId , userId, page , 30).enqueue(chatRoomDb);
     }
 
     // ─────────────────────────────────────────

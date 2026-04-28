@@ -306,6 +306,7 @@ public interface ApiService {
     @GET("api/chat/messages.php")
     Call<ApiResponse<MessageListResponse>> getMessages(
             @Query("room_id") int roomId,
+            @Query("user_id") int userId,
             @Query("page") int page,
             @Query("limit") int limit
     );

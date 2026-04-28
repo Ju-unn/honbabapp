@@ -46,6 +46,10 @@ public class WebSocketManager {
     private int retryCount = 0;
     private boolean isConnected = false; // 연결 상태 플래그
 
+    // 재연결 루프 방지 플래그 — cancel() 호출 시 true로 세팅
+    // onFailure()에서 이 플래그가 true면 재연결 시도 안 함
+    private boolean isIntentionalDisconnect = false;
+
     // ─────────────────────────────────────────
     // 콜백 인터페이스
     // ─────────────────────────────────────────
@@ -74,11 +78,16 @@ public class WebSocketManager {
      * @param listener 이벤트 수신 콜백
      */
     public void connect(int userId, MessageListener listener) {
-        // 이미 연결된 경우 기존 연결 정리 후 재연결
-        if (isConnected && webSocket != null) {
-            Log.d(TAG, "기존 연결 종료 후 재연결");
-            webSocket.cancel(); // 즉시 종료 (onClosed 콜백 없이)
+        // 기존 연결이 있으면 의도적으로 끊음 (재연결 루프 방지 플래그 세팅)
+        if (webSocket != null) {
+            isIntentionalDisconnect = true; // ← onFailure()에서 재연결 막는 플래그
+            webSocket.cancel();
+            webSocket = null;
         }
+
+        isIntentionalDisconnect = false; // 새 연결 시작 → 플래그 해제
+        isConnected = false;
+        retryCount = 0;
 
         this.currentUserId = userId;
         this.listener = listener;
@@ -134,6 +143,13 @@ public class WebSocketManager {
                 // 비정상 종료 — 재연결 시도
                 isConnected = false;
                 Log.e(TAG, "WebSocket 오류 발생: " + t.getMessage());
+
+                // 의도적 끊김(cancel())이면 재연결 시도 안 함
+                if (isIntentionalDisconnect) {
+                    Log.d(TAG, "의도적 연결 종료 — 재연결 생략");
+                    isIntentionalDisconnect = false;
+                    return;
+                }
 
                 if (retryCount < MAX_RETRY) {
                     retryCount++;
@@ -221,6 +237,7 @@ public class WebSocketManager {
      * 앱 종료 또는 로그아웃 시 호출
      */
     public void disconnect() {
+        isIntentionalDisconnect = true; // 재연결 루프 방지
         if (webSocket != null) {
             // 1000 = 정상 종료 코드
             webSocket.close(1000, "사용자 연결 종료");
