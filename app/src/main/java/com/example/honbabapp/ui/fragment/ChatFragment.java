@@ -195,8 +195,8 @@ public class ChatFragment extends Fragment {
             if (tabPos == 2) tabMatch = "group".equals(room.getRoom_type());
 
             // 검색어 필터
-            boolean keywordMatch  = keyword.isEmpty() || (room.getRoom_name() != null)
-                    && room.getRoom_name().toLowerCase().contains(keyword);
+            boolean keywordMatch  = keyword.isEmpty() ||
+                    (room.getRoom_name() != null && room.getRoom_name().toLowerCase().contains(keyword));
 
             if (tabMatch && keywordMatch) filtered.add(room);
         }

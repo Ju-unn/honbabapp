@@ -120,6 +120,7 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
                 Glide.with(binding.getRoot().getContext())
                         .load(profileUrl)
                         .placeholder(R.drawable.ic_profile)
+                        .error(R.drawable.ic_profile)
                         .circleCrop()
                         .into(binding.imgRoomProfile);
             }
