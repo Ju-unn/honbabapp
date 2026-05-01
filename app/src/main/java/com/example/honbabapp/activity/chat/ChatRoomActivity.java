@@ -3,7 +3,6 @@ package com.example.honbabapp.activity.chat;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Message;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
@@ -15,12 +14,14 @@ import com.example.honbabapp.api.data.chat.MessageData;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
 import com.example.honbabapp.databinding.PageChatDetailBinding;
-import com.example.honbabapp.network.WebSocketManager;
+import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.MessageAdapter;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -80,11 +81,8 @@ public class ChatRoomActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        // 채팅방 나갈때 websocket leave 전송
-        if (roomId != -1 && myUserId != -1) {
-            WebSocketManager.getInstance().leaveRoom(roomId , myUserId);
-        }
+        SocketManager.getInstance().getSocket().off("message");
+        SocketManager.getInstance().getSocket().off("read_update");
     }
 
     // ─────────────────────────────────────────
@@ -152,7 +150,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     private void loadMessageHistory() {
         if (roomId == -1) return;
 
-        ChatRepository.getInstance().getMessages(roomId, 1,
+        ChatRepository.getInstance().getMessages(roomId, myUserId, 1 ,
                 new Callback<ApiResponse<MessageListResponse>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<MessageListResponse>> call, Response<ApiResponse<MessageListResponse>> response) {
@@ -189,22 +187,34 @@ public class ChatRoomActivity extends AppCompatActivity {
     private void connectWebSocket() {
         if (myUserId == -1 || roomId == -1) return;
 
-        WebSocketManager.getInstance().connect(myUserId, new WebSocketManager.MessageListener() {
-            @Override
-            public void onMessage(String json) {
-                handleWebSocketMessage(json);
-            }
+        SocketManager.getInstance().joinRoom(roomId, myUserId);
 
-            @Override
-            public void onConnected() {
-                // 연결성공 -> 방입장 메세지 전송
-                WebSocketManager.getInstance().joinRoom(roomId , myUserId);
-            }
+        SocketManager.getInstance().getSocket().on("message", args -> {
+            try {
+                JSONObject json = (JSONObject) args[0];
+                MessageData msg = new MessageData();
+                msg.setMessage_id(json.getInt("message_id"));
+                msg.setRoom_id(json.getInt("room_id"));
+                msg.setSender_id(json.getInt("user_id"));
+                msg.setSender_name(json.optString("sender_name", ""));
+                msg.setSender_profile_image(json.optString("sender_profile_image", ""));
+                msg.setMsg_type(json.optString("msg_type", "text"));
+                msg.setContent(json.getString("content"));
+                msg.setCreated_at(json.getString("created_at"));
+                msg.setIs_mine(msg.getSender_id() == myUserId);
 
-            @Override
-            public void onDisconnected() {
-                // 연결 끊김
+                runOnUiThread(() -> {
+                    adapter.addMessage(msg);
+                    scrollToBottom();
+                    markRead();
+                });
+            } catch (Exception e) {
+                // 파싱 실패
             }
+        });
+
+        SocketManager.getInstance().getSocket().on("read_update", args -> {
+            // 추후 unread_count 업데이트 구현
         });
     }
 
@@ -264,8 +274,8 @@ public class ChatRoomActivity extends AppCompatActivity {
         String content = binding.etMessage.getText().toString().trim();
         if (content.isEmpty()) return;
 
-        binding.etMessage.setText(""); // 입려강 초기화
-        WebSocketManager.getInstance().sendMessage(roomId , myUserId , content);
+        binding.etMessage.setText("");
+        SocketManager.getInstance().sendMessage(roomId, myUserId, content);
     }
 
     // ─────────────────────────────────────────
@@ -275,25 +285,8 @@ public class ChatRoomActivity extends AppCompatActivity {
     /**
      * 읽음 처리 — REST + WebSocket 동시 호출
      */
-
     private void markRead() {
-        // REST: 서버 unread_count 초기화
-
-        ChatRepository.getInstance().markRead(roomId, myUserId,
-                new Callback<ApiResponse<Void>>() {
-                    @Override
-                    public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-
-                    }
-
-                    @Override
-                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-
-                    }
-                });
-
-        // WebSocket 다른 참여자들에게 읽음 알림 전파
-        WebSocketManager.getInstance().markRead(roomId, myUserId);
+        SocketManager.getInstance().sendRead(roomId, myUserId);
     }
 
     // ─────────────────────────────────────────

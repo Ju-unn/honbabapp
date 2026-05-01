@@ -16,6 +16,7 @@ import com.example.honbabapp.data.MockData;
 import com.example.honbabapp.data.meeting.Meeting;
 import com.example.honbabapp.data.user.User;
 import com.example.honbabapp.databinding.ActivityMainBinding;
+import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.ui.adapter.MainFragmentAdapter;
 import com.example.honbabapp.ui.fragment.HomeFragment;
 import com.example.honbabapp.ui.fragment.MapFragment;
@@ -39,7 +40,9 @@ public class MainActivity extends AppCompatActivity {
         initViewPager();
         initNavigation();
         handleIntent(getIntent());
+        SocketManager.getInstance().connect();
     }
+
 
     @Override
     protected void onNewIntent(@NonNull Intent intent) {
@@ -47,6 +50,12 @@ public class MainActivity extends AppCompatActivity {
         setIntent(intent);
         // 새로운 intent 처리
         handleIntent(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SocketManager.getInstance().disconnect();
     }
 
     /**

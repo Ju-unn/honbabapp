@@ -151,15 +151,15 @@ public class ChatFragment extends Fragment {
                 new Callback<ApiResponse<List<ChatRoomData>>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<List<ChatRoomData>>> call, Response<ApiResponse<List<ChatRoomData>>> response) {
-                        Log.d("ChatFragment", "success: " + response.body().isSuccess());
-                        Log.d("ChatFragment", "rooms size: " + allRooms.size());
 
                         if (response.isSuccessful()
                                 && response.body() != null
                                 && response.body().isSuccess()) {
-
                             allRooms = response.body().getData();
+
                             if (allRooms == null) allRooms = new ArrayList<>();
+                            Log.d("ChatFragment", "success: " + response.body().isSuccess());
+                            Log.d("ChatFragment", "rooms size: " + allRooms.size());
                             applyFilter();
                         } else {
                             showEmpty();
