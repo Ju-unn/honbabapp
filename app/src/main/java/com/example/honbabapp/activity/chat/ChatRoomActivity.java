@@ -17,9 +17,6 @@ import com.example.honbabapp.databinding.PageChatDetailBinding;
 import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.MessageAdapter;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import org.json.JSONObject;
 
@@ -38,12 +35,9 @@ public class ChatRoomActivity extends AppCompatActivity {
     private String roomName = "";
     private String roomType = "group";
 
-    private final Gson gson = new Gson();
-
     // ─────────────────────────────────────────
     // 생명주기
     // ─────────────────────────────────────────
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,7 +66,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // 화면 집입 시 읽음 처리
+        // 화면 진입 시 읽음 처리
         if (roomId != -1 && myUserId != -1) {
             markRead();
         }
@@ -102,10 +96,9 @@ public class ChatRoomActivity extends AppCompatActivity {
 
         // 메뉴 버튼 (나가기 등 - 추후 구현)
         binding.btnMenu.setOnClickListener(v -> {
-            //TODO : 채팅방 메뉴 팝업 (나가기, 초대 등)
+            // TODO: 채팅방 메뉴 팝업 (나가기, 초대 등)
         });
     }
-
 
     /**
      * RecyclerView + MessageAdapter 초기화
@@ -113,7 +106,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     private void initRecyclerView() {
         adapter = new MessageAdapter();
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        layoutManager.setStackFromEnd(true); // 최신 메세지가 아래 표시
+        layoutManager.setStackFromEnd(true); // 최신 메시지가 아래 표시
         binding.rvMessages.setLayoutManager(layoutManager);
         binding.rvMessages.setAdapter(adapter);
     }
@@ -126,7 +119,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         binding.btnSend.setOnClickListener(v -> sendMessage());
 
         // 키보드 전송 버튼 (imeOptions : actionSend)
-        binding.etMessage.setOnEditorActionListener((v , actionID , event) -> {
+        binding.etMessage.setOnEditorActionListener((v, actionID, event) -> {
             if (actionID == EditorInfo.IME_ACTION_SEND) {
                 sendMessage();
                 return true;
@@ -150,7 +143,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     private void loadMessageHistory() {
         if (roomId == -1) return;
 
-        ChatRepository.getInstance().getMessages(roomId, myUserId, 1 ,
+        ChatRepository.getInstance().getMessages(roomId, myUserId, 1,
                 new Callback<ApiResponse<MessageListResponse>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<MessageListResponse>> call, Response<ApiResponse<MessageListResponse>> response) {
@@ -214,53 +207,9 @@ public class ChatRoomActivity extends AppCompatActivity {
         });
 
         SocketManager.getInstance().getSocket().on("read_update", args -> {
-            // 추후 unread_count 업데이트 구현
+            // 추후 unread_count 업데이트 구현 (STEP 6)
         });
     }
-
-    /**
-     * WebSocket 수신 메시지 분기 처리
-     */
-    private void handleWebSocketMessage(String json) {
-        try {
-            JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
-            String type = obj.get("type").getAsString();
-
-            switch (type) {
-                case "message":
-                case "system" :
-                    // 새 메세지 수신 -> Adapter에 추가
-                    MessageData msg = gson.fromJson(json , MessageData.class);
-                    msg.setIs_mine(msg.getSender_id() == myUserId);
-                    adapter.addMessage(msg);
-                    scrollToBottom();
-
-                    // 화면이 활성화 상태면 즉시 읽음 처리
-                    markRead();
-                    break;
-
-                case "read_update":
-                    // 읽음 업데이트 수신 -> 해당 메세지들의 unread_count 계산
-                    handleReadUpdate(obj);
-                    break;
-            }
-        } catch (Exception e) {
-            // Json 파싱 실패
-        }
-    }
-
-    /**
-     * read_update 처리: message_ids 배열의 각 메시지 읽음 카운트 0으로 갱신
-     */
-    private void handleReadUpdate(JsonObject obj) {
-        if (!obj.has("message_ids")) return;
-
-        for (var element : obj.getAsJsonArray("message_ids")) {
-            int messageId = element.getAsInt();
-            adapter.updateReadCount(messageId , 0);
-        }
-    }
-
 
     // ─────────────────────────────────────────
     // 메시지 전송
@@ -269,7 +218,6 @@ public class ChatRoomActivity extends AppCompatActivity {
     /**
      * 입력창 내용을 WebSocket으로 전송
      */
-
     private void sendMessage() {
         String content = binding.etMessage.getText().toString().trim();
         if (content.isEmpty()) return;
@@ -283,7 +231,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     // ─────────────────────────────────────────
 
     /**
-     * 읽음 처리 — REST + WebSocket 동시 호출
+     * 읽음 처리 — WebSocket으로 전송
      */
     private void markRead() {
         SocketManager.getInstance().sendRead(roomId, myUserId);
@@ -302,14 +250,4 @@ public class ChatRoomActivity extends AppCompatActivity {
             binding.rvMessages.scrollToPosition(count - 1);
         }
     }
-
-
-
-
-
-
-
-
-
-
 }
