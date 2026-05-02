@@ -48,25 +48,6 @@ public class SocketManager {
                 Log.d(TAG, "연결 종료");
             });
 
-            socket.on("welcome", args -> {
-                try {
-                    JSONObject data = (JSONObject) args[0];
-                    Log.d(TAG, "📩 서버에서 왔어요: " + data.getString("content"));
-                } catch (Exception e) {
-                    Log.e(TAG, "welcome 파싱 실패: " + e.getMessage());
-                }
-            });
-
-            // echo 응답 받기
-            socket.on("echo", args -> {
-                try {
-                    JSONObject data = (JSONObject) args[0];
-                    Log.d(TAG, "echo 돌아왔어요: " + data.getString("text"));
-                } catch (Exception e) {
-                    Log.e(TAG, "echo 파싱 실패: " + e.getMessage());
-                }
-            });
-
             // 시스템 메시지 수신
             socket.on("system", args -> {
                 try {
@@ -101,28 +82,6 @@ public class SocketManager {
             });
 
             socket.connect();
-        }
-    }
-
-    public void sendPing() {
-        try {
-            JSONObject data = new JSONObject();
-            data.put("text", "테스트 메시지");
-            socket.emit("ping", data);
-            Log.d(TAG, "ping 전송!");
-        } catch (Exception e) {
-            Log.e(TAG, "ping 전송 실패: " + e.getMessage());
-        }
-    }
-
-    public void sendEcho() {
-        try {
-            JSONObject data = new JSONObject();
-            data.put("text", "echo 테스트!");
-            socket.emit("echo", data);
-            Log.d(TAG, "echo 전송!");
-        } catch (Exception e) {
-            Log.e(TAG, "echo 전송 실패: " + e.getMessage());
         }
     }
 
