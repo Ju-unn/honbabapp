@@ -50,19 +50,16 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
         if (viewType == VIEW_TYPE_MINE) {
-            // rv_message_sent.xml → RvMessageSentBinding
             RvMessageSentBinding binding =
                     RvMessageSentBinding.inflate(inflater, parent, false);
             return new MineViewHolder(binding);
 
         } else if (viewType == VIEW_TYPE_OTHER) {
-            // rv_message_received.xml → RvMessageReceivedBinding
             RvMessageReceivedBinding binding =
                     RvMessageReceivedBinding.inflate(inflater, parent, false);
             return new OtherViewHolder(binding);
 
         } else {
-            // rv_message_system.xml → RvMessageSystemBinding
             RvMessageSystemBinding binding =
                     RvMessageSystemBinding.inflate(inflater, parent, false);
             return new SystemViewHolder(binding);
@@ -110,15 +107,32 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     /**
-     * 특정 메시지의 읽음 카운트 업데이트
-     * read_update 수신 시 호출
+     * 특정 메시지의 읽음 카운트 직접 지정
+     * messageId 기준으로 찾아서 newUnreadCount 로 세팅
      */
     public void updateReadCount(int messageId, int newUnreadCount) {
         for (int i = 0; i < messages.size(); i++) {
             if (messages.get(i).getMessage_id() == messageId) {
                 messages.get(i).setUnread_count(newUnreadCount);
-                notifyItemChanged(i); // 해당 아이템만 다시 그림
+                notifyItemChanged(i);
                 break;
+            }
+        }
+    }
+
+    /**
+     * 특정 발신자의 메시지 unread_count 를 1씩 감소
+     * read_update 수신 시 호출 — 상대방이 읽었을 때 내 메시지 읽음 숫자 실시간 갱신
+     *
+     * senderId : 내 userId (내가 보낸 메시지만 감소 대상)
+     * 최솟값 0 보장 — 이미 0이면 변경 없음
+     */
+    public void decreaseUnreadCount(int senderId) {
+        for (int i = 0; i < messages.size(); i++) {
+            MessageData msg = messages.get(i);
+            if (msg.getSender_id() == senderId && msg.getUnread_count() > 0) {
+                msg.setUnread_count(msg.getUnread_count() - 1);
+                notifyItemChanged(i);
             }
         }
     }
@@ -179,9 +193,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
             // 프로필 이미지 Glide 로드
             Glide.with(binding.getRoot().getContext())
-                    .load(msg.getSender_profile_image()) // null이어도 OK
-                    .placeholder(R.drawable.ic_profile)  // 로딩 중 표시
-                    .error(R.drawable.ic_profile)        // null 또는 실패 시 표시
+                    .load(msg.getSender_profile_image())
+                    .placeholder(R.drawable.ic_profile)
+                    .error(R.drawable.ic_profile)
                     .circleCrop()
                     .into(binding.imgProfile);
         }
@@ -189,7 +203,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     /**
      * 시스템 메시지 (가운데 텍스트)
-     * "홍길동님이 나갔습니다." 등 안내 문구
      * rv_message_system.xml 사용
      */
     static class SystemViewHolder extends RecyclerView.ViewHolder {
