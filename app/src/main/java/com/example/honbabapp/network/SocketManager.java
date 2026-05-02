@@ -10,7 +10,7 @@ import io.socket.client.Socket;
 public class SocketManager {
 
     private static final String TAG = "SocketManager";
-    private static final String SERVER_URL = "http://3.37.127.69:3000";
+    private static final String SERVER_URL = "http://54.180.97.52:3000";
 
     private static class LazyHolder {
         static final SocketManager INSTANCE = new SocketManager();
