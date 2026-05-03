@@ -21,6 +21,8 @@ public class SocketManager {
     }
 
     private Socket socket;
+    // 그래서 이 플래그 없이는 connect()를 여러 번 호출하면 리스너가 중복 등록될 수 있음
+    private boolean isConnecting = false;
 
     private SocketManager() {
         try {
@@ -32,14 +34,20 @@ public class SocketManager {
     }
 
     public void connect() {
-        if (socket != null && !socket.connected()) {
+        // connected() 체크만으로는 부족 — 연결 시도 중에도 false를 반환하기 때문
+        // isConnecting까지 함께 체크해야 중복 connect() 호출 방지
+        if (socket != null && !socket.connected() && !isConnecting) {
+            isConnecting = true;
+
             // 연결 성공
             socket.on(Socket.EVENT_CONNECT, args -> {
+                isConnecting = false; // 연결 완료 → 플래그 해제
                 Log.d(TAG, "서버 연결 성공! ID: " + socket.id());
             });
 
             // 연결 실패
             socket.on(Socket.EVENT_CONNECT_ERROR, args -> {
+                isConnecting = false; // 실패해도 플래그 해제 → 재시도 가능하게
                 Log.e(TAG, "연결 실패: " + args[0].toString());
             });
 
@@ -55,29 +63,6 @@ public class SocketManager {
                     Log.d(TAG, "시스템: " + data.getString("content"));
                 } catch (Exception e) {
                     Log.e(TAG, "system 파싱 실패: " + e.getMessage());
-                }
-            });
-
-            // 메시지 수신
-            socket.on("message", args -> {
-                try {
-                    JSONObject data = (JSONObject) args[0];
-                    Log.d(TAG, "메시지 수신! " +
-                            "room:" + data.getInt("room_id") +
-                            " 내용:" + data.getString("content"));
-                } catch (Exception e) {
-                    Log.e(TAG, "message 파싱 실패: " + e.getMessage());
-                }
-            });
-
-            // 읽음 업데이트 수신
-            socket.on("read_update", args -> {
-                try {
-                    JSONObject data = (JSONObject) args[0];
-                    Log.d(TAG, "읽음 업데이트! reader_id:" + data.getInt("reader_id")
-                            + " room:" + data.getInt("room_id"));
-                } catch (Exception e) {
-                    Log.e(TAG, "read_update 파싱 실패: " + e.getMessage());
                 }
             });
 
@@ -125,6 +110,7 @@ public class SocketManager {
     public void disconnect() {
         if (socket != null && socket.connected()) {
             socket.disconnect();
+            isConnecting = false; //연결 끊길 때도 플래그 초기화
         }
     }
 

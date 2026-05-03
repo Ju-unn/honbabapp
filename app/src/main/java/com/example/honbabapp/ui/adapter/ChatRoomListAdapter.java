@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.R;
+import com.example.honbabapp.api.data.chat.ChatMemberData;
 import com.example.honbabapp.api.data.chat.ChatRoomData;
 import com.example.honbabapp.databinding.RvChatListBinding;
 
@@ -29,9 +30,11 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
     }
 
     private final OnRoomClickListener listener;
+    private final int myUserId;
 
-    public ChatRoomListAdapter(OnRoomClickListener listener) {
+    public ChatRoomListAdapter(OnRoomClickListener listener, int myUserId) {
         this.listener = listener;
+        this.myUserId = myUserId;
     }
 
     @NonNull
@@ -116,7 +119,25 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
 
             // 프로필 이미지
             if (room.getParticipants() != null && !room.getParticipants().isEmpty()) {
-                String profileUrl = room.getParticipants().get(0).getUser_profile_image();
+                String profileUrl = null;
+
+                if (room.isDirect()) {
+                    // [Bug #8] 1:1 채팅방: participants.get(0)이 항상 상대방이라는 보장 없음
+                    // 내 userId와 다른 멤버를 직접 찾아야 함
+                    for (ChatMemberData member : room.getParticipants()) {
+                        if (member.getUser_id() != myUserId) {
+                            profileUrl = member.getUser_profile_image();
+                            break;
+                        }
+                    }
+                } else {
+                    // 그룹 채팅방: 대표 프로필로 0번째 사용
+                    // TODO : 그룹은 모임 meetings table에 meeting_image로 할 예정
+                    // TODO : 만약에 meeting_image가 null 0번째 유저 이미지로
+                    profileUrl = room.getParticipants().get(0).getUser_profile_image();
+                }
+
+                // profileUrl이 null이면 Glide의 error()가 ic_profile 기본 이미지 표시
                 Glide.with(binding.getRoot().getContext())
                         .load(profileUrl)
                         .placeholder(R.drawable.ic_profile)

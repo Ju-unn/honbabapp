@@ -20,6 +20,8 @@ import com.example.honbabapp.ui.adapter.MessageAdapter;
 
 import org.json.JSONObject;
 
+import io.socket.emitter.Emitter;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -34,6 +36,12 @@ public class ChatRoomActivity extends AppCompatActivity {
     private int roomId = -1;
     private String roomName = "";
     private String roomType = "group";
+
+    // [Bug #2/#5] 리스너를 인스턴스 변수로 보관
+    // off(이벤트명)는 해당 이벤트의 모든 리스너를 제거함 → SocketManager 리스너까지 날아감
+    // off(이벤트명, 특정리스너) 형태로 호출해야 이 Activity가 등록한 것만 제거할 수 있음
+    private Emitter.Listener messageListener;
+    private Emitter.Listener readUpdateListener;
 
     // ─────────────────────────────────────────
     // 생명주기
@@ -72,8 +80,12 @@ public class ChatRoomActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        SocketManager.getInstance().getSocket().off("message");
-        SocketManager.getInstance().getSocket().off("read_update");
+        // [Bug #5] off(이벤트명)는 해당 이벤트의 모든 리스너를 제거 → SocketManager 리스너까지 날아감
+        // off(이벤트명, 리스너)로 이 Activity가 등록한 것만 정확히 제거
+        if (messageListener != null)
+            SocketManager.getInstance().getSocket().off("message", messageListener);
+        if (readUpdateListener != null)
+            SocketManager.getInstance().getSocket().off("read_update", readUpdateListener);
     }
 
     // ─────────────────────────────────────────
@@ -82,7 +94,6 @@ public class ChatRoomActivity extends AppCompatActivity {
 
     private void initToolbar() {
         binding.tvChatStatus.setText(roomName);
-        binding.tvChatStatus.setVisibility(View.GONE);
         binding.btnBack.setOnClickListener(v -> finish());
         binding.btnMenu.setOnClickListener(v -> {
             // TODO: 채팅방 메뉴 팝업 (나가기, 초대 등)
@@ -154,10 +165,13 @@ public class ChatRoomActivity extends AppCompatActivity {
     private void connectWebSocket() {
         if (myUserId == -1 || roomId == -1) return;
 
+        // 소켓 연결 여부 확인 후 connect() — 이미 연결됐으면 SocketManager 내부에서 무시됨
+        SocketManager.getInstance().connect();
         SocketManager.getInstance().joinRoom(roomId, myUserId);
 
+        // 람다를 인스턴스 변수에 저장 → onDestroy에서 이 리스너만 정확히 제거 가능
         // 새 메시지 수신
-        SocketManager.getInstance().getSocket().on("message", args -> {
+        messageListener = args -> {
             try {
                 JSONObject json = (JSONObject) args[0];
                 MessageData msg = new MessageData();
@@ -179,10 +193,10 @@ public class ChatRoomActivity extends AppCompatActivity {
             } catch (Exception e) {
                 // 파싱 실패
             }
-        });
+        };
 
         // 읽음 업데이트 수신 — 상대방이 읽었을 때 내 메시지 읽음 숫자 실시간 감소
-        SocketManager.getInstance().getSocket().on("read_update", args -> {
+        readUpdateListener = args -> {
             try {
                 JSONObject data = (JSONObject) args[0];
                 int readerId = data.getInt("reader_id");
@@ -194,7 +208,10 @@ public class ChatRoomActivity extends AppCompatActivity {
             } catch (Exception e) {
                 // 파싱 실패
             }
-        });
+        };
+
+        SocketManager.getInstance().getSocket().on("message", messageListener);
+        SocketManager.getInstance().getSocket().on("read_update", readUpdateListener);
     }
 
     // ─────────────────────────────────────────

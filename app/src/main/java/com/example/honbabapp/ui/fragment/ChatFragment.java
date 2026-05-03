@@ -79,6 +79,14 @@ public class ChatFragment extends Fragment {
         binding = null; // 메모리 누수 방지
     }
 
+    // 채팅방에서 나왔을 때 목록 갱신
+    // onResume이 없으면 ChatRoomActivity에서 돌아와도 목록이 그대로 (새 메시지 미반영)
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadChatRooms();
+    }
+
     // ─────────────────────────────────────────
     // 초기화
     // ─────────────────────────────────────────
@@ -94,7 +102,7 @@ public class ChatFragment extends Fragment {
             intent.putExtra("room_name", room.getRoom_name());
             intent.putExtra("room_type", room.getRoom_type());
             startActivity(intent);
-        });
+        }, myUserId); // [Bug #8] 1:1 방에서 상대방 프로필 찾으려면 내 userId 필요
 
         binding.recyclerChatRooms.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recyclerChatRooms.setAdapter(adapter);
