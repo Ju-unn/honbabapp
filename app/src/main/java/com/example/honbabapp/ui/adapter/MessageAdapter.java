@@ -10,14 +10,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.R;
 import com.example.honbabapp.api.data.chat.MessageData;
-import com.example.honbabapp.databinding.RvMessageSentBinding;
 import com.example.honbabapp.databinding.RvMessageReceivedBinding;
+import com.example.honbabapp.databinding.RvMessageSentBinding;
 import com.example.honbabapp.databinding.RvMessageSystemBinding;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
 
 public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -116,12 +117,12 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyItemRangeInserted(0, older.size());
     }
 
-    // 내가 보낸 메시지만 unread -1
-    // 상대방이 읽었을 때만 호출됨 (reader_id != myUserId 조건 통과 후)
-    public void decreaseMyMessagesUnreadCount(int myUserId) {
+    // 특정 message_id들의 unread_count만 -1
+    // 서버에서 실제로 새로 읽힌 message_id 목록만 정확하게 -1
+    public void decrementUnreadForMessages(Set<Integer> messageIds) {
         for (int i = 0; i < messages.size(); i++) {
             MessageData msg = messages.get(i);
-            if (msg.getSender_id() == myUserId && msg.getUnread_count() > 0) {
+            if (messageIds.contains(msg.getMessage_id()) && msg.getUnread_count() > 0) {
                 msg.setUnread_count(msg.getUnread_count() - 1);
                 notifyItemChanged(i);
             }

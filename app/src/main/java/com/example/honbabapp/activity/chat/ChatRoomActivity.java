@@ -20,12 +20,15 @@ import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.MessageAdapter;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import io.socket.emitter.Emitter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -234,15 +237,20 @@ public class ChatRoomActivity extends AppCompatActivity {
             }
         };
 
-        // 읽음 업데이트 수신 — 누군가 읽었을 때 방의 모든 메시지 unread_count 감소
-        // readerId 무관하게 처리 — 나 포함 누구든 읽으면 서버가 broadcast → -1
+        // newly_read_message_ids 기반으로 해당 메시지만 정확하게 -1
+        // reader_id 체크 제거 → B 자신의 read_update도 처리
         readUpdateListener = args -> {
             try {
                 JSONObject json = (JSONObject) args[0];
-                int readerId = json.getInt("reader_id");
-                if (readerId != myUserId) {   // 내 자신의 read_update는 무시
-                    runOnUiThread(() -> adapter.decreaseMyMessagesUnreadCount(myUserId));
+
+                JSONArray idsArray = json.optJSONArray("newly_read_message_ids");
+                if (idsArray == null || idsArray.length() == 0) return;
+
+                Set<Integer> ids = new HashSet<>();
+                for (int i = 0; i < idsArray.length(); i++) {
+                    ids.add(idsArray.getInt(i));
                 }
+                runOnUiThread(() -> adapter.decrementUnreadForMessages(ids));
             } catch (Exception e) {}
         };
 
