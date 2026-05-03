@@ -4,12 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -17,19 +11,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.honbabapp.R;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.example.honbabapp.activity.chat.ChatRoomActivity;
 import com.example.honbabapp.api.data.chat.ChatRoomData;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.FragmentChatBinding;
+import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.ChatRoomListAdapter;
-import com.example.honbabapp.network.SocketManager;
 import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import io.socket.emitter.Emitter;
@@ -79,15 +78,38 @@ public class ChatFragment extends Fragment {
 
         // 채팅 목록 화면에서도 실시간 last_message 갱신
         SocketManager.getInstance().connect();
+        // 변경 후
         roomMessageListener = args -> {
             try {
-                JSONObject json = (JSONObject) args[0];
-                int roomId       = json.getInt("room_id");
-                String content   = json.getString("content");
-                String createdAt = json.getString("created_at");
-                requireActivity().runOnUiThread(() ->
-                        adapter.updateLastMessage(roomId, content, createdAt)
-                );
+                JSONObject json    = (JSONObject) args[0];
+                int roomId         = json.getInt("room_id");
+                String content     = json.getString("content");
+                String time        = json.getString("created_at");
+                int senderId       = json.optInt("user_id", -1);
+
+                requireActivity().runOnUiThread(() -> {
+                    // allRooms 직접 수정
+                    for (ChatRoomData room : allRooms) {
+                        if (room.getRoom_id() == roomId) {
+                            room.setLast_message(content);
+                            room.setLast_msg_time(time);
+                            // 내가 보낸 메시지가 아닐 때만 뱃지 +1
+                            if (senderId != myUserId) {
+                                room.setUnread_count(room.getUnread_count() + 1);
+                            }
+                            break;
+                        }
+                    }
+                    // 최신 메시지 방을 위로 정렬 후 화면 갱신
+                    Collections.sort(allRooms, (a, b) -> {
+                        String tA = a.getLast_msg_time();
+                        String tB = b.getLast_msg_time();
+                        if (tA == null) return 1;
+                        if (tB == null) return -1;
+                        return tB.compareTo(tA); // 내림차순 (최신이 위)
+                    });
+                    applyFilter();
+                });
             } catch (Exception e) { /* 파싱 실패 무시 */ }
         };
         SocketManager.getInstance().getSocket().on("message", roomMessageListener);

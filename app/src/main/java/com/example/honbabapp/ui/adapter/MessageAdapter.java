@@ -116,29 +116,12 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyItemRangeInserted(0, older.size());
     }
 
-    /**
-     * 특정 메시지의 읽음 카운트 직접 지정
-     * messageId 기준으로 찾아서 newUnreadCount 로 세팅
-     */
-    public void updateReadCount(int messageId, int newUnreadCount) {
-        for (int i = 0; i < messages.size(); i++) {
-            if (messages.get(i).getMessage_id() == messageId) {
-                messages.get(i).setUnread_count(newUnreadCount);
-                notifyItemChanged(i);
-                break;
-            }
-        }
-    }
-
-    /**
-     * 방의 모든 메시지 unread_count 를 1씩 감소
-     * read_update 수신 시 호출 — 누군가 읽었을 때 전체 메시지 읽음 숫자 실시간 갱신
-     * 최솟값 0 보장 — 이미 0이면 변경 없음
-     */
-    public void decreaseUnreadCount() {
+    // 내가 보낸 메시지만 unread -1
+    // 상대방이 읽었을 때만 호출됨 (reader_id != myUserId 조건 통과 후)
+    public void decreaseMyMessagesUnreadCount(int myUserId) {
         for (int i = 0; i < messages.size(); i++) {
             MessageData msg = messages.get(i);
-            if (msg.getUnread_count() > 0) {
+            if (msg.getSender_id() == myUserId && msg.getUnread_count() > 0) {
                 msg.setUnread_count(msg.getUnread_count() - 1);
                 notifyItemChanged(i);
             }
@@ -239,7 +222,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         if (timeStr == null || timeStr.isEmpty()) return "";
         try {
             SimpleDateFormat input  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
-            input.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+            input.setTimeZone(TimeZone.getTimeZone("UTC"));
             SimpleDateFormat output = new SimpleDateFormat("HH:mm", Locale.KOREA);
             output.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
             return output.format(input.parse(timeStr));

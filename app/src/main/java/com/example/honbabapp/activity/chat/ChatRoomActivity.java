@@ -238,10 +238,12 @@ public class ChatRoomActivity extends AppCompatActivity {
         // readerId 무관하게 처리 — 나 포함 누구든 읽으면 서버가 broadcast → -1
         readUpdateListener = args -> {
             try {
-                runOnUiThread(() -> adapter.decreaseUnreadCount());
-            } catch (Exception e) {
-                // 파싱 실패
-            }
+                JSONObject json = (JSONObject) args[0];
+                int readerId = json.getInt("reader_id");
+                if (readerId != myUserId) {   // 내 자신의 read_update는 무시
+                    runOnUiThread(() -> adapter.decreaseMyMessagesUnreadCount(myUserId));
+                }
+            } catch (Exception e) {}
         };
 
         SocketManager.getInstance().getSocket().on("message", messageListener);

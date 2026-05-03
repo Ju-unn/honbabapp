@@ -70,21 +70,6 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
         notifyDataSetChanged();
     }
 
-    /**
-     * 마지막 메시지 업데이트
-     * WebSocket 으로 새 메시지 수신 시 목록의 해당 방만 갱신
-     */
-    public void updateLastMessage(int roomId, String message, String time) {
-        for (int i = 0; i < rooms.size(); i++) {
-            if (rooms.get(i).getRoom_id() == roomId) {
-                rooms.get(i).setLast_message(message);
-                rooms.get(i).setLast_msg_time(time);
-                notifyItemChanged(i); // 해당 아이템만 다시 그림
-                break;
-            }
-        }
-    }
-
     // ─────────────────────────────────────────
     // ViewHolder
     // ─────────────────────────────────────────
@@ -161,7 +146,7 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
             try {
                 SimpleDateFormat inputFormat =
                         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
-                inputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+                inputFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
                 Date date = inputFormat.parse(timeStr);
 
                 Calendar msgCal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"));
