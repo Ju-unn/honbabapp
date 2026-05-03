@@ -18,6 +18,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapter.ViewHolder> {
 
@@ -160,11 +161,12 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
             try {
                 SimpleDateFormat inputFormat =
                         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+                inputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
                 Date date = inputFormat.parse(timeStr);
 
-                Calendar msgCal = Calendar.getInstance();
+                Calendar msgCal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"));
                 msgCal.setTime(date);
-                Calendar now = Calendar.getInstance();
+                Calendar now = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"));
 
                 boolean isToday = msgCal.get(Calendar.YEAR) == now.get(Calendar.YEAR)
                         && msgCal.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR);
@@ -172,6 +174,7 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
                 SimpleDateFormat outputFormat = isToday
                         ? new SimpleDateFormat("HH:mm", Locale.KOREA)
                         : new SimpleDateFormat("MM/dd", Locale.KOREA);
+                outputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
 
                 return outputFormat.format(date);
             } catch (Exception e) {

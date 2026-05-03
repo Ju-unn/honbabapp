@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -107,6 +108,15 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     /**
+     * 이전 페이지 메시지를 맨 앞에 삽입
+     * 무한 스크롤로 이전 메시지 로드 시 호출
+     */
+    public void prependMessages(List<MessageData> older) {
+        messages.addAll(0, older);
+        notifyItemRangeInserted(0, older.size());
+    }
+
+    /**
      * 특정 메시지의 읽음 카운트 직접 지정
      * messageId 기준으로 찾아서 newUnreadCount 로 세팅
      */
@@ -121,16 +131,14 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     /**
-     * 특정 발신자의 메시지 unread_count 를 1씩 감소
-     * read_update 수신 시 호출 — 상대방이 읽었을 때 내 메시지 읽음 숫자 실시간 갱신
-     *
-     * senderId : 내 userId (내가 보낸 메시지만 감소 대상)
+     * 방의 모든 메시지 unread_count 를 1씩 감소
+     * read_update 수신 시 호출 — 누군가 읽었을 때 전체 메시지 읽음 숫자 실시간 갱신
      * 최솟값 0 보장 — 이미 0이면 변경 없음
      */
-    public void decreaseUnreadCount(int senderId) {
+    public void decreaseUnreadCount() {
         for (int i = 0; i < messages.size(); i++) {
             MessageData msg = messages.get(i);
-            if (msg.getSender_id() == senderId && msg.getUnread_count() > 0) {
+            if (msg.getUnread_count() > 0) {
                 msg.setUnread_count(msg.getUnread_count() - 1);
                 notifyItemChanged(i);
             }
@@ -185,6 +193,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             binding.textContent.setText(msg.getContent());
             binding.textTime.setText(formatTime(msg.getCreated_at()));
 
+            // 읽지 않은 인원 수 (0이면 숨김)
             if (msg.getUnread_count() > 0) {
                 binding.textUnread.setVisibility(View.VISIBLE);
                 binding.textUnread.setText(String.valueOf(msg.getUnread_count()));
@@ -230,7 +239,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         if (timeStr == null || timeStr.isEmpty()) return "";
         try {
             SimpleDateFormat input  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+            input.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
             SimpleDateFormat output = new SimpleDateFormat("HH:mm", Locale.KOREA);
+            output.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
             return output.format(input.parse(timeStr));
         } catch (Exception e) {
             return "";

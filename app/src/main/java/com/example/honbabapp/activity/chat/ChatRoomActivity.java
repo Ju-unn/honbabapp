@@ -6,9 +6,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.honbabapp.api.data.chat.MessageData;
 import com.example.honbabapp.api.data.response.ApiResponse;
@@ -22,6 +24,7 @@ import org.json.JSONObject;
 
 import io.socket.emitter.Emitter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -36,12 +39,19 @@ public class ChatRoomActivity extends AppCompatActivity {
     private int roomId = -1;
     private String roomName = "";
     private String roomType = "group";
+    private int memberCount = 0;
+
+    // 무한 스크롤 페이징
+    private int currentPage = 1;
+    private boolean isLoadingMore = false;
+    private boolean hasMorePages = true;
 
     // 리스너를 인스턴스 변수로 보관
     // off(이벤트명)는 해당 이벤트의 모든 리스너를 제거함 → SocketManager 리스너까지 날아감
     // off(이벤트명, 특정리스너) 형태로 호출해야 이 Activity가 등록한 것만 제거할 수 있음
     private Emitter.Listener messageListener;
     private Emitter.Listener readUpdateListener;
+    private Emitter.Listener memberJoinedListener;
 
     // ─────────────────────────────────────────
     // 생명주기
@@ -56,6 +66,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         roomId   = getIntent().getIntExtra("room_id", -1);
         roomName = getIntent().getStringExtra("room_name");
         roomType = getIntent().getStringExtra("room_type");
+        memberCount = getIntent().getIntExtra("member_count", 0);
         if (roomName == null) roomName = "";
         if (roomType == null) roomType = "group";
 
@@ -86,6 +97,8 @@ public class ChatRoomActivity extends AppCompatActivity {
             SocketManager.getInstance().getSocket().off("message", messageListener);
         if (readUpdateListener != null)
             SocketManager.getInstance().getSocket().off("read_update", readUpdateListener);
+        if (memberJoinedListener != null)
+            SocketManager.getInstance().getSocket().off("member_joined", memberJoinedListener);
     }
 
     // ─────────────────────────────────────────
@@ -93,7 +106,15 @@ public class ChatRoomActivity extends AppCompatActivity {
     // ─────────────────────────────────────────
 
     private void initToolbar() {
-        binding.tvChatStatus.setText(roomName);
+        binding.tvChatTitle.setText(roomName);
+
+        if ("group".equals(roomType) && memberCount > 0) {
+            binding.tvChatStatus.setVisibility(View.VISIBLE);
+            binding.tvChatStatus.setText(memberCount + "명");
+        } else {
+            binding.tvChatStatus.setVisibility(View.GONE);
+        }
+
         binding.btnBack.setOnClickListener(v -> finish());
         binding.btnMenu.setOnClickListener(v -> {
             // TODO: 채팅방 메뉴 팝업 (나가기, 초대 등)
@@ -106,6 +127,18 @@ public class ChatRoomActivity extends AppCompatActivity {
         layoutManager.setStackFromEnd(true);
         binding.rvMessages.setLayoutManager(layoutManager);
         binding.rvMessages.setAdapter(adapter);
+
+        // 위로 스크롤해서 첫 번째 아이템이 보이면 이전 페이지 로드
+        binding.rvMessages.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+                LinearLayoutManager lm = (LinearLayoutManager) rv.getLayoutManager();
+                if (!isLoadingMore && hasMorePages
+                        && lm != null && lm.findFirstVisibleItemPosition() == 0) {
+                    loadMoreMessages();
+                }
+            }
+        });
     }
 
     private void initInputArea() {
@@ -131,6 +164,10 @@ public class ChatRoomActivity extends AppCompatActivity {
     private void loadMessageHistory() {
         if (roomId == -1) return;
 
+        // member_joined 등으로 재호출 시 페이징 상태 초기화
+        currentPage = 1;
+        hasMorePages = true;
+
         ChatRepository.getInstance().getMessages(roomId, myUserId, 1,
                 new Callback<ApiResponse<MessageListResponse>>() {
                     @Override
@@ -146,6 +183,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                                     msg.setIs_mine(msg.getSender_id() == myUserId);
                                 }
                                 adapter.setMessages(history);
+                                hasMorePages = data.getTotal_pages() > 1;
                                 scrollToBottom();
                             }
                         }
@@ -183,6 +221,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                 msg.setMsg_type(json.optString("msg_type", "text"));
                 msg.setContent(json.getString("content"));
                 msg.setCreated_at(json.getString("created_at"));
+                msg.setUnread_count(json.optInt("unread_count", 0)); // [Bug 4] 실시간 unread_count 파싱
                 msg.setIs_mine(msg.getSender_id() == myUserId);
 
                 runOnUiThread(() -> {
@@ -195,16 +234,11 @@ public class ChatRoomActivity extends AppCompatActivity {
             }
         };
 
-        // 읽음 업데이트 수신 — 상대방이 읽었을 때 내 메시지 읽음 숫자 실시간 감소
+        // 읽음 업데이트 수신 — 누군가 읽었을 때 방의 모든 메시지 unread_count 감소
+        // readerId 무관하게 처리 — 나 포함 누구든 읽으면 서버가 broadcast → -1
         readUpdateListener = args -> {
             try {
-                JSONObject data = (JSONObject) args[0];
-                int readerId = data.getInt("reader_id");
-
-                // 내가 읽은 건 이미 반영됨 — 상대방이 읽었을 때만 처리
-                if (readerId != myUserId) {
-                    runOnUiThread(() -> adapter.decreaseUnreadCount(myUserId));
-                }
+                runOnUiThread(() -> adapter.decreaseUnreadCount());
             } catch (Exception e) {
                 // 파싱 실패
             }
@@ -212,6 +246,17 @@ public class ChatRoomActivity extends AppCompatActivity {
 
         SocketManager.getInstance().getSocket().on("message", messageListener);
         SocketManager.getInstance().getSocket().on("read_update", readUpdateListener);
+
+        // [Bug 1·2] invite 후 member_joined 수신 → unread_count 재계산 + 인원 수 업데이트
+        memberJoinedListener = args -> runOnUiThread(() -> {
+            loadMessageHistory(); // 멤버 수 바뀌었으므로 unread_count 포함 전체 재로드
+            memberCount++;
+            if ("group".equals(roomType)) {
+                binding.tvChatStatus.setVisibility(View.VISIBLE);
+                binding.tvChatStatus.setText(memberCount + "명");
+            }
+        });
+        SocketManager.getInstance().getSocket().on("member_joined", memberJoinedListener);
     }
 
     // ─────────────────────────────────────────
@@ -232,6 +277,60 @@ public class ChatRoomActivity extends AppCompatActivity {
 
     private void markRead() {
         SocketManager.getInstance().sendRead(roomId, myUserId);
+    }
+
+    // ─────────────────────────────────────────
+    // 무한 스크롤 — 이전 페이지 로드
+    // ─────────────────────────────────────────
+
+    private void loadMoreMessages() {
+        isLoadingMore = true;
+        int nextPage = currentPage + 1;
+
+        ChatRepository.getInstance().getMessages(roomId, myUserId, nextPage,
+                new Callback<ApiResponse<MessageListResponse>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<MessageListResponse>> call,
+                                           Response<ApiResponse<MessageListResponse>> response) {
+                        if (response.isSuccessful()
+                                && response.body() != null
+                                && response.body().isSuccess()) {
+
+                            MessageListResponse data = response.body().getData();
+                            if (data != null && data.getMessages() != null
+                                    && !data.getMessages().isEmpty()) {
+
+                                List<MessageData> older = data.getMessages();
+                                for (MessageData m : older) {
+                                    m.setIs_mine(m.getSender_id() == myUserId);
+                                }
+
+                                // 삽입 전 첫 번째 아이템 위치 저장 → 삽입 후 스크롤 유지
+                                int firstVisible = ((LinearLayoutManager) binding.rvMessages
+                                        .getLayoutManager()).findFirstVisibleItemPosition();
+
+                                adapter.prependMessages(older);
+
+                                // 이전 메시지가 삽입되면 스크롤이 맨 위로 튀지 않게 보정
+                                binding.rvMessages.scrollToPosition(
+                                        older.size() + firstVisible);
+
+                                currentPage = nextPage;
+                                hasMorePages = nextPage < data.getTotal_pages();
+                            } else {
+                                hasMorePages = false;
+                            }
+                        } else {
+                            hasMorePages = false;
+                        }
+                        isLoadingMore = false;
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<MessageListResponse>> call, Throwable t) {
+                        isLoadingMore = false;
+                    }
+                });
     }
 
     // ─────────────────────────────────────────

@@ -24,11 +24,15 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.FragmentChatBinding;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.ChatRoomListAdapter;
+import com.example.honbabapp.network.SocketManager;
 import com.google.android.material.tabs.TabLayout;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.socket.emitter.Emitter;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -40,6 +44,7 @@ public class ChatFragment extends Fragment {
     // 젠체 목록 (탭 / 검색 필터링)
     private List<ChatRoomData> allRooms = new ArrayList<>();
     private int myUserId = -1;
+    private Emitter.Listener roomMessageListener;
 
     public ChatFragment() {
         Log.i("ChatFragment" , "생성");
@@ -71,11 +76,28 @@ public class ChatFragment extends Fragment {
         initTabLayout();
         initSearchBar();
         loadChatRooms();
+
+        // 채팅 목록 화면에서도 실시간 last_message 갱신
+        SocketManager.getInstance().connect();
+        roomMessageListener = args -> {
+            try {
+                JSONObject json = (JSONObject) args[0];
+                int roomId       = json.getInt("room_id");
+                String content   = json.getString("content");
+                String createdAt = json.getString("created_at");
+                requireActivity().runOnUiThread(() ->
+                        adapter.updateLastMessage(roomId, content, createdAt)
+                );
+            } catch (Exception e) { /* 파싱 실패 무시 */ }
+        };
+        SocketManager.getInstance().getSocket().on("message", roomMessageListener);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (roomMessageListener != null)
+            SocketManager.getInstance().getSocket().off("message", roomMessageListener);
         binding = null; // 메모리 누수 방지
     }
 
@@ -101,6 +123,7 @@ public class ChatFragment extends Fragment {
             intent.putExtra("room_id", room.getRoom_id());
             intent.putExtra("room_name", room.getRoom_name());
             intent.putExtra("room_type", room.getRoom_type());
+            intent.putExtra("member_count", room.getParticipants() != null ? room.getParticipants().size() : 0);
             startActivity(intent);
         }, myUserId); // [Bug #8] 1:1 방에서 상대방 프로필 찾으려면 내 userId 필요
 
