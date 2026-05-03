@@ -180,6 +180,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
         void bind(MessageData msg) {
+            binding.textSenderName.setVisibility(View.VISIBLE);
             binding.textSenderName.setText(msg.getSender_name());
             binding.textContent.setText(msg.getContent());
             binding.textTime.setText(formatTime(msg.getCreated_at()));

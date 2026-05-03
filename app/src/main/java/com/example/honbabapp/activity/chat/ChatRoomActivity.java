@@ -37,7 +37,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     private String roomName = "";
     private String roomType = "group";
 
-    // [Bug #2/#5] 리스너를 인스턴스 변수로 보관
+    // 리스너를 인스턴스 변수로 보관
     // off(이벤트명)는 해당 이벤트의 모든 리스너를 제거함 → SocketManager 리스너까지 날아감
     // off(이벤트명, 특정리스너) 형태로 호출해야 이 Activity가 등록한 것만 제거할 수 있음
     private Emitter.Listener messageListener;
@@ -80,7 +80,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // [Bug #5] off(이벤트명)는 해당 이벤트의 모든 리스너를 제거 → SocketManager 리스너까지 날아감
+        // off(이벤트명)는 해당 이벤트의 모든 리스너를 제거 → SocketManager 리스너까지 날아감
         // off(이벤트명, 리스너)로 이 Activity가 등록한 것만 정확히 제거
         if (messageListener != null)
             SocketManager.getInstance().getSocket().off("message", messageListener);
