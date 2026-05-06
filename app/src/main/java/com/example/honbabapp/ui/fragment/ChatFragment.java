@@ -3,6 +3,7 @@ package com.example.honbabapp.ui.fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -78,6 +79,7 @@ public class ChatFragment extends Fragment {
 
         // 채팅 목록 화면에서도 실시간 last_message 갱신
         SocketManager.getInstance().connect();
+
         // 변경 후
         roomMessageListener = args -> {
             try {
@@ -95,7 +97,9 @@ public class ChatFragment extends Fragment {
                             room.setLast_msg_time(time);
                             // 내가 보낸 메시지가 아닐 때만 뱃지 +1
                             if (senderId != myUserId) {
+                                Log.i("ChatFragment" , "플러스전" + room.getRoom_id() + "방번호 : " + room.getUnread_count() + "");
                                 room.setUnread_count(room.getUnread_count() + 1);
+                                Log.i("ChatFragment" , "플러스 후 " +  room.getRoom_id() + "방번호 : " + room.getUnread_count() + "");
                             }
                             break;
                         }
@@ -147,7 +151,7 @@ public class ChatFragment extends Fragment {
             intent.putExtra("room_type", room.getRoom_type());
             intent.putExtra("member_count", room.getParticipants() != null ? room.getParticipants().size() : 0);
             startActivity(intent);
-        }, myUserId); // [Bug #8] 1:1 방에서 상대방 프로필 찾으려면 내 userId 필요
+        }, myUserId); // 1:1 방에서 상대방 프로필 찾으려면 내 userId 필요
 
         binding.recyclerChatRooms.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recyclerChatRooms.setAdapter(adapter);
@@ -248,6 +252,7 @@ public class ChatFragment extends Fragment {
             if (tabPos == 2) tabMatch = "group".equals(room.getRoom_type());
 
             // 검색어 필터
+            // keyword가 공백이거나 , roomName이 null이 아니고 roomName이 keyword를 포함하고 있다면 true
             boolean keywordMatch  = keyword.isEmpty() ||
                     (room.getRoom_name() != null && room.getRoom_name().toLowerCase().contains(keyword));
 

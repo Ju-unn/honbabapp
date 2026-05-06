@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -120,6 +121,7 @@ public class ChatRoomActivity extends AppCompatActivity {
 
         binding.btnBack.setOnClickListener(v -> finish());
         binding.btnMenu.setOnClickListener(v -> {
+            Toast.makeText(this, "기능 추가 예정", Toast.LENGTH_SHORT).show();
             // TODO: 채팅방 메뉴 팝업 (나가기, 초대 등)
         });
     }

@@ -108,7 +108,7 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
                 String profileUrl = null;
 
                 if (room.isDirect()) {
-                    // [Bug #8] 1:1 채팅방: participants.get(0)이 항상 상대방이라는 보장 없음
+                    // 1:1 채팅방: participants.get(0)이 항상 상대방이라는 보장 없음
                     // 내 userId와 다른 멤버를 직접 찾아야 함
                     for (ChatMemberData member : room.getParticipants()) {
                         if (member.getUser_id() != myUserId) {
