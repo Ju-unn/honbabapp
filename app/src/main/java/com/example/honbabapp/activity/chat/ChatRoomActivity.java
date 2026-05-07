@@ -224,7 +224,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                 msg.setMsg_type(json.optString("msg_type", "text"));
                 msg.setContent(json.getString("content"));
                 msg.setCreated_at(json.getString("created_at"));
-                msg.setUnread_count(json.optInt("unread_count", 0)); // [Bug 4] 실시간 unread_count 파싱
+                msg.setUnread_count(json.optInt("unread_count", 0)); //실시간 unread_count 파싱
                 msg.setIs_mine(msg.getSender_id() == myUserId);
 
                 runOnUiThread(() -> {
@@ -257,7 +257,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         SocketManager.getInstance().getSocket().on("message", messageListener);
         SocketManager.getInstance().getSocket().on("read_update", readUpdateListener);
 
-        // [Bug 1·2] invite 후 member_joined 수신 → unread_count 재계산 + 인원 수 업데이트
+        // invite 후 member_joined 수신 → unread_count 재계산 + 인원 수 업데이트
         memberJoinedListener = args -> runOnUiThread(() -> {
             loadMessageHistory(); // 멤버 수 바뀌었으므로 unread_count 포함 전체 재로드
             memberCount++;

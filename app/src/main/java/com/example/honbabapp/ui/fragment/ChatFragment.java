@@ -147,7 +147,7 @@ public class ChatFragment extends Fragment {
             intent.putExtra("room_type", room.getRoom_type());
             intent.putExtra("member_count", room.getParticipants() != null ? room.getParticipants().size() : 0);
             startActivity(intent);
-        }, myUserId); // [Bug #8] 1:1 방에서 상대방 프로필 찾으려면 내 userId 필요
+        }, myUserId); //1:1 방에서 상대방 프로필 찾으려면 내 userId 필요
 
         binding.recyclerChatRooms.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recyclerChatRooms.setAdapter(adapter);

@@ -41,7 +41,6 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // rv_chat_list.xml → ViewBinding 클래스명: RvChatListBinding
         RvChatListBinding binding = RvChatListBinding.inflate(
                 LayoutInflater.from(parent.getContext()), parent, false);
         return new ViewHolder(binding);
@@ -108,7 +107,6 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
                 String profileUrl = null;
 
                 if (room.isDirect()) {
-                    // [Bug #8] 1:1 채팅방: participants.get(0)이 항상 상대방이라는 보장 없음
                     // 내 userId와 다른 멤버를 직접 찾아야 함
                     for (ChatMemberData member : room.getParticipants()) {
                         if (member.getUser_id() != myUserId) {
