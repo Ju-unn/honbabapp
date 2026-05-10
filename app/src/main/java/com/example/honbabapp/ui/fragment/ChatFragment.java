@@ -146,6 +146,31 @@ public class ChatFragment extends Fragment {
             intent.putExtra("room_name", room.getRoom_name());
             intent.putExtra("room_type", room.getRoom_type());
             intent.putExtra("member_count", room.getParticipants() != null ? room.getParticipants().size() : 0);
+
+            // 그룹: room_image 우선, 없으면 0번째 유저 이미지
+            String roomImage = null;
+            if (room.isGroup()) {
+                String groupImage = room.getRoom_image();
+                if (groupImage != null && !groupImage.isEmpty()) {
+                    roomImage = groupImage;
+                } else if (room.getParticipants() != null && !room.getParticipants().isEmpty()) {
+                    roomImage = room.getParticipants().get(0).getUser_profile_image();
+                }
+            } else {
+                // 1:1: 상대방 이미지
+                if (room.getParticipants() != null) {
+                    for (com.example.honbabapp.api.data.chat.ChatMemberData member : room.getParticipants()) {
+                        if (member.getUser_id() != myUserId) {
+                            roomImage = member.getUser_profile_image();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            intent.putExtra("room_image", roomImage);
+
+
             startActivity(intent);
         }, myUserId); //1:1 방에서 상대방 프로필 찾으려면 내 userId 필요
 

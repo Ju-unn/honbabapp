@@ -3,6 +3,7 @@ package com.example.honbabapp.activity.chat;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Toast;
@@ -13,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.example.honbabapp.R;
 import com.example.honbabapp.api.data.chat.MessageData;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
@@ -43,6 +46,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     private int roomId = -1;
     private String roomName = "";
     private String roomType = "group";
+    private String roomImage = null;
     private int memberCount = 0;
 
     // 무한 스크롤 페이징
@@ -71,6 +75,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         roomName = getIntent().getStringExtra("room_name");
         roomType = getIntent().getStringExtra("room_type");
         memberCount = getIntent().getIntExtra("member_count", 0);
+        roomImage = getIntent().getStringExtra("room_image");
         if (roomName == null) roomName = "";
         if (roomType == null) roomType = "group";
 
@@ -111,6 +116,14 @@ public class ChatRoomActivity extends AppCompatActivity {
 
     private void initToolbar() {
         binding.tvChatTitle.setText(roomName);
+
+        // 채팅방 이미지
+        Glide.with(this)
+                .load(roomImage)
+                .placeholder(R.drawable.ic_profile)
+                .error(R.drawable.ic_profile)
+                .circleCrop()
+                .into(binding.imChatAvatar);
 
         if ("group".equals(roomType) && memberCount > 0) {
             binding.tvChatStatus.setVisibility(View.VISIBLE);

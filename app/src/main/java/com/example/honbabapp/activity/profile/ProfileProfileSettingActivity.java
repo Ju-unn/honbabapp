@@ -278,6 +278,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                     .enqueue(new Callback<ApiResponse<ImageUploadData>>() {
                         @Override
                         public void onResponse(Call<ApiResponse<ImageUploadData>> call, Response<ApiResponse<ImageUploadData>> response) {
+                            Log.d(TAG, "서버 호출: " + imagePart + userIdBody);
                             if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                                 // S3 Url 저장 (저장 버튼 누를 때 사용)
                                 selectedImageUrl = response.body().getData().getProfile_image_url();
