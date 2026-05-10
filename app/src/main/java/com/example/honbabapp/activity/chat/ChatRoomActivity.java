@@ -221,15 +221,19 @@ public class ChatRoomActivity extends AppCompatActivity {
     private void connectWebSocket() {
         if (myUserId == -1 || roomId == -1) return;
 
-        // 소켓 연결 여부 확인 후 connect() — 이미 연결됐으면 SocketManager 내부에서 무시됨
+        // 소켓 연결 여부 확인 후 connect()
         SocketManager.getInstance().connect();
-        SocketManager.getInstance().joinRoom(roomId, myUserId);
 
         // 람다를 인스턴스 변수에 저장 → onDestroy에서 이 리스너만 정확히 제거 가능
         // 새 메시지 수신
         messageListener = args -> {
             try {
                 JSONObject json = (JSONObject) args[0];
+
+                // room_id 가드: 지금 열려있는 방 메시지가 아니면 무시
+                // fan-out 구조상 내 모든 방 메시지가 들어오므로 필터 필수
+                if (json.getInt("room_id") != roomId) return;
+
                 MessageData msg = new MessageData();
                 msg.setMessage_id(json.getInt("message_id"));
                 msg.setRoom_id(json.getInt("room_id"));
@@ -252,11 +256,15 @@ public class ChatRoomActivity extends AppCompatActivity {
             }
         };
 
+        // ─── 읽음 처리 수신 ───
         // newly_read_message_ids 기반으로 해당 메시지만 정확하게 -1
         // reader_id 체크 제거 → B 자신의 read_update도 처리
         readUpdateListener = args -> {
             try {
                 JSONObject json = (JSONObject) args[0];
+
+                // room_id 가드: 다른 방의 read_update는 무시
+                if (json.getInt("room_id") != roomId) return;
 
                 JSONArray idsArray = json.optJSONArray("newly_read_message_ids");
                 if (idsArray == null || idsArray.length() == 0) return;
@@ -269,18 +277,28 @@ public class ChatRoomActivity extends AppCompatActivity {
             } catch (Exception e) {}
         };
 
+        // ─── 멤버 참여 수신 ───
+        // invite 후 member_joined 수신 → unread_count 재계산 + 인원 수 업데이트
+        memberJoinedListener = args -> {
+            try {
+                JSONObject json = (JSONObject) args[0];
+
+                // room_id 가드: 지금 열려있는 방 이벤트가 아니면 무시
+                if (json.getInt("room_id") != roomId) return;
+
+                runOnUiThread(() -> {
+                    loadMessageHistory();
+                    memberCount++;
+                    if ("group".equals(roomType)) {
+                        binding.tvChatStatus.setVisibility(View.VISIBLE);
+                        binding.tvChatStatus.setText(memberCount + "명");
+                    }
+                });
+            } catch (Exception e) {}
+        };
+
         SocketManager.getInstance().getSocket().on("message", messageListener);
         SocketManager.getInstance().getSocket().on("read_update", readUpdateListener);
-
-        // invite 후 member_joined 수신 → unread_count 재계산 + 인원 수 업데이트
-        memberJoinedListener = args -> runOnUiThread(() -> {
-            loadMessageHistory(); // 멤버 수 바뀌었으므로 unread_count 포함 전체 재로드
-            memberCount++;
-            if ("group".equals(roomType)) {
-                binding.tvChatStatus.setVisibility(View.VISIBLE);
-                binding.tvChatStatus.setText(memberCount + "명");
-            }
-        });
         SocketManager.getInstance().getSocket().on("member_joined", memberJoinedListener);
     }
 

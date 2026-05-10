@@ -21,8 +21,11 @@ public class SocketManager {
     }
 
     private Socket socket;
-    // 그래서 이 플래그 없이는 connect()를 여러 번 호출하면 리스너가 중복 등록될 수 있음
     private boolean isConnecting = false;
+
+    // 연결 전에 login()이 호출됐을 때 userId를 임시 보관
+    // 연결 완료되면 EVENT_CONNECT에서 꺼내서 emit
+    private int pendingLoginUserId = -1;
 
     private SocketManager() {
         try {
@@ -34,26 +37,36 @@ public class SocketManager {
     }
 
     public void connect() {
-        // connected() 체크만으로는 부족 — 연결 시도 중에도 false를 반환하기 때문
-        // isConnecting까지 함께 체크해야 중복 connect() 호출 방지
         if (socket != null && !socket.connected() && !isConnecting) {
             isConnecting = true;
 
+            //  중복 등록 방지: 등록 전에 먼저 제거
+            socket.off(Socket.EVENT_CONNECT);
+            socket.off(Socket.EVENT_CONNECT_ERROR);
+            socket.off(Socket.EVENT_DISCONNECT);
+            socket.off("system");
+
             // 연결 성공
             socket.on(Socket.EVENT_CONNECT, args -> {
-                isConnecting = false; // 연결 완료 → 플래그 해제
+                isConnecting = false;
                 Log.d(TAG, "서버 연결 성공! ID: " + socket.id());
+
+                // 연결 완료 시점에 pendingLoginUserId가 있으면 login emit
+                // 재연결(네트워크 끊겼다 복구)될 때도 자동으로 재로그인됨
+                if (pendingLoginUserId != -1) {
+                    emitLogin(pendingLoginUserId);
+                }
             });
 
             // 연결 실패
             socket.on(Socket.EVENT_CONNECT_ERROR, args -> {
-                isConnecting = false; // 실패해도 플래그 해제 → 재시도 가능하게
+                isConnecting = false;
                 Log.e(TAG, "연결 실패: " + args[0].toString());
             });
 
             // 연결 종료
             socket.on(Socket.EVENT_DISCONNECT, args -> {
-                Log.d(TAG, "연결 종료");
+                Log.d(TAG, "연결 종료 - user_id: " + pendingLoginUserId);
             });
 
             // 시스템 메시지 수신
@@ -70,15 +83,37 @@ public class SocketManager {
         }
     }
 
-    public void joinRoom(int roomId, int userId) {
+    /**
+     * 로그인 emit — 앱 시작 시 MainActivity에서 한 번 호출
+     *
+     * 동작 원리:
+     * - 이미 연결됨 → 즉시 emit
+     * - 아직 연결 안 됨 → pendingLoginUserId에 저장 → connect() 트리거
+     *   → EVENT_CONNECT 콜백에서 자동으로 emit
+     * - 재연결 시 → EVENT_CONNECT 재실행 → 자동 재로그인
+     */
+    public void login(int userId) {
+        pendingLoginUserId = userId; // 항상 저장 (재연결 대비)
+
+        if (socket != null && socket.connected()) {
+            // 이미 연결된 상태 → 즉시 emit
+            emitLogin(userId);
+        } else {
+            // 아직 연결 안 됨 → connect() 호출, 완료되면 EVENT_CONNECT에서 emit
+            Log.d(TAG, "소켓 미연결 상태 — connect() 후 login emit 예정");
+            connect();
+        }
+    }
+
+    /** 실제 login emit 로직 (내부 전용) */
+    private void emitLogin(int userId) {
         try {
             JSONObject data = new JSONObject();
-            data.put("room_id", roomId);
             data.put("user_id", userId);
-            socket.emit("join", data);
-            Log.d(TAG, "join 전송! room:" + roomId);
+            socket.emit("login", data);
+            Log.d(TAG, "login emit 완료 — user_id: " + userId);
         } catch (Exception e) {
-            Log.e(TAG, "join 전송 실패: " + e.getMessage());
+            Log.e(TAG, "login emit 실패: " + e.getMessage());
         }
     }
 
@@ -89,21 +124,9 @@ public class SocketManager {
             data.put("user_id", userId);
             data.put("content", content);
             socket.emit("message", data);
-            Log.d(TAG, "메시지 전송! room:" + roomId + " 내용:" + content);
+            Log.d(TAG, "메시지 전송! room:" + roomId);
         } catch (Exception e) {
             Log.e(TAG, "메시지 전송 실패: " + e.getMessage());
-        }
-    }
-
-    public void emitMemberJoined(int roomId, int userId) {
-        try {
-            JSONObject data = new JSONObject();
-            data.put("room_id", roomId);
-            data.put("user_id", userId);
-            socket.emit("member_joined", data);
-            Log.d(TAG, "member_joined 전송! room:" + roomId + " user:" + userId);
-        } catch (Exception e) {
-            Log.e(TAG, "member_joined 전송 실패: " + e.getMessage());
         }
     }
 
@@ -113,16 +136,26 @@ public class SocketManager {
             data.put("room_id", roomId);
             data.put("user_id", userId);
             socket.emit("read", data);
-            Log.d(TAG, "읽음 전송! room:" + roomId);
         } catch (Exception e) {
-            Log.e(TAG, "읽음 전송 실패: " + e.getMessage());
+            Log.e(TAG, "read 전송 실패: " + e.getMessage());
+        }
+    }
+
+    public void emitMemberJoined(int roomId, int userId) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put("room_id", roomId);
+            data.put("user_id", userId);
+            socket.emit("member_joined", data);
+            Log.d(TAG, "member_joined emit! room:" + roomId + " user:" + userId);
+        } catch (Exception e) {
+            Log.e(TAG, "member_joined emit 실패: " + e.getMessage());
         }
     }
 
     public void disconnect() {
         if (socket != null && socket.connected()) {
             socket.disconnect();
-            isConnecting = false; //연결 끊길 때도 플래그 초기화
         }
     }
 

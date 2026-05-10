@@ -1,6 +1,7 @@
 package com.example.honbabapp.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -40,7 +41,15 @@ public class MainActivity extends AppCompatActivity {
         initViewPager();
         initNavigation();
         handleIntent(getIntent());
-        SocketManager.getInstance().connect();
+
+        // SharedPreferences에서 userId 읽기
+        SharedPreferences prefs =
+                getSharedPreferences("honbabapp_prefs", android.content.Context.MODE_PRIVATE);
+        int userId = prefs.getInt("user_id", -1);
+
+        // 앱 시작하자마자 서버에 "나 접속했어요" 등록
+        // → 이제부터 내 모든 채팅방 메시지를 어느 화면에 있어도 수신
+        SocketManager.getInstance().login(userId);
     }
 
 

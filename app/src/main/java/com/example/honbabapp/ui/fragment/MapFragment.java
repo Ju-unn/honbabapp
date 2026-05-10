@@ -562,7 +562,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void setupSearchBar() {
-        binding.searchInputLayout.setOnClickListener(v -> {
+        binding.etSearchMap.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity() , SearchViewActivity.class);
             startActivity(intent);
         });
