@@ -115,10 +115,13 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
                         }
                     }
                 } else {
-                    // 그룹 채팅방: 대표 프로필로 0번째 사용
-                    // TODO : 그룹은 모임 meetings table에 meeting_image로 할 예정
-                    // TODO : 만약에 meeting_image가 null 0번째 유저 이미지로
-                    profileUrl = room.getParticipants().get(0).getUser_profile_image();
+                    // 그룹 채팅방: room_image 우선, 없으면 0번째 유저 이미지
+                    String groupImage = room.getRoom_image();
+                    if (groupImage != null && !groupImage.isEmpty()) {
+                        profileUrl = groupImage;
+                    } else {
+                        profileUrl = room.getParticipants().get(0).getUser_profile_image();
+                    }
                 }
 
                 // profileUrl이 null이면 Glide의 error()가 ic_profile 기본 이미지 표시

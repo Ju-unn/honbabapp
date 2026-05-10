@@ -209,12 +209,22 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
                     if (apiResponse.isSuccess()) {
                         Log.i(TAG, action + " 성공");
 
-                        // 성공 메시지
-                        String message = action.equals("approve") ?
-                                "참여를 승인했습니다" : "참여를 거절했습니다";
-                        Toast.makeText(MeetingApplicantListActivity.this,
-                                message,
-                                Toast.LENGTH_SHORT).show();
+                        if (action.equals("approve")) {
+                            // 승인: room_id 로그 + Toast
+                            ApproveResponse data = apiResponse.getData();
+                            Integer roomId = (data != null) ? data.getRoom_id() : null;
+                            Log.i(TAG, "채팅방 room_id: " + roomId);
+
+                            String chatMsg = (roomId != null)
+                                    ? "채팅방에 참여자를 추가했습니다"
+                                    : "참여를 승인했습니다";
+                            Toast.makeText(MeetingApplicantListActivity.this,
+                                    chatMsg, Toast.LENGTH_SHORT).show();
+                        } else {
+                            // 거절
+                            Toast.makeText(MeetingApplicantListActivity.this,
+                                    "참여를 거절했습니다", Toast.LENGTH_SHORT).show();
+                        }
 
                         // 신청자 목록 다시 로드
                         loadApplicants();

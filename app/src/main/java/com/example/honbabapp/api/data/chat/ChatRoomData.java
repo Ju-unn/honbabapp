@@ -10,6 +10,7 @@ import java.util.List;
  *   "room_id": 1,
  *   "room_type": "group",
  *   "room_name": "오늘 저녁 삼겹살",
+ *   "room_image": "https://...",
  *   "meeting_id": 5,
  *   "owner_id": 123,
  *   "last_message": "내일 몇 시에 만나요?",
@@ -25,6 +26,7 @@ public class ChatRoomData {
     private int room_id;
     private String room_type;       // "direct" | "group"
     private String room_name;
+    private String room_image;
     private Integer meeting_id;     // null 가능 → Integer 사용
     private int owner_id;
     private String last_message;
@@ -42,6 +44,9 @@ public class ChatRoomData {
 
     public String getRoom_name() { return room_name; }
     public void setRoom_name(String room_name) { this.room_name = room_name; }
+
+    public String getRoom_image() { return room_image; }
+    public void setRoom_image(String room_image) { this.room_image = room_image; }
 
     public Integer getMeeting_id() { return meeting_id; }
     public void setMeeting_id(Integer meeting_id) { this.meeting_id = meeting_id; }

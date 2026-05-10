@@ -12,7 +12,8 @@ package com.example.honbabapp.api.data.response.meeting;
  *   "data": {
  *     "participant_id": 6,
  *     "participation_status": "승인",
- *     "meeting_current_participants": 3
+ *     "meeting_current_participants": 3,
+ *     "room_id": 12
  *   }
  * }
  *
@@ -30,8 +31,8 @@ public class ApproveResponse {
     private int participant_id;
     private String participation_status;
     private Integer meeting_current_participants;  // 승인 시에만 있음
+    private Integer room_id;                       // 승인 시에만 있음, 거절 시 null
 
-    // Getters and Setters
     public int getParticipant_id() {
         return participant_id;
     }
@@ -54,5 +55,13 @@ public class ApproveResponse {
 
     public void setMeeting_current_participants(Integer meeting_current_participants) {
         this.meeting_current_participants = meeting_current_participants;
+    }
+
+    public Integer getRoom_id() {
+        return room_id;
+    }
+
+    public void setRoom_id(Integer room_id) {
+        this.room_id = room_id;
     }
 }
