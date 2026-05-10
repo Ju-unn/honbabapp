@@ -128,6 +128,7 @@ public class ProfileFragment extends Fragment {
 
         // 프로필 이미지
         String imageUrl = profile.getUser_profile_image();
+        Log.i(TAG , "이미지 : " + imageUrl);
 
         Glide.with(requireContext())
                 .load(imageUrl)
