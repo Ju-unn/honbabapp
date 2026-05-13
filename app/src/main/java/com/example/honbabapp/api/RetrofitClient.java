@@ -4,7 +4,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
-    private static String BASE_URL = "http://15.164.213.194/";
+    private static String BASE_URL = "http://3.34.98.113/";
     private RetrofitClient() {} // 외부 생성 방지
 
     private static class LazyHolder {
