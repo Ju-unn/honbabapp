@@ -73,9 +73,16 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         MessageData msg = messages.get(position);
 
         if (holder instanceof MineViewHolder) {
-            ((MineViewHolder) holder).bind(msg);
+            // 내 메세지 : 시간 표시 여부만 필요
+            boolean showTime = isLastInTimeRun(position);
+
+            ((MineViewHolder) holder).bind(msg , showTime);
         } else if (holder instanceof OtherViewHolder) {
-            ((OtherViewHolder) holder).bind(msg);
+            // 상대 메세지: 시간 + 닉네임 표시 여부 둘 다 필요
+            boolean showTime       = isLastInTimeRun(position);
+            boolean showSenderName = isFirstInSenderRun(position);
+
+            ((OtherViewHolder) holder).bind(msg, showTime, showSenderName);
         } else if (holder instanceof SystemViewHolder) {
             ((SystemViewHolder) holder).bind(msg);
         }
@@ -102,10 +109,17 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     /**
      * 새 메시지 1개 추가
      * WebSocket 실시간 수신 시 호출 — 전체를 다시 그리지 않고 맨 아래만 추가
+     * 직전 메세지가 내가 보낸거라면 닉네임 한번 호출 + 메세지 시간 한번호출
      */
     public void addMessage(MessageData msg) {
         messages.add(msg);
-        notifyItemInserted(messages.size() - 1);
+        int newIndex = messages.size() -1;
+        notifyItemInserted(newIndex);
+
+        // 직전 메세지 재계산 (2개 이상일 경우)
+        if (messages.size() >= 2) {
+            notifyItemChanged(newIndex - 1);
+        }
     }
 
     /**
@@ -115,6 +129,11 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public void prependMessages(List<MessageData> older) {
         messages.addAll(0, older);
         notifyItemRangeInserted(0, older.size());
+
+        // 기존 첫 메세지 (삽입후 인덱스 = older.size()) 재계산
+        if (!older.isEmpty() && messages.size() > older.size()) {
+            notifyItemChanged(older.size());
+        }
     }
 
     // 특정 message_id들의 unread_count만 -1
@@ -145,9 +164,16 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             this.binding = binding;
         }
 
-        void bind(MessageData msg) {
+        void bind(MessageData msg , boolean showTime) {
             binding.textContent.setText(msg.getContent());
-            binding.textTime.setText(formatTime(msg.getCreated_at()));
+
+            // 시간 : 런의 마지막일 때만 표시
+            if (showTime) {
+                binding.textTime.setText(formatTime(msg.getCreated_at()));
+                binding.textTime.setVisibility(View.VISIBLE);
+            } else {
+                binding.textTime.setVisibility(View.GONE);
+            }
 
             // 읽지 않은 인원 수 (0이면 숨김)
             if (msg.getUnread_count() > 0) {
@@ -171,11 +197,24 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             this.binding = binding;
         }
 
-        void bind(MessageData msg) {
-            binding.textSenderName.setVisibility(View.VISIBLE);
-            binding.textSenderName.setText(msg.getSender_name());
+        void bind(MessageData msg, boolean showTime, boolean showSenderName) {
+            // 닉네임: 런의 첫 번째일 때만 표시
+            if (showSenderName) {
+                binding.textSenderName.setText(msg.getSender_name());
+                binding.textSenderName.setVisibility(View.VISIBLE);
+            } else {
+                binding.textSenderName.setVisibility(View.GONE);
+            }
+
             binding.textContent.setText(msg.getContent());
-            binding.textTime.setText(formatTime(msg.getCreated_at()));
+
+            // 시간: 런의 마지막일 때만 표시
+            if (showTime) {
+                binding.textTime.setText(formatTime(msg.getCreated_at()));
+                binding.textTime.setVisibility(View.VISIBLE);
+            } else {
+                binding.textTime.setVisibility(View.GONE);
+            }
 
             // 읽지 않은 인원 수 (0이면 숨김)
             if (msg.getUnread_count() > 0) {
@@ -185,14 +224,20 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 binding.textUnread.setVisibility(View.GONE);
             }
 
-            // 프로필 이미지 Glide 로드
-            Glide.with(binding.getRoot().getContext())
-                    .load(msg.getSender_profile_image())
-                    .placeholder(R.drawable.ic_profile)
-                    .error(R.drawable.ic_profile)
-                    .circleCrop()
-                    .into(binding.imgProfile);
+            // 프로필 이미지 — 첫 번째 메세지만 표시, 나머지는 INVISIBLE (자리는 유지)
+            if (showSenderName) {
+                binding.imgProfile.setVisibility(View.VISIBLE);
+                Glide.with(binding.getRoot().getContext())
+                        .load(msg.getSender_profile_image())
+                        .placeholder(R.drawable.ic_profile)
+                        .error(R.drawable.ic_profile)
+                        .circleCrop()
+                        .into(binding.imgProfile);
+            } else {
+                binding.imgProfile.setVisibility(View.INVISIBLE); // GONE 아님! 자리 유지
+            }
         }
+
     }
 
     /**
@@ -217,6 +262,73 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     // ─────────────────────────────────────────
 
     /**
+     * "2026-04-17 10:00:00" → "2026-04-17 10:00" (앞 16자리만 자름)
+     * 같은 분(minute)인지 비교할 때 사용
+     * null이거나 너무 짧으면 빈 문자열 반환 (NullPointerException 방지)
+     */
+    private static String minuteKey(String createdAt) {
+        if (createdAt == null || createdAt.length() < 16) return "";
+        return createdAt.substring(0, 16); // "yyyy-MM-dd HH:mm"
+    }
+
+    /**
+     * position 메세지가 "시간 런"의 마지막인지 판단
+     * 마지막이면 true → 시간 표시 / 아니면 false → 시간 숨김
+     *
+     * 마지막인 조건 (하나라도 해당하면 true):
+     *   1. 리스트의 맨 끝 메세지 (다음 메세지 없음)
+     *   2. 다음 메세지가 시스템 메세지 (입장/퇴장 알림)
+     *   3. 다음 메세지의 sender_id가 다름 (다른 사람이 보냄)
+     *   4. 다음 메세지의 분(minute)이 다름 (1분 이상 차이)
+     */
+    private boolean isLastInTimeRun(int position) {
+        // 1. 마지막 아이템이면 무조건 true
+        if (position >= messages.size() - 1) return true;
+
+        MessageData current = messages.get(position);
+        MessageData next    = messages.get(position + 1);
+
+        // 2. 다음이 시스템 메세지면 런 끊김
+        if ("system".equals(next.getMsg_type())) return true;
+
+        // 3. 다음 메세지가 다른 사람이면 런 끊김
+        if (current.getSender_id() != next.getSender_id()) return true;
+
+        // 4. 다음 메세지가 다른 분(minute)이면 런 끊김
+        if (!minuteKey(current.getCreated_at()).equals(minuteKey(next.getCreated_at()))) return true;
+
+        // 위 조건 모두 해당 없음 → 아직 런 중간 → 시간 숨김
+        return false;
+    }
+
+    /**
+     * position 메세지가 "발신자 런"의 첫 번째인지 판단
+     * 첫 번째이면 true → 닉네임 표시 / 아니면 false → 닉네임 숨김
+     * (OtherViewHolder — 상대방 메세지에만 적용)
+     *
+     * 첫 번째인 조건 (하나라도 해당하면 true):
+     *   1. 리스트의 맨 첫 메세지 (이전 메세지 없음)
+     *   2. 이전 메세지가 시스템 메세지
+     *   3. 이전 메세지의 sender_id가 다름
+     */
+    private boolean isFirstInSenderRun(int position) {
+        // 1. 첫 번째 아이템이면 무조건 true
+        if (position == 0) return true;
+
+        MessageData current  = messages.get(position);
+        MessageData previous = messages.get(position - 1);
+
+        // 2. 이전이 시스템 메세지면 런 끊김
+        if ("system".equals(previous.getMsg_type())) return true;
+
+        // 3. 이전 메세지가 다른 사람이면 런 끊김
+        if (current.getSender_id() != previous.getSender_id()) return true;
+
+        // 위 조건 모두 해당 없음 → 런 중간 → 닉네임 숨김
+        return false;
+    }
+
+    /**
      * "2026-04-17 10:00:00" → "10:00"
      */
     private static String formatTime(String timeStr) {
@@ -224,7 +336,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         try {
             SimpleDateFormat input  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
             input.setTimeZone(TimeZone.getTimeZone("UTC"));
-            SimpleDateFormat output = new SimpleDateFormat("HH:mm", Locale.KOREA);
+            SimpleDateFormat output = new SimpleDateFormat("a h:mm", Locale.KOREAN);
             output.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
             return output.format(input.parse(timeStr));
         } catch (Exception e) {
