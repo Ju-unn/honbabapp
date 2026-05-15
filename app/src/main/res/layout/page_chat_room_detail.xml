@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    채팅방 상세 페이지 (햄버거 버튼 클릭 시 진입)
+
+    구조 :
+    [상단 헤더 바]     ← 뒤로가기 + "채팅방 정보"
+    [헤더 카드]        방 이미지 + 이름 + 부제 + 인원수 (클릭 → 모임 상세)
+    [사진 섹션]        헤더 "사진" + 가로 RecyclerView
+    [참가자 섹션]      헤더 "참가자 (N)" + 세로 RecyclerView
+    [나가기 버튼]      "채팅방 나가기" (빨강 글자)
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_200">
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- 1) 상단 헤더 바  (← 뒤로가기 + 제목)            -->
+    <!-- ════════════════════════════════════════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:background="@color/bg_100"
+        android:elevation="2dp">
+
+        <!-- 뒤로가기 버튼 -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_arrow_back"
+            android:scaleType="centerCrop"
+            android:background="@color/white"
+            android:layout_marginEnd="12dp"
+            android:contentDescription="뒤로가기" />
+
+        <!-- 제목 -->
+        <!-- marginEnd 56dp : 우측 버튼이 없으므로 좌측 btn_back 만큼 빼서 가운데 정렬 -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="채팅방 정보"
+            android:textColor="@color/primary_200"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:letterSpacing="-0.05"
+            android:layout_marginEnd="56dp" />
+
+    </LinearLayout>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- 본문 ScrollView                                -->
+    <!-- ════════════════════════════════════════════ -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ──────────────────────────────────── -->
+            <!-- 2) 헤더 카드 (클릭 가능)               -->
+            <!--    - 방 프로필 이미지                  -->
+            <!--    - 방 이름                          -->
+            <!--    - 부제 (group: 한줄소개/위치, direct: 상태메시지) -->
+            <!--    - 인원수 (group 전용 N/MAX명)       -->
+            <!-- ──────────────────────────────────── -->
+            <LinearLayout
+                android:id="@+id/card_room_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="24dp"
+                android:background="@color/bg_100"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <!-- 방 이미지 (원형 80dp) -->
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/iv_room_image"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_profile"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Honbab.Profile.Circle"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- 방 이름 (group: 방이름, direct: 상대 닉네임) -->
+                <TextView
+                    android:id="@+id/tv_room_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="채팅방 이름"
+                    android:textColor="@color/text_100"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <!-- 부제 (group: meeting_description / direct: 상태 메시지) -->
+                <TextView
+                    android:id="@+id/tv_room_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:gravity="center"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:layout_marginBottom="6dp" />
+
+                <!-- 인원수 (group 전용) -->
+                <TextView
+                    android:id="@+id/tv_member_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0/0명"
+                    android:textColor="@color/primary_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- ──────────────────────────────────── -->
+            <!-- 3) 사진 섹션                          -->
+            <!-- ──────────────────────────────────── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/bg_100"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:layout_marginBottom="8dp">
+
+                <!-- 헤더 ("사진" + "더보기 >") -->
+                <LinearLayout
+                    android:id="@+id/layout_photo_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="20dp"
+                    android:layout_marginBottom="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?android:attr/selectableItemBackground">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="사진"
+                        android:textColor="@color/text_100"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_photo_more"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="더보기"
+                        android:textColor="@color/text_200"
+                        android:textSize="13sp"
+                        android:layout_marginEnd="4dp" />
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_chevron_right" />
+
+                </LinearLayout>
+
+                <!-- 가로 RecyclerView (사진 미리보기) -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_photo_preview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="20dp"
+                    android:clipToPadding="false"
+                    android:overScrollMode="never"
+                    android:visibility="gone" />
+
+                <!-- 빈 상태 ("전송된 사진이 없습니다") -->
+                <TextView
+                    android:id="@+id/tv_photo_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="전송된 사진이 없습니다"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:gravity="center"
+                    android:paddingVertical="24dp" />
+
+            </LinearLayout>
+
+            <!-- ──────────────────────────────────── -->
+            <!-- 4) 참가자 섹션                        -->
+            <!-- ──────────────────────────────────── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/bg_100"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:layout_marginBottom="8dp">
+
+                <!-- 헤더 "참가자 (N)" -->
+                <TextView
+                    android:id="@+id/tv_participants_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="참가자 (0)"
+                    android:textColor="@color/text_100"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="20dp"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- 세로 RecyclerView -->
+                <!-- nestedScrollingEnabled=false : 부모 ScrollView 가 스크롤 처리하도록 함 -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_participants"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            </LinearLayout>
+
+            <!-- ──────────────────────────────────── -->
+            <!-- 5) 나가기 버튼                        -->
+            <!-- ──────────────────────────────────── -->
+            <LinearLayout
+                android:id="@+id/btn_leave_room"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="20dp"
+                android:background="@color/bg_100"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="채팅방 나가기"
+                    android:textColor="@color/error_red"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+
+            </LinearLayout>
+
+            <!-- 하단 여백 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="24dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

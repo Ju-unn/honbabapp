@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    채팅방 상세 페이지의 사진 가로 미리보기 한 칸
+    - 80dp 정사각 썸네일
+    - 우측 마진 8dp (마지막 칸 마진은 어댑터에서 처리하거나 무시)
+    - centerCrop 으로 잘려도 정사각 모양 유지
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp">
+
+    <ImageView
+        android:id="@+id/iv_photo"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:scaleType="centerCrop"
+        android:background="@color/bg_300"
+        android:contentDescription="채팅방 사진" />
+
+</FrameLayout>
