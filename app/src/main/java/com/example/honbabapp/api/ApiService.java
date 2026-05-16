@@ -13,7 +13,9 @@ import com.example.honbabapp.api.data.request.user.DeleteAccountRequest;
 import com.example.honbabapp.api.data.request.user.UpdateLocationRequest;
 import com.example.honbabapp.api.data.request.user.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.MyMeetingItem;
+import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
 import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
+import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
@@ -326,11 +328,31 @@ public interface ApiService {
 
     /**
      * 6. 채팅방 나가기
+     *
+     * 응답 data 의 9개 필드:
+     *   - room_id, remaining
+     *   - is_host, is_host_transferred, new_host_id
+     *   - room_deleted, meeting_deleted
+     *   - penalty_applied, new_manner_score
      */
     @POST("api/chat/leave.php")
-    Call<ApiResponse<Void>> leaveRoom(@Body LeaveRoomRequest request);
+    Call<ApiResponse<LeaveRoomResponse>> leaveRoom(@Body LeaveRoomRequest request);
 
-
+    /**
+     * 7. 채팅방 사진 목록 조회 (페이지네이션)
+     *
+     * @param roomId 채팅방 ID
+     * @param userId 요청자 user_id (멤버 권한 체크용)
+     * @param page   페이지 번호 (1부터)
+     * @param limit  페이지당 개수 (보통 10 또는 30)
+     */
+    @GET("api/chat/photos.php")
+    Call<ApiResponse<ChatPhotosResponse>> getChatPhotos (
+            @Query("room_id") int roomId,
+            @Query("user_id") int userId,
+            @Query("page")    int page,
+            @Query("limit")   int limit
+    );
 
 
 }

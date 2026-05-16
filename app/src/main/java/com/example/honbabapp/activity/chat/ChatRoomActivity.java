@@ -1,6 +1,7 @@
 package com.example.honbabapp.activity.chat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -42,6 +43,11 @@ public class ChatRoomActivity extends AppCompatActivity {
     private PageChatDetailBinding binding;
     private MessageAdapter adapter;
 
+    // ChatRoomDetailActivity 결과 받기용 requestCode
+    private static final int REQ_DETAIL = 1001;
+
+    // 햄버거 → ChatRoomDetailActivity 로 넘길 meeting_id
+    private int meetingId = -1;
     private int myUserId = -1;
     private int roomId = -1;
     private String roomName = "";
@@ -57,9 +63,15 @@ public class ChatRoomActivity extends AppCompatActivity {
     // 리스너를 인스턴스 변수로 보관
     // off(이벤트명)는 해당 이벤트의 모든 리스너를 제거함 → SocketManager 리스너까지 날아감
     // off(이벤트명, 특정리스너) 형태로 호출해야 이 Activity가 등록한 것만 제거할 수 있음
+    // 맴버가 나갔을때
+    // 나갔을때 호스트가 바뀌면
     private Emitter.Listener messageListener;
     private Emitter.Listener readUpdateListener;
     private Emitter.Listener memberJoinedListener;
+    private Emitter.Listener memberLeftListener;
+    private Emitter.Listener hostChangedListener;
+
+
 
     // ─────────────────────────────────────────
     // 생명주기
@@ -76,6 +88,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         roomType = getIntent().getStringExtra("room_type");
         memberCount = getIntent().getIntExtra("member_count", 0);
         roomImage = getIntent().getStringExtra("room_image");
+        meetingId = getIntent().getIntExtra("meeting_id", -1);
         if (roomName == null) roomName = "";
         if (roomType == null) roomType = "group";
 
@@ -108,7 +121,26 @@ public class ChatRoomActivity extends AppCompatActivity {
             SocketManager.getInstance().getSocket().off("read_update", readUpdateListener);
         if (memberJoinedListener != null)
             SocketManager.getInstance().getSocket().off("member_joined", memberJoinedListener);
+        if (memberLeftListener != null)
+            SocketManager.getInstance().getSocket().off("member_left", memberLeftListener);
+        if (hostChangedListener != null)
+            SocketManager.getInstance().getSocket().off("host_changed", hostChangedListener);
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // ChatRoomDetailActivity 에서 "나가기" 했을 때
+        if (requestCode == REQ_DETAIL
+                && resultCode == RESULT_OK
+                && data != null
+                && data.getBooleanExtra("left", false)) {
+            // 본인도 함께 닫아서 ChatFragment 로 자연스럽게 복귀
+            finish();
+        }
+    }
+
 
     // ─────────────────────────────────────────
     // 초기화
@@ -133,9 +165,15 @@ public class ChatRoomActivity extends AppCompatActivity {
         }
 
         binding.btnBack.setOnClickListener(v -> finish());
+
         binding.btnMenu.setOnClickListener(v -> {
-            Toast.makeText(this, "기능 추가 예정", Toast.LENGTH_SHORT).show();
-            // TODO: 채팅방 메뉴 팝업 (나가기, 초대 등)
+            Intent intent = new Intent(this, ChatRoomDetailActivity.class);
+            intent.putExtra("room_id", roomId);
+            intent.putExtra("room_name", roomName);
+            intent.putExtra("room_type", roomType);
+            intent.putExtra("room_image", roomImage);
+            intent.putExtra("meeting_id", meetingId);
+            startActivityForResult(intent, REQ_DETAIL);
         });
     }
 
@@ -297,6 +335,60 @@ public class ChatRoomActivity extends AppCompatActivity {
             } catch (Exception e) {}
         };
 
+
+        // ─── 멤버 나감 수신 ───
+        // 누군가 채팅방에서 나갔을 때 인원수 갱신
+        memberLeftListener = args -> {
+            try {
+                JSONObject json = (JSONObject) args[0];
+
+                // room_id 가드 : 다른 방 이벤트면 무시
+                if (json.getInt("room_id") != roomId) return;
+
+                int remaining = json.optInt("remaining", -1);
+                int leftUserId = json.optInt("user_id", -1);
+
+                runOnUiThread(() -> {
+                    // 본인이 나간 거면 onActivityResult 가 처리하므로 여기선 다른 사람만
+                    if (leftUserId != myUserId) {
+                        if (remaining >= 0) {
+                            memberCount = remaining;
+                        } else {
+                            memberCount = Math.max(0, memberCount - 1);
+                        }
+                        if ("group".equals(roomType)) {
+                            binding.tvChatStatus.setText(memberCount + "명");
+                        }
+                    }
+                });
+            } catch (Exception e) { /* 파싱 실패 무시 */ }
+        };
+
+
+        // ─── 호스트 변경 수신 ───
+        // 위임 발생 시 본인이 새 방장이면 Toast 안내
+        hostChangedListener = args -> {
+            try {
+                JSONObject json = (JSONObject) args[0];
+
+                // room_id 가드
+                if (json.getInt("room_id") != roomId) return;
+
+                int newHostId = json.optInt("new_host_id", -1);
+
+                runOnUiThread(() -> {
+                    if (newHostId == myUserId) {
+                        Toast.makeText(ChatRoomActivity.this,
+                                "방장으로 위임되었습니다",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (Exception e) { /* 파싱 실패 무시 */ }
+        };
+
+
+        SocketManager.getInstance().getSocket().on("host_changed", hostChangedListener);
+        SocketManager.getInstance().getSocket().on("member_left", memberLeftListener);
         SocketManager.getInstance().getSocket().on("message", messageListener);
         SocketManager.getInstance().getSocket().on("read_update", readUpdateListener);
         SocketManager.getInstance().getSocket().on("member_joined", memberJoinedListener);

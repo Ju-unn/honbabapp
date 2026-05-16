@@ -146,6 +146,7 @@ public class ChatFragment extends Fragment {
             intent.putExtra("room_name", room.getRoom_name());
             intent.putExtra("room_type", room.getRoom_type());
             intent.putExtra("member_count", room.getParticipants() != null ? room.getParticipants().size() : 0);
+            intent.putExtra("meeting_id", room.getMeeting_id() != null ? room.getMeeting_id() : -1);
 
             // 그룹: room_image 우선, 없으면 0번째 유저 이미지
             String roomImage = null;

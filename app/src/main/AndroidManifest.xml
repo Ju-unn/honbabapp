@@ -83,6 +83,19 @@
             android:name=".activity.meeting.MeetingCardWritingActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.chat.ChatRoomDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activity.chat.ChatRoomPhotosActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activity.chat.ChatRoomParticipantDetailActivity"
+            android:exported="false" />
+
+
+        <activity
             android:name=".activity.SplashActivity"
             android:exported="true">
             <intent-filter>

@@ -8,7 +8,9 @@ import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
 import com.example.honbabapp.api.data.request.chat.LeaveRoomRequest;
 import com.example.honbabapp.api.data.request.chat.MarkReadRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
+import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
 import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
+import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
 
 import java.util.List;
@@ -148,17 +150,43 @@ public class ChatRepository {
 
     /**
      * 채팅방에서 나간다
-     * 서버에서 시스템 메시지("XXX님이 나갔습니다.")를 자동으로 브로드캐스트한다
      *
-     * @param roomId 채팅방 ID
-     * @param userId 나가는 사용자 ID
-     * @param chatRoomDb     완료 콜백
+     * 응답에 포함되는 정보:
+     *  - 호스트 위임 발생 여부 (is_host_transferred / new_host_id)
+     *  - 채팅방/모임 삭제 여부
+     *  - 적용된 패널티 점수 (penalty_applied)
+     *  - 변경된 매너점수 (new_manner_score)
+     *
+     * 서버에서 시스템 메시지 INSERT 및 WebSocket broadcast(member_left, host_changed)
+     * 까지 모두 자동 처리한다.
+     *
+     * @param roomId     채팅방 ID
+     * @param userId     나가는 사용자 ID
+     * @param chatRoomDb 완료 콜백 (LeaveRoomResponse 반환)
      */
-    public void leaveRoom(int roomId, int userId, Callback<ApiResponse<Void>> chatRoomDb) {
+    public void leaveRoom(int roomId, int userId, Callback<ApiResponse<LeaveRoomResponse>> chatRoomDb) {
         LeaveRoomRequest request = new LeaveRoomRequest(roomId, userId);
         apiService.leaveRoom(request).enqueue(chatRoomDb);
     }
 
+    // ─────────────────────────────────────────
+    // 채팅방 사진 조회
+    // ChatRoomDetailActivity / ChatRoomPhotosActivity 에서 호출
+    // ─────────────────────────────────────────
+
+    /**
+     * 채팅방의 사진 목록을 페이지 단위로 가져온다
+     *
+     * @param roomId     채팅방 ID
+     * @param userId     요청자 user_id (멤버 권한 체크용)
+     * @param page       페이지 번호 (1부터)
+     * @param limit      페이지당 개수 (미리보기 10, 그리드 30)
+     * @param chatRoomDb 성공 시 ChatPhotosResponse 반환
+     */
+    public void getChatPhotos(int roomId, int userId, int page, int limit,
+                              Callback<ApiResponse<ChatPhotosResponse>> chatRoomDb) {
+        apiService.getChatPhotos(roomId, userId, page, limit).enqueue(chatRoomDb);
+    }
 
 
 }
