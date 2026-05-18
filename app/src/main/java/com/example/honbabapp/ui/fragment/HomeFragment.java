@@ -452,6 +452,13 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (binding == null) return;
+        loadMeetings(); // 채팅방에서 모임 삭제/취소 후 돌아왔을때 새로고침
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;

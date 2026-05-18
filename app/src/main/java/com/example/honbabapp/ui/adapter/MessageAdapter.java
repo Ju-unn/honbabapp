@@ -31,6 +31,29 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private List<MessageData> messages = new ArrayList<>();
 
     // ─────────────────────────────────────────
+    // 프로필 클릭 콜백 (외부 주입)
+    // ─────────────────────────────────────────
+
+    public interface OnProfileClickListener {
+        void onProfileClick(int userId);
+    }
+
+    private final OnProfileClickListener profileClickListener;
+
+    public MessageAdapter() {
+        profileClickListener = null;
+    }
+
+    /**
+     * 프로필 클릭 콜백을 받는 생성자
+     */
+    public MessageAdapter(OnProfileClickListener listener) {
+        this.profileClickListener = listener;
+    }
+
+
+
+    // ─────────────────────────────────────────
     // ViewType 결정
     // ─────────────────────────────────────────
 
@@ -59,7 +82,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         } else if (viewType == VIEW_TYPE_OTHER) {
             RvMessageReceivedBinding binding =
                     RvMessageReceivedBinding.inflate(inflater, parent, false);
-            return new OtherViewHolder(binding);
+            return new OtherViewHolder(binding, profileClickListener);
 
         } else {
             RvMessageSystemBinding binding =
@@ -191,10 +214,12 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      */
     static class OtherViewHolder extends RecyclerView.ViewHolder {
         private final RvMessageReceivedBinding binding;
+        private final OnProfileClickListener profileClickListener;
 
-        OtherViewHolder(RvMessageReceivedBinding binding) {
+        OtherViewHolder(RvMessageReceivedBinding binding, OnProfileClickListener profileClickListener) {
             super(binding.getRoot());
             this.binding = binding;
+            this.profileClickListener = profileClickListener;
         }
 
         void bind(MessageData msg, boolean showTime, boolean showSenderName) {
@@ -236,6 +261,15 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             } else {
                 binding.imgProfile.setVisibility(View.INVISIBLE); // GONE 아님! 자리 유지
             }
+
+            // 프로필/ 닉네임 클릭시 -> ChatRoomParticipantDetailActivity 이동
+            View.OnClickListener profileClick = v -> {
+                if (profileClickListener != null) {
+                    profileClickListener.onProfileClick(msg.getSender_id());
+                }
+            };
+            binding.imgProfile.setOnClickListener(profileClick);
+            binding.textSenderName.setOnClickListener(profileClick);
         }
 
     }

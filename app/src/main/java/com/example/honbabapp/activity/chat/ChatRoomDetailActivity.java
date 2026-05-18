@@ -19,7 +19,9 @@ import com.example.honbabapp.R;
 import com.example.honbabapp.activity.meeting.MeetingDetailActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
+import com.example.honbabapp.api.data.chat.ChatMemberData;
 import com.example.honbabapp.api.data.chat.ChatPhotoData;
+import com.example.honbabapp.api.data.chat.ChatRoomData;
 import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.api.data.meeting.MeetingParticipant;
 import com.example.honbabapp.api.data.response.ApiResponse;
@@ -31,6 +33,7 @@ import com.example.honbabapp.ui.adapter.ChatParticipantAdapter;
 import com.example.honbabapp.ui.adapter.ChatPhotoPreviewAdapter;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -136,9 +139,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
         if ("group".equals(roomType) && meetingId != -1) {
             loadMeetingDetail();
         } else {
-            // direct 방: 모임 정보 없음, 참가자 섹션은 숨김 처리
-            binding.tvParticipantsTitle.setVisibility(View.GONE);
-            binding.rvParticipants.setVisibility(View.GONE);
+            // direct 방: 채팅방 멤버 정보 조회 → 참가자 섹션 표시
+            loadChatRoomMembers();
         }
 
         loadChatPhotos();
@@ -256,6 +258,72 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                     }
                 });
     }
+    /**
+     * 1:1 (direct) 방의 멤버 정보 조회 (참가자 섹션 표시용)
+     *
+     * 별도 API 없이 ChatRepository.getChatRooms() 응답에서 현재 room 을 필터링한다.
+     *  - 본인 + 상대방 2명을 ChatParticipantAdapter 에 표시
+     *  - 상대방 user_id 는 onHeaderCardClick() 에서도 쓰이므로 otherUserId 필드에 저장
+     *  - 방장 뱃지는 direct 방에선 의미 없음 → hostId = -1
+     */
+    private void loadChatRoomMembers() {
+        ChatRepository.getInstance().getChatRooms(myUserId,
+                new Callback<ApiResponse<List<ChatRoomData>>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ApiResponse<List<ChatRoomData>>> call,
+                                           @NonNull Response<ApiResponse<List<ChatRoomData>>> response) {
+                        if (!response.isSuccessful()
+                                || response.body() == null
+                                || !response.body().isSuccess()
+                                || response.body().getData() == null) {
+                            Log.e(TAG, "채팅방 목록 조회 실패");
+                            return;
+                        }
+
+                        // 응답에서 현재 room 찾기
+                        ChatRoomData currentRoom = null;
+                        for (ChatRoomData r : response.body().getData()) {
+                            if (r.getRoom_id() == roomId) {
+                                currentRoom = r;
+                                break;
+                            }
+                        }
+
+                        if (currentRoom == null
+                                || currentRoom.getParticipants() == null
+                                || currentRoom.getParticipants().isEmpty()) {
+                            Log.w(TAG, "현재 채팅방 또는 참가자 정보 없음");
+                            return;
+                        }
+
+                        // ChatMemberData → MeetingParticipant 변환
+                        List<MeetingParticipant> participants = new ArrayList<>();
+                        for (ChatMemberData m : currentRoom.getParticipants()) {
+                            participants.add(toMeetingParticipant(m));
+                            // 상대방 user_id 저장 (헤더 카드 클릭 시 사용)
+                            if (m.getUser_id() != myUserId) {
+                                otherUserId = m.getUser_id();
+                            }
+                        }
+
+                        // 어댑터에 주입
+                        participantAdapter.setHostId(-1);  // direct 방은 방장 없음
+                        participantAdapter.setItems(participants);
+
+                        // 헤더 "참가자 (N)"
+                        binding.tvParticipantsTitle.setText("참가자 (" + participants.size() + ")");
+                        binding.tvParticipantsTitle.setVisibility(View.VISIBLE);
+                        binding.rvParticipants.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ApiResponse<List<ChatRoomData>>> call,
+                                          @NonNull Throwable t) {
+                        Log.e(TAG, "채팅방 멤버 조회 네트워크 오류: " + t.getMessage());
+                    }
+                });
+    }
+
 
 
     // ═════════════════════════════════════════
@@ -306,6 +374,22 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
             binding.tvPhotoEmpty.setVisibility(View.GONE);
             photoAdapter.setItems(photos);
         }
+    }
+
+    /**
+     * ChatMemberData → MeetingParticipant 변환 (1:1 방 멤버 표시용)
+     *
+     * ChatParticipantAdapter는 MeetingParticipant 만 받기 때문에
+     * direct 방에서 ChatMemberData 를 어댑터에 넣으려면 변환이 필요하다.
+     *
+     * 매너점수는 rooms.php 응답에 없으므로 기본값(0.0) 사용 — direct 방 어댑터 UI 에서는 안 보임
+     */
+    private MeetingParticipant toMeetingParticipant(ChatMemberData member) {
+        MeetingParticipant meetingParticipant = new MeetingParticipant();
+        meetingParticipant.setUser_id(member.getUser_id());
+        meetingParticipant.setUser_nickname(member.getUser_nickname());
+        meetingParticipant.setUser_profile_image(member.getUser_profile_image());
+        return meetingParticipant;
     }
 
 
@@ -393,10 +477,13 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
      */
     private String buildLeaveDialogMessage(boolean isHost, int hoursUntil, int otherMembers) {
         if (isHost) {
+            // 호스트 혼자인 경우 → 모임 삭제, 매너점수 차감 없음 (날짜 무관)
+            if (otherMembers == 0) {
+                return "채팅방 참여자가 혼자일때 나가면 모임이 삭제됩니다. 그래도 괜찮나요?";
+            }
+            // ─── 아래는 "다른 멤버가 있는" 경우 ───
             if (hoursUntil >= 48) {
-                return (otherMembers >= 1)
-                        ? "방장이 위임됩니다. 정말 나가시겠어요?"
-                        : "모임이 삭제됩니다. 그래도 괜찮나요?";
+                return "방장이 위임됩니다. 정말 나가시겠어요?";
             }
             if (hoursUntil >= 24) {
                 return "방장이 위임되고 매너점수 -0.3이 차감됩니다.";

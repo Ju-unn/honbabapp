@@ -76,9 +76,16 @@ public class ProfileMyMeetingAdapter extends RecyclerView.Adapter<ProfileMyMeeti
                     item.getMeeting_current_participants() + "/"
                             + item.getMeeting_max_participants() + "명");
 
-            // 상태
-            boolean isExpired = item.isIs_past() || "모집완료".equals(item.getMeeting_status());
-            binding.tvMeetingStatus.setText(isExpired ? "모집완료" : "모집중");
+            // 상태 (취소 > 모집완료 > 모집중 우선순위)
+            String statusLabel;
+            if ("취소".equals(item.getMeeting_status())) {
+                statusLabel = "취소";
+            } else if (item.isIs_past() || "모집완료".equals(item.getMeeting_status())) {
+                statusLabel = "모집완료";
+            } else {
+                statusLabel = "모집중";
+            }
+            binding.tvMeetingStatus.setText(statusLabel);
 
             // 역할 배지
             boolean isHost = "host".equals(item.getUser_role());

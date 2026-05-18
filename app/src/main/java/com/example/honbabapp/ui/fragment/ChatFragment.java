@@ -74,7 +74,6 @@ public class ChatFragment extends Fragment {
         initRecyclerView();
         initTabLayout();
         initSearchBar();
-        loadChatRooms();
 
         // 채팅 목록 화면에서도 실시간 last_message 갱신
         SocketManager.getInstance().connect();

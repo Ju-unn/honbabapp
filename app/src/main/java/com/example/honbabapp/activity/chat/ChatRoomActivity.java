@@ -139,6 +139,13 @@ public class ChatRoomActivity extends AppCompatActivity {
             // 본인도 함께 닫아서 ChatFragment 로 자연스럽게 복귀
             finish();
         }
+
+        // 햄버거에서 돌아왔을 때 메시지 히스토리 재조회 (방 정보 변경 가능성 대비)
+        if (requestCode == REQ_DETAIL) {
+            currentPage = 1;
+            hasMorePages = true;
+            loadMessageHistory();
+        }
     }
 
 
@@ -178,7 +185,13 @@ public class ChatRoomActivity extends AppCompatActivity {
     }
 
     private void initRecyclerView() {
-        adapter = new MessageAdapter();
+        adapter = new MessageAdapter(senderId -> {
+            // 메시지 프로필/닉네임 클릭 → 참가자 상세
+            Intent intent = new Intent(this, ChatRoomParticipantDetailActivity.class);
+            intent.putExtra("user_id", senderId);
+            startActivity(intent);
+        });
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         binding.rvMessages.setLayoutManager(layoutManager);

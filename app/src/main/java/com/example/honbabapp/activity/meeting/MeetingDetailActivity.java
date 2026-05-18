@@ -345,6 +345,11 @@ public class MeetingDetailActivity extends AppCompatActivity {
         // 현재 사용자의 참여 상태 확인
         String participationStatus = getParticipationStatus();
 
+        // "취소" 상태(이전에 채팅방을 나간 사용자)는 신규 사용자와 동일하게 취급 → 재신청 허용
+        if ("취소".equals(participationStatus)) {
+            participationStatus = null;
+        }
+
         if (participationStatus != null) {
             // 참여 신청한 경우 - 상태에 따라 버튼 텍스트 변경
             if (participationStatus.equals("승인")) {

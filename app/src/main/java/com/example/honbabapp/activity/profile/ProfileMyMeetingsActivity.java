@@ -122,14 +122,20 @@ public class ProfileMyMeetingsActivity extends AppCompatActivity {
         pastParticipantMeetings.clear();
 
         for (MyMeetingItem item : all) {
-            if (!item.isIs_past()) {
-                // 탭1 : 진행중 (host + participant )
+            // 취소된 모임은 날짜와 무관하게 "과거"로 분류
+            // 취소됐는가
+            boolean isCancelled = "취소".equals(item.getMeeting_status());
+            // 과거인가
+            boolean treatAsPast = item.isIs_past() || isCancelled;
+
+            if (!treatAsPast) {
+                // 탭1 : 진행중 (host + participant)
                 currentMeetings.add(item);
             } else if ("host".equals(item.getUser_role())) {
-                // 탭2 : 과거 호스트
+                // 탭2 : 과거 호스트 (취소 포함)
                 pastHostMeetings.add(item);
             } else {
-                // 탭3 : 과거 참여자
+                // 탭3 : 과거 참여자 (취소 포함)
                 pastParticipantMeetings.add(item);
             }
         }
