@@ -56,4 +56,16 @@
         android:background="@drawable/host_badge_background"
         android:visibility="gone" />
 
+    <!-- 3-dot 메뉴 버튼-->
+    <ImageButton
+        android:id="@+id/btn_participant_menu"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_bar3_vertical"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:scaleType="centerInside"
+        android:contentDescription="멤버 관리"
+        android:visibility="gone" />
+
 </LinearLayout>

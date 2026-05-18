@@ -18,19 +18,22 @@ import java.util.List;
 /**
  * 채팅방 참가자 리스트 어댑터
  *
- * - 행 1개당 : 원형 프로필 + 닉네임 + (방장이면) 방장 뱃지
+ * - 행 1개당 : 원형 프로필 + 닉네임 + (방장이면) 방장 뱃지 + (조건부) 3-dot 메뉴
  * - 행 클릭 시 : OnParticipantClickListener.onClick(participant) 호출
  *   → ChatRoomParticipantDetailActivity 로 이동
+ * - 3-dot 클릭 시 : OnParticipantMenuClickListener.onMenuClick(participant) 호출
+ *   → ChatParticipantActionBottomSheetDialog 띄움
  *
- * 방장 판별:
- *   - participant.user_id == hostId 이면 방장
- *   - hostId 는 Activity 에서 setHostId() 로 주입
+ * 방장 뱃지 표시 조건:
+ *   - participant.user_id == hostId
  *
- * 사용:
- *   ChatParticipantAdapter adapter = new ChatParticipantAdapter(this::onClick);
- *   adapter.setHostId(meeting.getHost().getUser_id());
- *   adapter.setItems(meeting.getParticipants());
- *   binding.rvParticipants.setAdapter(adapter);
+ * 3-dot 메뉴 표시 조건:
+ *   - (currentUserId == hostId)  → 내가 방장
+ *   AND
+ *   - (participant.user_id != hostId) → 대상이 방장이 아님 (자기 자신 강퇴 방지)
+ *
+ *   즉 "내가 방장일 때, 내가 아닌 일반 멤버 행에만" 3-dot 노출.
+ *
  */
 public class ChatParticipantAdapter
         extends RecyclerView.Adapter<ChatParticipantAdapter.ViewHolder> {
@@ -39,8 +42,14 @@ public class ChatParticipantAdapter
     // 클릭 리스너 인터페이스
     // ─────────────────────────────────────────
 
+    /** 행 전체 클릭 — 프로필 상세 화면으로 이동 */
     public interface OnParticipantClickListener {
         void onClick(MeetingParticipant participant);
+    }
+
+    /** 3-dot 메뉴 클릭 — 강퇴 등 액션 바텀시트 띄움 */
+    public interface OnParticipantMenuClickListener {
+        void onMenuClick(MeetingParticipant participant);
     }
 
     // ─────────────────────────────────────────
@@ -48,8 +57,11 @@ public class ChatParticipantAdapter
     // ─────────────────────────────────────────
 
     private List<MeetingParticipant> participantsItem = new ArrayList<>();
-    private int hostId = -1;                      // 방장의 user_id (뱃지 표시 판단용)
+    private int hostId        = -1;                  // 방장의 user_id (뱃지/메뉴 판단용)
+    private int currentUserId = -1;                  // 현재 로그인한 user_id (메뉴 노출 판단용)
+
     private final OnParticipantClickListener listener;
+    private OnParticipantMenuClickListener menuClickListener;   // optional
 
     // ─────────────────────────────────────────
     // 생성자
@@ -69,10 +81,21 @@ public class ChatParticipantAdapter
         notifyDataSetChanged();
     }
 
-    /** 방장 ID 주입 (방장 뱃지 표시용) */
+    /** 방장 ID 주입 (방장 뱃지 + 3-dot 표시 판단용) */
     public void setHostId(int hostId) {
         this.hostId = hostId;
-        notifyDataSetChanged();   // 호스트가 바뀌면 뱃지 위치도 바뀌므로 갱신
+        notifyDataSetChanged();   // 호스트가 바뀌면 뱃지/메뉴 위치도 바뀌므로 갱신
+    }
+
+    /** 현재 로그인한 user_id 주입 (내가 방장인지 판단용) */
+    public void setCurrentUserId(int currentUserId) {
+        this.currentUserId = currentUserId;
+        notifyDataSetChanged();
+    }
+
+    /** 3-dot 메뉴 클릭 리스너 등록 (Activity 에서 등록) */
+    public void setOnMenuClickListener(OnParticipantMenuClickListener listener) {
+        this.menuClickListener = listener;
     }
 
     // ─────────────────────────────────────────
@@ -128,7 +151,22 @@ public class ChatParticipantAdapter
             boolean isHost = (participant.getUser_id() == hostId);
             binding.tvHostBadge.setVisibility(isHost ? View.VISIBLE : View.GONE);
 
-            // ── 행 클릭 → 외부로 위임 ──
+            // ── 3-dot 메뉴 표시/숨김 ──
+            // 조건: 내가 방장이고 + 대상이 방장이 아닐 때만
+            //  방장 본인 행에는 메뉴 자체를 안 보여줌)
+            boolean iAmHost      = (currentUserId == hostId) && (currentUserId != -1);
+            boolean targetIsHost = isHost;
+            boolean showMenu     = iAmHost && !targetIsHost;
+            binding.btnParticipantMenu.setVisibility(showMenu ? View.VISIBLE : View.GONE);
+
+            // ── 3-dot 클릭 → 외부로 위임 ──
+            binding.btnParticipantMenu.setOnClickListener(v -> {
+                if (menuClickListener != null) {
+                    menuClickListener.onMenuClick(participant);
+                }
+            });
+
+            // ── 행 클릭 → 외부로 위임 (프로필 상세) ──
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onClick(participant);

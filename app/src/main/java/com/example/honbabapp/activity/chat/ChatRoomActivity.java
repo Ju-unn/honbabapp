@@ -70,7 +70,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     private Emitter.Listener memberJoinedListener;
     private Emitter.Listener memberLeftListener;
     private Emitter.Listener hostChangedListener;
-
+    private Emitter.Listener kickedListener;
 
 
     // ─────────────────────────────────────────
@@ -125,6 +125,8 @@ public class ChatRoomActivity extends AppCompatActivity {
             SocketManager.getInstance().getSocket().off("member_left", memberLeftListener);
         if (hostChangedListener != null)
             SocketManager.getInstance().getSocket().off("host_changed", hostChangedListener);
+        if (kickedListener != null)
+            SocketManager.getInstance().getSocket().off("kicked", kickedListener);
     }
 
     @Override
@@ -399,12 +401,48 @@ public class ChatRoomActivity extends AppCompatActivity {
             } catch (Exception e) { /* 파싱 실패 무시 */ }
         };
 
+        // ─── 강퇴 수신 ───
+        kickedListener = args -> {
+            Log.d("KICK_DEBUG", "kicked 이벤트 수신! args=" + (args.length > 0 ? args[0].toString() : "empty"));
+
+            try {
+                JSONObject json = (JSONObject) args[0];
+
+                Log.d("KICK_DEBUG", "json.room_id=" + json.getInt("room_id") + " / 내 roomId=" + roomId);
+
+                if (json.getInt("room_id") != roomId) {
+                    Log.d("KICK_DEBUG", "room_id 다름 → 무시");
+                    return;
+                }
+
+                int targetUserId = json.optInt("target_user_id", -1);
+                Log.d("KICK_DEBUG", "targetUserId=" + targetUserId + " / 내 userId=" + myUserId);
+
+                if (targetUserId != myUserId) {
+                    Log.d("KICK_DEBUG", "target_user_id 다름 → 무시");
+                    return;
+                }
+
+                Log.d("KICK_DEBUG", "강퇴 확정 → finish 호출");
+                runOnUiThread(() -> {
+                    Toast.makeText(ChatRoomActivity.this,
+                            "방장에 의해 강퇴되었습니다",
+                            Toast.LENGTH_LONG).show();
+                    finish();
+                });
+            } catch (Exception e) {
+                Log.e("KICK_DEBUG", "kicked 파싱 실패: " + e.getMessage());
+            }
+        };
+
+
 
         SocketManager.getInstance().getSocket().on("host_changed", hostChangedListener);
         SocketManager.getInstance().getSocket().on("member_left", memberLeftListener);
         SocketManager.getInstance().getSocket().on("message", messageListener);
         SocketManager.getInstance().getSocket().on("read_update", readUpdateListener);
         SocketManager.getInstance().getSocket().on("member_joined", memberJoinedListener);
+        SocketManager.getInstance().getSocket().on("kicked", kickedListener);
     }
 
     // ─────────────────────────────────────────

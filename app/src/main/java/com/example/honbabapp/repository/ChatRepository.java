@@ -5,11 +5,13 @@ import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.chat.ChatRoomData;
 import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
 import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
+import com.example.honbabapp.api.data.request.chat.KickMemberRequest;
 import com.example.honbabapp.api.data.request.chat.LeaveRoomRequest;
 import com.example.honbabapp.api.data.request.chat.MarkReadRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
 import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
+import com.example.honbabapp.api.data.response.chat.KickMemberResponse;
 import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
 
@@ -167,6 +169,24 @@ public class ChatRepository {
     public void leaveRoom(int roomId, int userId, Callback<ApiResponse<LeaveRoomResponse>> chatRoomDb) {
         LeaveRoomRequest request = new LeaveRoomRequest(roomId, userId);
         apiService.leaveRoom(request).enqueue(chatRoomDb);
+    }
+
+    // ─────────────────────────────────────────
+    // 강퇴 (그룹 방 방장 전용)
+    // ChatRoomDetailActivity 의 참가자 행 3-dot 메뉴 → 바텀시트 → 확인 다이얼로그 후 호출
+    // ─────────────────────────────────────────
+
+    /**
+     * 방장이 특정 멤버를 강퇴한다
+     * @param roomId       채팅방 ID
+     * @param hostId       방장 user_id (= 현재 로그인 사용자)
+     * @param targetUserId 강퇴할 대상 user_id
+     * @param chatRoomDb   완료 콜백 (KickMemberResponse 반환)
+     */
+    public void kickMember(int roomId, int hostId, int targetUserId,
+                           Callback<ApiResponse<KickMemberResponse>> chatRoomDb) {
+        KickMemberRequest request = new KickMemberRequest(roomId, hostId, targetUserId);
+        apiService.kickMember(request).enqueue(chatRoomDb);
     }
 
     // ─────────────────────────────────────────

@@ -26,11 +26,13 @@ import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.api.data.meeting.MeetingParticipant;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
+import com.example.honbabapp.api.data.response.chat.KickMemberResponse;
 import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
 import com.example.honbabapp.databinding.PageChatRoomDetailBinding;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.ChatParticipantAdapter;
 import com.example.honbabapp.ui.adapter.ChatPhotoPreviewAdapter;
+import com.example.honbabapp.ui.dialog.ChatParticipantActionBottomSheetDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -168,6 +170,11 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
     private void setupRecyclerViews() {
         // 참가자 (세로)
         participantAdapter = new ChatParticipantAdapter(participant -> this.onParticipantClick(participant));
+        //   - currentUserId : 내가 누군지 (방장인지 판단용)
+        //   - menu listener : 3-dot 눌렸을 때 호출될 콜백
+        participantAdapter.setCurrentUserId(myUserId);
+        participantAdapter.setOnMenuClickListener(participant -> this.onKickMenuClick(participant));
+
         binding.rvParticipants.setLayoutManager(new LinearLayoutManager(this));
         binding.rvParticipants.setAdapter(participantAdapter);
 
@@ -564,4 +571,83 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    // ═════════════════════════════════════════
+    // 강퇴 흐름 (3-dot 메뉴 → 바텀시트 → 확인 → API)
+    // ═════════════════════════════════════════
+
+    /**
+     * 1단계 : 3-dot 메뉴 클릭 → 바텀시트 띄움
+     */
+    private void onKickMenuClick(MeetingParticipant participant) {
+        ChatParticipantActionBottomSheetDialog dialog =
+                new ChatParticipantActionBottomSheetDialog();
+        dialog.participant = participant;
+        dialog.listener    = this::confirmKick;   // 강퇴 버튼 누르면 confirmKick 호출
+        dialog.show(getSupportFragmentManager(), "participantAction");
+    }
+
+    /**
+     * 2단계 : "강퇴하기" 클릭 → 확인 다이얼로그
+     *
+     * 강퇴는 되돌릴 수 없는 행위라 한 번 더 확인.
+     * 매너점수 차감 정책은 없지만 "재신청 불가" 라는 영구적 영향이 있음.
+     */
+    private void confirmKick(MeetingParticipant participant) {
+        new AlertDialog.Builder(this)
+                .setTitle("강퇴 확인")
+                .setMessage(participant.getUser_nickname()
+                        + "님을 정말 강퇴하시겠어요?\n\n강퇴된 멤버는 같은 모임에 다시 신청할 수 없습니다.")
+                .setNegativeButton("취소", null)
+                .setPositiveButton("강퇴", (dialog, which) -> performKick(participant))
+                .show();
+    }
+
+    /**
+     * 3단계 : 실제 강퇴 API 호출 (Repository 경유)
+     */
+    private void performKick(MeetingParticipant participant) {
+        // ★ apiService 직접 호출 X → ChatRepository 경유
+        //   (leaveRoom, getChatPhotos 와 동일한 컨벤션)
+        ChatRepository.getInstance().kickMember(
+                roomId,
+                myUserId,
+                participant.getUser_id(),
+                new Callback<ApiResponse<KickMemberResponse>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ApiResponse<KickMemberResponse>> call,
+                                           @NonNull Response<ApiResponse<KickMemberResponse>> response) {
+
+                        if (response.isSuccessful()
+                                && response.body() != null
+                                && response.body().isSuccess()) {
+
+                            Toast.makeText(ChatRoomDetailActivity.this,
+                                    participant.getUser_nickname() + "님을 강퇴했습니다.",
+                                    Toast.LENGTH_SHORT).show();
+
+                            // 참가자 리스트 + 인원수 갱신
+                            // 서버 재조회가 가장 안전 (race condition 방지)
+                            loadMeetingDetail();
+
+                        } else {
+                            String errMsg = (response.body() != null)
+                                    ? response.body().getMessage()
+                                    : "강퇴에 실패했습니다";
+                            Toast.makeText(ChatRoomDetailActivity.this,
+                                    errMsg, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ApiResponse<KickMemberResponse>> call,
+                                          @NonNull Throwable t) {
+                        Log.e(TAG, "kickMember 네트워크 오류: " + t.getMessage());
+                        Toast.makeText(ChatRoomDetailActivity.this,
+                                "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+
 }

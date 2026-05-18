@@ -3,6 +3,7 @@ package com.example.honbabapp.api;
 import com.example.honbabapp.api.data.chat.ChatRoomData;
 import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
 import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
+import com.example.honbabapp.api.data.request.chat.KickMemberRequest;
 import com.example.honbabapp.api.data.request.chat.LeaveRoomRequest;
 import com.example.honbabapp.api.data.request.chat.MarkReadRequest;
 import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
@@ -15,6 +16,7 @@ import com.example.honbabapp.api.data.request.user.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.MyMeetingItem;
 import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
 import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
+import com.example.honbabapp.api.data.response.chat.KickMemberResponse;
 import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
@@ -353,6 +355,26 @@ public interface ApiService {
             @Query("page")    int page,
             @Query("limit")   int limit
     );
+
+    /**
+     * 8. 채팅방 멤버 강퇴 (방장 전용)
+     *
+     * 응답 data:
+     *   - room_id                      : 강퇴 일어난 방
+     *   - target_user_id               : 강퇴된 유저
+     *   - remaining                    : 남은 멤버 수
+     *   - meeting_current_participants : 강퇴 후 현재 모임 인원
+     *
+     * 서버에서 자동 처리:
+     *   - meeting_participants 상태 '강퇴' 로 변경
+     *   - chat_room_members 에서 삭제
+     *   - meetings.meeting_current_participants -= 1, 모집완료 → 모집중 복귀
+     *   - 시스템 메시지 "OO님이 강퇴되었습니다." INSERT
+     *   - WebSocket 'member_left' (reason='kicked') 방 전체 broadcast
+     *   - WebSocket 'kicked' 대상자에게 직접 emit
+     */
+    @POST("api/chat/kick.php")
+    Call<ApiResponse<KickMemberResponse>> kickMember(@Body KickMemberRequest request);
 
 
 }
