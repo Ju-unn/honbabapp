@@ -12,6 +12,14 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <!-- 카메라 권한: 채팅 이미지 첨부 시 카메라로 직접 촬영용 -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- 카메라 하드웨어 요구 사항: required=false 로 카메라 없는 기기도 설치 허용 -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -23,6 +31,27 @@
         android:theme="@style/Theme.Honbabapp"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+
+        <!--
+            FileProvider: 카메라로 촬영한 사진을 임시 파일로 저장하고
+            카메라 앱한테 "여기에 저장해줘" 라고 content:// URI 로 안전하게 전달하기 위함.
+
+            android:authorities = "${applicationId}.fileprovider"
+              → 빌드 시 BuildConfig.APPLICATION_ID + ".fileprovider" 로 치환됨
+              → 코드에서 FileProvider.getUriForFile() 호출 시 같은 문자열 사용해야 함
+
+            android:exported = "false" → 다른 앱이 직접 접근 못 함 (Intent 의 grantUriPermissions 로만)
+            android:grantUriPermissions = "true" → Intent.FLAG_GRANT_WRITE_URI_PERMISSION 사용 가능
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <activity
             android:name=".activity.chat.ChatRoomActivity"

@@ -2,6 +2,7 @@ package com.example.honbabapp.repository;
 
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
+import com.example.honbabapp.api.data.ImageUploadData;
 import com.example.honbabapp.api.data.chat.ChatRoomData;
 import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
 import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
@@ -17,7 +18,11 @@ import com.example.honbabapp.api.data.response.chat.MessageListResponse;
 
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Callback;
+import retrofit2.http.Part;
 
 public class ChatRepository {
 
@@ -206,6 +211,29 @@ public class ChatRepository {
     public void getChatPhotos(int roomId, int userId, int page, int limit,
                               Callback<ApiResponse<ChatPhotosResponse>> chatRoomDb) {
         apiService.getChatPhotos(roomId, userId, page, limit).enqueue(chatRoomDb);
+    }
+
+    // ─────────────────────────────────────────
+    // 채팅 이미지 업로드 (S3 업로드만, DB INSERT 안 함)
+    // ChatRoomActivity 에서 갤러리/카메라 결과 후 호출
+    // ─────────────────────────────────────────
+
+    /**
+     * 채팅 이미지를 S3 에 업로드한다
+     *
+     * @param roomId     채팅방 ID
+     * @param userId     업로드하는 user_id (멤버 권한 검증용)
+     * @param imagePart  MultipartBody.Part (파라미터명: "chat_image")
+     * @param chatRoomDb 성공 시 ImageUploadData (image_url) 반환
+     */
+    public void uploadChatImage(int roomId, int userId,
+                                MultipartBody.Part imagePart,
+                                Callback<ApiResponse<ImageUploadData>> chatRoomDb) {
+        RequestBody roomIdBody = RequestBody.create(
+                MediaType.parse("text/plain"), String.valueOf(roomId));
+        RequestBody userIdBody = RequestBody.create(
+                MediaType.parse("text/plain"), String.valueOf(userId));
+        apiService.uploadChatImage(imagePart, roomIdBody, userIdBody).enqueue(chatRoomDb);
     }
 
 

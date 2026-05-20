@@ -130,6 +130,26 @@ public class SocketManager {
         }
     }
 
+    /**
+     * @param roomId    채팅방 ID
+     * @param userId    보내는 user_id
+     * @param imageUrl  S3 업로드 후 받은 image_url
+     */
+    public void sendImageMessage(int roomId, int userId, String imageUrl) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put("room_id", roomId);
+            data.put("user_id", userId);
+            data.put("msg_type", "image");          // 서버에서 분기 처리
+            data.put("image_url", imageUrl);        // S3 URL
+            data.put("content", "사진");             // 구버전 앱 graceful fallback
+            socket.emit("message", data);
+            Log.d(TAG, "이미지 메시지 전송! room:" + roomId + " url:" + imageUrl);
+        } catch (Exception e) {
+            Log.e(TAG, "이미지 메시지 전송 실패: " + e.getMessage());
+        }
+    }
+
     public void sendRead(int roomId, int userId) {
         try {
             JSONObject data = new JSONObject();

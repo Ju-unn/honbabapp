@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    카메라 액션의 원형 컬러 배경.
+    카카오톡 스타일과 유사한 청록색 톤.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#14B8A6" />
+</shape>

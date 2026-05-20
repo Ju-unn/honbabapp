@@ -376,6 +376,26 @@ public interface ApiService {
     @POST("api/chat/kick.php")
     Call<ApiResponse<KickMemberResponse>> kickMember(@Body KickMemberRequest request);
 
+    /**
+     * 채팅 이미지 업로드
+     * - 갤러리/카메라에서 가져온 이미지를 S3 chat/ 폴더로 업로드
+     * - 서버는 chat_messages INSERT 하지 않음 (S3 업로드 + URL 반환만)
+     * - 클라이언트가 받은 URL 을 WebSocket 'message' 이벤트로 보내야 DB 저장됨
+     *   (텍스트 메시지와 동일 흐름 → 단일 진실의 원천)
+     *
+     * @param image   MultipartBody.Part (파라미터명: "chat_image")
+     * @param roomId  채팅방 ID (멤버 권한 검증용)
+     * @param userId  업로드하는 user_id
+     * @return ApiResponse<ImageUploadData> - image_url (S3 URL)
+     */
+    @Multipart
+    @POST("api/chat/upload_chat_image.php")
+    Call<ApiResponse<ImageUploadData>> uploadChatImage(
+            @Part MultipartBody.Part image,
+            @Part("room_id") RequestBody roomId,
+            @Part("user_id") RequestBody userId
+    );
+
 
 }
 
