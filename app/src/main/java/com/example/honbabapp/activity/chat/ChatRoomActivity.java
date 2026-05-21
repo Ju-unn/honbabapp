@@ -3,20 +3,30 @@ package com.example.honbabapp.activity.chat;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.honbabapp.BuildConfig;
+import android.Manifest;
 import com.example.honbabapp.R;
+import com.example.honbabapp.api.data.ImageUploadData;
 import com.example.honbabapp.api.data.chat.MessageData;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
@@ -24,17 +34,26 @@ import com.example.honbabapp.databinding.PageChatDetailBinding;
 import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.MessageAdapter;
+import com.example.honbabapp.ui.dialog.ChatAttachBottomSheetDialog;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import io.socket.emitter.Emitter;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -71,6 +90,70 @@ public class ChatRoomActivity extends AppCompatActivity {
     private Emitter.Listener memberLeftListener;
     private Emitter.Listener hostChangedListener;
     private Emitter.Listener kickedListener;
+
+    // ─────────────────────────────────────────
+    // 이미지 첨부
+    // ─────────────────────────────────────────
+    /** 갤러리 한 번에 선택할 수 있는 최대 장수 */
+    private static final int MAX_GALLERY_PICK = 10;
+
+    /** 업로드 중 첨부 버튼 잠금 (다중 트리거 방지) */
+    private boolean isUploading = false;
+
+    /**
+     * Photo Picker (Android 13+ 기본, 그 이하 버전은 AndroidX 가 fallback 제공).
+     *
+     * 다중 선택 결과(List<Uri>) 를 받으면 순차로 업로드 (uploadOne 재귀).
+     */
+    private final ActivityResultLauncher<PickVisualMediaRequest> galleryLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.PickMultipleVisualMedia(MAX_GALLERY_PICK) ,
+                    uris -> {
+                        if (uris == null || uris.isEmpty()) return;
+                        startSequentialUpload(uris);
+                    }
+            );
+
+    /**
+     * 카메라가 사진을 저장할 위치 (FileProvider content:// URI).
+     */
+    private Uri pendingCameraUri = null;
+
+    /**
+     * 카메라 권한 런처
+     */
+    private final ActivityResultLauncher<String> cameraPermissionLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.RequestPermission() ,
+                    granted -> {
+                        if (granted) {
+                            launchCamera();
+                        } else {
+                            Toast.makeText(this, "카메라 권한이 필요합니다", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+            );
+
+    /**
+     * 카메라 촬영 런처 (TakePicture)
+     * 성공 시 pendingCameraUri 가 가리키는 파일(= 카메라 앱이 사진을 저장한 곳) 을 업로드.
+     */
+    private final ActivityResultLauncher<Uri> cameraLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.TakePicture(),
+                    success -> {
+                        if (success  && pendingCameraUri != null) {
+                            // 사진 1장 = 리스트 1개로 감싸서 동일 순차 업로드 흐름 재사용
+                            List<Uri> single = new ArrayList<>();
+                            single.add(pendingCameraUri);
+                            startSequentialUpload(single);
+                        } else {
+                            Log.d("CHAT_UPLOAD", "카메라 촬영 취소 또는 실패");
+                        }
+                        // pendingCameraUri 는 다음 촬영 때 다시 발급하므로 정리
+                        pendingCameraUri = null;
+                    }
+            );
 
 
     // ─────────────────────────────────────────
@@ -224,9 +307,221 @@ public class ChatRoomActivity extends AppCompatActivity {
         });
 
         binding.btnAttach.setOnClickListener(v -> {
-            // TODO: 이미지 첨부 기능
+            // 업로드 진행 중이면 무시 (락)
+            if (isUploading) {
+                Toast.makeText(this, "사진 전송 중입니다", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            showAttachBottomSheet();
         });
     }
+
+    // ─────────────────────────────────────────
+    // 이미지 첨부 — 바텀시트
+    // ─────────────────────────────────────────
+
+    /**
+     * 첨부 버튼 클릭 → 갤러리/카메라 바텀시트 표시
+     *
+     * 다이얼로그는 "어떤 액션을 선택했는가" 만 알리고
+     * 실제 갤러리/카메라 인텐트 실행은 Activity 책임 (강퇴 다이얼로그와 동일 패턴)
+     */
+    private void showAttachBottomSheet() {
+        ChatAttachBottomSheetDialog dialog = new ChatAttachBottomSheetDialog();
+        dialog.listener = new ChatAttachBottomSheetDialog.OnAttachActionListener() {
+            @Override
+            public void onPickGallery() {
+                // Photo Picker 띄위기 이미지만
+                galleryLauncher.launch(new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                        .build());
+            }
+
+            @Override
+            public void onPickCamera() {
+                // 권한 체크 — 이미 허용이면 바로 launchCamera, 아니면 권한 요청
+                int status = ContextCompat.checkSelfPermission(
+                        ChatRoomActivity.this , Manifest.permission.CAMERA);
+                if (status == PackageManager.PERMISSION_GRANTED) {
+                    launchCamera();
+                } else {
+                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+                }
+            }
+        };
+        dialog.show(getSupportFragmentManager() , "chat_attach");
+    }
+
+    /**
+     * 카메라 앱을 실행해서 촬영 → 결과를 cameraLauncher 콜백으로 받음
+     *
+     * 흐름:
+     *   1) cache/chat_images/ 디렉토리 보장 (file_paths.xml 의 허용 경로)
+     *   2) cam_<timestamp>.jpg 빈 파일 생성
+     *   3) FileProvider 로 content:// URI 발급 (file:// 직접 노출 금지 — Android 7+ FileUriExposedException)
+     *   4) pendingCameraUri 에 보관 (콜백에서 어떤 파일이었는지 알기 위함)
+     *   5) cameraLauncher.launch(uri) → 카메라 앱이 그 URI 에 사진 저장
+     *
+     * 실패 시 토스트만 띄우고 종료 (촬영 흐름 자체가 시작 안 됨).
+     */
+
+    private void launchCamera() {
+        try {
+            // 1) 디렉토리 보장 — file_paths.xml 의 <cache-path path="chat_images/"> 와 일치해야 함
+            File dir = new File(getCacheDir(), "chat_images");
+            if (!dir.exists() && !dir.mkdirs()) {
+                Log.e("CHAT_UPLOAD", "chat_images 디렉토리 생성 실패");
+                Toast.makeText(this, "카메라 준비 실패", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 2) 임시 빈 파일
+            File photoFile = new File(dir, "cam_" + System.currentTimeMillis() + ".jpg");
+
+            // 3) FileProvider URI 발급
+            //    authority 는 AndroidManifest.xml 의 <provider> 와 정확히 동일해야 함
+            //    BuildConfig.APPLICATION_ID + ".fileprovider" → "com.example.honbabapp.fileprovider"
+            Uri uri = FileProvider.getUriForFile(
+                    this,
+                    BuildConfig.APPLICATION_ID + ".fileprovider",
+                    photoFile);
+
+            // 4) 보관 — 콜백에서 사용
+            pendingCameraUri = uri;
+
+            // 5) 카메라 실행
+            cameraLauncher.launch(uri);
+
+        }  catch (Exception e) {
+            Log.e("CHAT_UPLOAD", "카메라 실행 실패: " + e.getMessage());
+            Toast.makeText(this, "카메라 실행 실패", Toast.LENGTH_SHORT).show();
+            pendingCameraUri = null;
+        }
+    }
+
+    // ─────────────────────────────────────────
+    // 이미지 첨부 — 순차 업로드
+    // ─────────────────────────────────────────
+
+    /**
+     * 갤러리에서 받은 다중 Uri 를 한 장씩 순차로 업로드
+     */
+    private void startSequentialUpload(@NonNull List<Uri> uris) {
+        isUploading = true;
+        binding.btnAttach.setEnabled(false);
+        Toast.makeText(this, "사진 " + uris.size() + "장 전송 중...", Toast.LENGTH_SHORT).show();
+        uploadOne(uris, 0);
+    }
+
+    /**
+     * 콜백 기반 비동기 직렬 처리 패턴
+     */
+    private void uploadOne(@NonNull List<Uri> uris , int index) {
+        // 종료 조건
+        if (index >= uris.size()) {
+            isUploading = false;
+            binding.btnAttach.setEnabled(true);
+            return;
+        }
+        Uri uri = uris.get(index);
+        uploadAndSend(uri , () -> uploadOne(uris , index + 1));
+    }
+
+    /**
+     * 단일 Uri 업로드 + WebSocket emit
+     *
+     * 흐름:
+     *   1) Uri → 임시 파일 변환 (Multipart 전송에 필요)
+     *   2) Multipart 구성
+     *   3) ChatRepository.uploadChatImage() → S3 URL 반환
+     *   4) SocketManager.sendImageMessage() → 서버가 DB 저장 + fan-out
+     *   5) onComplete.run() → 다음 장으로 진행
+     *
+     * 실패해도 onComplete 는 호출됨 (다음 장 계속 진행).
+     * → 1장이 실패해도 2,3 번째는 정상 업로드 → 사용자 경험 보호
+     */
+
+    private void uploadAndSend(Uri uri , Runnable onComplete) {
+        try {
+            // 1) Uri → 임시 파일
+            //    cache/chat_<timestamp>.jpg 로 저장 (앱 종료 시 OS 가 정리)
+
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            if (inputStream == null) {
+                Log.e("CHAT_UPLOAD", "InputStream null — skip uri:" + uri);
+                onComplete.run();
+                return;
+            }
+
+            File tempFile = new File(getCacheDir() ,
+                    "chat_" + System.currentTimeMillis() + ".jpg");
+            FileOutputStream fos = new FileOutputStream(tempFile);
+            byte[] buffer = new byte[4096];
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                fos.write(buffer, 0, len);
+            }
+            fos.close();
+            inputStream.close();
+
+            // 2) Multipart 구성
+            //    파라미터명 "chat_image" → 백엔드의 $_FILES['chat_image'] 와 매칭
+            RequestBody requestFile = RequestBody.create(
+                    MediaType.parse("image/jpeg") , tempFile);
+
+            MultipartBody.Part imagePart = MultipartBody.Part.createFormData(
+                    "chat_image" , tempFile.getName() , requestFile);
+
+            // 3) S3 업로드
+            ChatRepository.getInstance().uploadChatImage(roomId, myUserId, imagePart,
+                    new Callback<ApiResponse<ImageUploadData>>() {
+                        @Override
+                        public void onResponse(Call<ApiResponse<ImageUploadData>> call, Response<ApiResponse<ImageUploadData>> response) {
+                            if (response.isSuccessful()
+                                    && response.body() != null
+                                    && response.body().isSuccess()
+                                    && response.body().getData() != null) {
+
+                                String imageUrl = response.body().getData().getImage_url();
+                                Log.d("CHAT_UPLOAD", "S3 업로드 성공: " + imageUrl);
+
+                                // 4) WebSocket emit → 서버가 DB 저장 + fan-out
+                                SocketManager.getInstance()
+                                        .sendImageMessage(roomId, myUserId , imageUrl);
+                            } else {
+                                String msg = (response.body() != null)
+                                        ? response.body().getMessage()
+                                        : "이미지 업로드 실패";
+                                Log.e("CHAT_UPLOAD", "S3 업로드 실패: " + msg);
+                                Toast.makeText(ChatRoomActivity.this,
+                                        "이미지 1장 업로드 실패", Toast.LENGTH_SHORT).show();
+                            }
+                            // 5) 임시 파일 정리 + 다음 장 진행
+                            //noinspection ResultOfMethodCallIgnored
+                            tempFile.delete();
+                            onComplete.run();
+                        }
+
+                        @Override
+                        public void onFailure(Call<ApiResponse<ImageUploadData>> call, Throwable t) {
+                            Log.e("CHAT_UPLOAD", "네트워크 실패: " + t.getMessage());
+                            Toast.makeText(ChatRoomActivity.this,
+                                    "네트워크 오류 — 이미지 1장 실패", Toast.LENGTH_SHORT).show();
+                            //noinspection ResultOfMethodCallIgnored
+                            tempFile.delete();
+                            onComplete.run();
+                        }
+                    });
+
+
+
+        } catch (IOException e) {
+            Log.e("CHAT_UPLOAD", "이미지 처리 오류: " + e.getMessage());
+            onComplete.run();
+        }
+    }
+
+
 
     // ─────────────────────────────────────────
     // 메시지 히스토리 로드
