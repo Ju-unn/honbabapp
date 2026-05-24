@@ -269,8 +269,6 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
      * 1:1 (direct) 방의 멤버 정보 조회 (참가자 섹션 표시용)
      *
      * 별도 API 없이 ChatRepository.getChatRooms() 응답에서 현재 room 을 필터링한다.
-     *  - 본인 + 상대방 2명을 ChatParticipantAdapter 에 표시
-     *  - 상대방 user_id 는 onHeaderCardClick() 에서도 쓰이므로 otherUserId 필드에 저장
      *  - 방장 뱃지는 direct 방에선 의미 없음 → hostId = -1
      */
     private void loadChatRoomMembers() {
@@ -607,8 +605,6 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
      * 3단계 : 실제 강퇴 API 호출 (Repository 경유)
      */
     private void performKick(MeetingParticipant participant) {
-        // ★ apiService 직접 호출 X → ChatRepository 경유
-        //   (leaveRoom, getChatPhotos 와 동일한 컨벤션)
         ChatRepository.getInstance().kickMember(
                 roomId,
                 myUserId,
@@ -627,7 +623,6 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                                     Toast.LENGTH_SHORT).show();
 
                             // 참가자 리스트 + 인원수 갱신
-                            // 서버 재조회가 가장 안전 (race condition 방지)
                             loadMeetingDetail();
 
                         } else {

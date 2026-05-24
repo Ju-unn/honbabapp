@@ -188,7 +188,24 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
         void bind(MessageData msg , boolean showTime) {
-            binding.textContent.setText(msg.getContent());
+            // ── 이미지 / 텍스트 분기 ──
+            // RecyclerView 는 ViewHolder 를 재사용하므로
+            // 두 경우 모두에서 textContent / imageContent visibility 를 명시적으로 설정해야
+            // 재활용 시 잔상(이전 이미지가 텍스트 메시지에 남는 버그) 이 안 생긴다.
+            if (msg.isImage()) {
+                binding.textContent.setVisibility(View.GONE);
+                binding.imageContent.setVisibility(View.VISIBLE);
+                Glide.with(binding.getRoot().getContext())
+                        .load(msg.getImage_url())
+                        .dontAnimate()
+                        .placeholder(R.drawable.message_image_background)
+                        .error(R.drawable.message_image_background)
+                        .into(binding.imageContent);
+            } else {
+                binding.imageContent.setVisibility(View.GONE);
+                binding.textContent.setVisibility(View.VISIBLE);
+                binding.textContent.setText(msg.getContent());
+            }
 
             // 시간 : 런의 마지막일 때만 표시
             if (showTime) {
@@ -231,7 +248,22 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 binding.textSenderName.setVisibility(View.GONE);
             }
 
-            binding.textContent.setText(msg.getContent());
+            // ── 이미지 / 텍스트 분기 ──
+            // (MineViewHolder 와 동일 — 재활용 잔상 방지 위해 양쪽 모두 visibility 명시)
+            if (msg.isImage()) {
+                binding.textContent.setVisibility(View.GONE);
+                binding.imageContent.setVisibility(View.VISIBLE);
+                Glide.with(binding.getRoot().getContext())
+                        .load(msg.getImage_url())
+                        .dontAnimate()
+                        .placeholder(R.drawable.message_image_background)
+                        .error(R.drawable.message_image_background)
+                        .into(binding.imageContent);
+            } else {
+                binding.imageContent.setVisibility(View.GONE);
+                binding.textContent.setVisibility(View.VISIBLE);
+                binding.textContent.setText(msg.getContent());
+            }
 
             // 시간: 런의 마지막일 때만 표시
             if (showTime) {

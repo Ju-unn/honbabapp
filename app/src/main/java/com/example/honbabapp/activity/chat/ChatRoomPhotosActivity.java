@@ -74,7 +74,6 @@ public class ChatRoomPhotosActivity extends AppCompatActivity {
         binding = PageChatPhotosBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // ── Intent extra ──
         roomId = getIntent().getIntExtra("room_id", -1);
         if (roomId == -1) {
             Toast.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();

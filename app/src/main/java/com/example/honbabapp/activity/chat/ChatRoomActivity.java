@@ -1,5 +1,6 @@
 package com.example.honbabapp.activity.chat;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,10 +22,10 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.BuildConfig;
-import android.Manifest;
 import com.example.honbabapp.R;
 import com.example.honbabapp.api.data.ImageUploadData;
 import com.example.honbabapp.api.data.chat.MessageData;
@@ -424,7 +425,11 @@ public class ChatRoomActivity extends AppCompatActivity {
             return;
         }
         Uri uri = uris.get(index);
-        uploadAndSend(uri , () -> uploadOne(uris , index + 1));
+        uploadAndSend(uri, () -> {
+            // 다음 장을 200ms 뒤에 (타다닥 속도 늦춤)
+            binding.rvMessages.postDelayed(
+                    () -> uploadOne(uris, index + 1), 350);
+        });
     }
 
     /**
@@ -590,6 +595,8 @@ public class ChatRoomActivity extends AppCompatActivity {
                 msg.setSender_profile_image(json.optString("sender_profile_image", ""));
                 msg.setMsg_type(json.optString("msg_type", "text"));
                 msg.setContent(json.getString("content"));
+                // 이미지 메시지면 image_url 도 함께 파싱 (텍스트면 null)
+                msg.setImage_url(json.optString("image_url", null));
                 msg.setCreated_at(json.getString("created_at"));
                 msg.setUnread_count(json.optInt("unread_count", 0)); //실시간 unread_count 파싱
                 msg.setIs_mine(msg.getSender_id() == myUserId);
