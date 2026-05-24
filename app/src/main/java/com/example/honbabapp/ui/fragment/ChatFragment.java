@@ -44,6 +44,7 @@ public class ChatFragment extends Fragment {
     private List<ChatRoomData> allRooms = new ArrayList<>();
     private int myUserId = -1;
     private Emitter.Listener roomMessageListener;
+    private Emitter.Listener roomJoinedListener;
 
     public ChatFragment() {
         Log.i("ChatFragment" , "생성");
@@ -77,7 +78,8 @@ public class ChatFragment extends Fragment {
 
         // 채팅 목록 화면에서도 실시간 last_message 갱신
         SocketManager.getInstance().connect();
-        // 변경 후
+
+        // message 이벤트 리스너
         roomMessageListener = args -> {
             try {
                 JSONObject json    = (JSONObject) args[0];
@@ -112,6 +114,24 @@ public class ChatFragment extends Fragment {
             } catch (Exception e) { /* 파싱 실패 무시 */ }
         };
         SocketManager.getInstance().getSocket().on("message", roomMessageListener);
+
+        // room_joined 이벤트 리스너 (새 채팅방 추가됨)
+        roomJoinedListener = args -> {
+            try {
+                // 백엔드에서 emit한 payload: { room_id, room_type, room_name }
+                // 간단히 전체 채팅방 목록을 다시 불러와서 갱신
+                requireActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadChatRooms();
+                    }
+                });
+
+            } catch (Exception e) {
+                Log.e("ChatFragment", "room_joined 처리 실패: " + e.getMessage());
+            }
+        };
+        SocketManager.getInstance().getSocket().on("room_joined", roomJoinedListener);
     }
 
     @Override
@@ -119,6 +139,8 @@ public class ChatFragment extends Fragment {
         super.onDestroyView();
         if (roomMessageListener != null)
             SocketManager.getInstance().getSocket().off("message", roomMessageListener);
+        if (roomJoinedListener != null)
+            SocketManager.getInstance().getSocket().off("room_joined", roomJoinedListener);
         binding = null; // 메모리 누수 방지
     }
 
