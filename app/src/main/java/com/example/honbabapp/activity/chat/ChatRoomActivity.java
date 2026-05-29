@@ -410,7 +410,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     private void startSequentialUpload(@NonNull List<Uri> uris) {
         isUploading = true;
         binding.btnAttach.setEnabled(false);
-        Toast.makeText(this, "사진 " + uris.size() + "장 전송 중...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "사진 " + uris.size() + "장 전송 중", Toast.LENGTH_SHORT).show();
         uploadOne(uris, 0);
     }
 
@@ -426,7 +426,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         }
         Uri uri = uris.get(index);
         uploadAndSend(uri, () -> {
-            // 다음 장을 200ms 뒤에 (타다닥 속도 늦춤)
+            // 다음 장을 350ms 뒤에 (타다닥 속도 늦춤)
             binding.rvMessages.postDelayed(
                     () -> uploadOne(uris, index + 1), 350);
         });
