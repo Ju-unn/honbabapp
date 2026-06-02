@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="end"
@@ -13,6 +13,61 @@
         android:layout_height="wrap_content"
         android:layout_weight="0.3" />
 
+    <!-- 실패 시: 재전송/삭제 버튼 -->
+    <LinearLayout
+        android:id="@+id/failOverlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginEnd="6dp"
+        android:visibility="gone">
+
+        <!-- 흰 둥근 컨테이너 안에 아이콘 2개 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_fail_action"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            >
+
+            <!-- 재전송 -->
+            <ImageButton
+                android:id="@+id/btnRetry"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="재전송"
+                android:scaleType="fitCenter"
+                android:src="@android:drawable/ic_menu_rotate"
+                app:tint="#FF8A30" />
+
+            <!-- 가운데 구분 여백 -->
+            <View
+                android:layout_width="14dp"
+                android:layout_height="match_parent" />
+
+            <!-- 삭제 -->
+            <ImageButton
+                android:id="@+id/btnDelete"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="삭제"
+                android:scaleType="fitCenter"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="#FF8A30" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
     <!-- 시간 + 읽음: 말풍선 왼쪽, 하단 정렬 -->
     <LinearLayout
         android:layout_width="wrap_content"
@@ -23,7 +78,6 @@
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="2dp">
 
-        <!-- 읽지 않은 수 -->
         <TextView
             android:id="@+id/textUnread"
             android:layout_width="wrap_content"
@@ -34,7 +88,6 @@
             android:textSize="10sp"
             android:visibility="gone" />
 
-        <!-- 전송 시간 -->
         <TextView
             android:id="@+id/textTime"
             android:layout_width="wrap_content"
@@ -46,12 +99,12 @@
 
     </LinearLayout>
 
-    <!-- 말풍선 컨테이너: 텍스트 또는 이미지 한 가지만 보임 -->
+    <!-- 말풍선 컨테이너 -->
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <!-- 텍스트 메시지 말풍선 -->
+        <!-- 텍스트 말풍선 -->
         <TextView
             android:id="@+id/textContent"
             android:layout_width="wrap_content"
@@ -63,7 +116,7 @@
             android:textColor="@color/white"
             android:textSize="15sp" />
 
-        <!-- 이미지 메시지 (둥근 모서리) -->
+        <!-- 단일 이미지 -->
         <ImageView
             android:id="@+id/imageContent"
             android:layout_width="200dp"
@@ -75,6 +128,16 @@
             android:maxHeight="280dp"
             android:minHeight="120dp"
             android:scaleType="fitCenter"
+            android:visibility="gone" />
+
+        <!-- 다중 이미지 그리드 (2장 이상일 때) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvImageGrid"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/message_image_background"
+            android:clipToOutline="true"
+            android:nestedScrollingEnabled="false"
             android:visibility="gone" />
 
     </FrameLayout>

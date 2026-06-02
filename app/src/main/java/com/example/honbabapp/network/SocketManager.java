@@ -2,7 +2,11 @@ package com.example.honbabapp.network;
 
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -131,20 +135,44 @@ public class SocketManager {
     }
 
     /**
-     * @param roomId    채팅방 ID
-     * @param userId    보내는 user_id
-     * @param imageUrl  S3 업로드 후 받은 image_url
+     * 단일 이미지 전송 — 구버전 호환용
+     * @deprecated 새 코드는 sendImageMessage(roomId, userId, urls, clientMsgId) 사용
      */
     public void sendImageMessage(int roomId, int userId, String imageUrl) {
+        List<String> urls = new ArrayList<>();
+        urls.add(imageUrl);
+        sendImageMessage(roomId, userId, urls, null);
+    }
+
+    /**
+     * 다중 이미지 전송 (묶음 메시지 1개)
+     *
+     * @param roomId      채팅방 ID
+     * @param userId      보내는 user_id
+     * @param urls        S3 업로드 완료된 URL 목록 (1장 이상)
+     * @param clientMsgId optimistic dedupe 키 (null 이면 생략)
+     */
+    public void sendImageMessage(int roomId, int userId, List<String> urls, String clientMsgId) {
         try {
             JSONObject data = new JSONObject();
             data.put("room_id", roomId);
             data.put("user_id", userId);
-            data.put("msg_type", "image");          // 서버에서 분기 처리
-            data.put("image_url", imageUrl);        // S3 URL
-            data.put("content", "사진");             // 구버전 앱 graceful fallback
+            data.put("msg_type", "image");
+            data.put("image_url", urls.get(0));
+            data.put("content", "사진");
+
+            // image_urls 배열
+            JSONArray arr = new JSONArray();
+            for (String url : urls) arr.put(url);
+            data.put("image_urls", arr);
+
+            // client_msg_id — 있을 때만 포함
+            if (clientMsgId != null) data.put("client_msg_id", clientMsgId);
+
             socket.emit("message", data);
-            Log.d(TAG, "이미지 메시지 전송! room:" + roomId + " url:" + imageUrl);
+            Log.d(TAG, "이미지 메시지 전송! room:" + roomId
+                    + " urls:" + urls.size() + "장"
+                    + " clientMsgId:" + clientMsgId);
         } catch (Exception e) {
             Log.e(TAG, "이미지 메시지 전송 실패: " + e.getMessage());
         }

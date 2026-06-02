@@ -1,6 +1,7 @@
 package com.example.honbabapp.activity.chat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,11 +14,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.honbabapp.api.data.chat.ChatPhotoData;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
 import com.example.honbabapp.databinding.PageChatPhotosBinding;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.ChatPhotoGridAdapter;
+
+import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -105,6 +109,17 @@ public class ChatRoomPhotosActivity extends AppCompatActivity {
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
         binding.rvChatPhotos.setLayoutManager(gridLayoutManager);
         binding.rvChatPhotos.setAdapter(adapter);
+
+        adapter.setOnPhotoClickListener((photos, position) -> {
+            // 전체 URL 목록 추출
+            ArrayList<String> urls = new ArrayList<>();
+            for (ChatPhotoData p : photos) urls.add(p.getImage_url());
+
+            Intent intent = new Intent(this, FullScreenImageActivity.class);
+            intent.putStringArrayListExtra(FullScreenImageActivity.EXTRA_IMAGE_URLS, urls);
+            intent.putExtra(FullScreenImageActivity.EXTRA_START_INDEX, position);
+            startActivity(intent);
+        });
 
         // 무한 스크롤 리스너
         binding.rvChatPhotos.addOnScrollListener(new RecyclerView.OnScrollListener() {

@@ -14,36 +14,29 @@ import com.example.honbabapp.databinding.RvChatPhotoGridBinding;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 채팅방 사진 3열 그리드 어댑터
- *
- * - ChatRoomPhotosActivity 에서 사용
- * - GridLayoutManager(this, 3) 와 함께 사용
- * - 정사각 비율 (rv_chat_photo_grid.xml 의 dimensionRatio="1:1")
- *
- * 무한 스크롤 지원:
- *   addItems() 로 페이지 단위 추가 (setItems 는 전체 교체)
- */
 public class ChatPhotoGridAdapter
         extends RecyclerView.Adapter<ChatPhotoGridAdapter.ViewHolder> {
 
+    // ── 클릭 콜백 ─────────────────────────────
+    public interface OnPhotoClickListener {
+        void onPhotoClick(List<ChatPhotoData> items, int position);
+    }
+
+    private OnPhotoClickListener clickListener;
+
+    public void setOnPhotoClickListener(OnPhotoClickListener listener) {
+        this.clickListener = listener;
+    }
+
+    // ── 데이터 ────────────────────────────────
     private final List<ChatPhotoData> items = new ArrayList<>();
 
-    // ─────────────────────────────────────────
-    // 데이터 갱신
-    // ─────────────────────────────────────────
-
-    /** 리스트 전체 교체 (첫 페이지 로드 시) */
     public void setItems(List<ChatPhotoData> newItems) {
         items.clear();
         if (newItems != null) items.addAll(newItems);
         notifyDataSetChanged();
     }
 
-    /**
-     * 페이지 추가 (무한 스크롤 시 호출)
-     * notifyItemRangeInserted 로 깜빡임 방지
-     */
     public void addItems(List<ChatPhotoData> moreItems) {
         if (moreItems == null || moreItems.isEmpty()) return;
         int start = items.size();
@@ -51,14 +44,9 @@ public class ChatPhotoGridAdapter
         notifyItemRangeInserted(start, moreItems.size());
     }
 
-    /** 현재 아이템 수 (페이지 계산용) */
-    public int getCurrentCount() {
-        return items.size();
-    }
+    public int getCurrentCount() { return items.size(); }
 
-    // ─────────────────────────────────────────
-    // RecyclerView.Adapter 필수 메서드
-    // ─────────────────────────────────────────
+    // ── Adapter ───────────────────────────────
 
     @NonNull
     @Override
@@ -70,20 +58,15 @@ public class ChatPhotoGridAdapter
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(items.get(position));
+        holder.bind(items.get(position), position);
     }
 
     @Override
-    public int getItemCount() {
-        return items.size();
-    }
+    public int getItemCount() { return items.size(); }
 
-    // ─────────────────────────────────────────
-    // ViewHolder
-    // ─────────────────────────────────────────
+    // ── ViewHolder ────────────────────────────
 
     class ViewHolder extends RecyclerView.ViewHolder {
-
         private final RvChatPhotoGridBinding binding;
 
         ViewHolder(RvChatPhotoGridBinding binding) {
@@ -91,13 +74,19 @@ public class ChatPhotoGridAdapter
             this.binding = binding;
         }
 
-        void bind(ChatPhotoData item) {
+        void bind(ChatPhotoData item, int position) {
             Glide.with(binding.getRoot().getContext())
                     .load(item.getImage_url())
                     .placeholder(R.color.bg_300)
                     .error(R.color.bg_300)
                     .centerCrop()
                     .into(binding.ivPhoto);
+
+            binding.getRoot().setOnClickListener(v -> {
+                if (clickListener != null) {
+                    clickListener.onPhotoClick(items, position);
+                }
+            });
         }
     }
 }

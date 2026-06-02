@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -48,9 +50,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -62,6 +68,10 @@ import retrofit2.Response;
 public class ChatRoomActivity extends AppCompatActivity {
     private PageChatDetailBinding binding;
     private MessageAdapter adapter;
+
+    // ── Optimistic UI ──────────────────────────────
+    /** 업로드 중인 이미지의 client_msg_id → 타임아웃 Handler 취소용 */
+    private final Map<String , Handler> pendingTimeoutHandlers = new HashMap<>();
 
     // ChatRoomDetailActivity 결과 받기용 requestCode
     private static final int REQ_DETAIL = 1001;
@@ -102,8 +112,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     private boolean isUploading = false;
 
     /**
-     * Photo Picker (Android 13+ 기본, 그 이하 버전은 AndroidX 가 fallback 제공).
-     *
+     * Photo Picker
      * 다중 선택 결과(List<Uri>) 를 받으면 순차로 업로드 (uploadOne 재귀).
      */
     private final ActivityResultLauncher<PickVisualMediaRequest> galleryLauncher =
@@ -294,6 +303,32 @@ public class ChatRoomActivity extends AppCompatActivity {
                 }
             }
         });
+
+        adapter.setFailedMessageListener(new MessageAdapter.OnFailedMessageListener() {
+            @Override
+            public void onRetry(MessageData msg) {
+                // SENDING 으로 되돌리고 동일 client_msg_id 로 재업로드
+                msg.setStatus(MessageData.STATUS_SENDING);
+                adapter.notifyItemChanged(adapter.getMessages().indexOf(msg)); // 오버레이 즉시 숨김
+                List<Uri> uris = msg.getLocalUris();
+                if (uris != null && !uris.isEmpty()) {
+                    retryUpload(msg, uris);
+                }
+            }
+
+            @Override
+            public void onDelete(MessageData msg) {
+                adapter.removeByClientMsgId(msg.getClient_msg_id());
+            }
+        });
+
+        adapter.setImageClickListener((urls, startIndex) -> {
+            Intent intent = new Intent(this, FullScreenImageActivity.class);
+            intent.putStringArrayListExtra(
+                    FullScreenImageActivity.EXTRA_IMAGE_URLS, new ArrayList<>(urls));
+            intent.putExtra(FullScreenImageActivity.EXTRA_START_INDEX, startIndex);
+            startActivity(intent);
+        });
     }
 
     private void initInputArea() {
@@ -400,18 +435,150 @@ public class ChatRoomActivity extends AppCompatActivity {
         }
     }
 
+
+
     // ─────────────────────────────────────────
     // 이미지 첨부 — 순차 업로드
     // ─────────────────────────────────────────
 
     /**
-     * 갤러리에서 받은 다중 Uri 를 한 장씩 순차로 업로드
+     * 선택된 Uri 목록을 모두 S3에 올린 뒤 묶음 소켓 메시지 1개 전송.
+     *
+     * 흐름:
+     *   1) optimistic 메시지 즉시 추가 (SENDING, localUris 세팅 → Glide 미리보기)
+     *   2) 각 Uri 병렬 업로드 (uploadOne 은 그대로 활용, 결과를 results[] 배열에 기록)
+     *   3) 전체 완료 후 성공 URL ≥ 1 → sendImageMessage 1회 emit
+     *   4) 성공 URL = 0 → 즉시 markFailed
+     *   5) 10초 타임아웃 Handler → echo 미수신 시 markFailed
+     */
+    /**
+     * 선택된 Uri 목록을 모두 S3에 올린 뒤 묶음 소켓 메시지 1개 전송.
+     *
+     * 흐름:
+     *   1) optimistic 메시지 즉시 추가 (SENDING, localUris 세팅 → Glide 미리보기)
+     *   2) 각 Uri 병렬 업로드 (uploadOne 은 그대로 활용, 결과를 results[] 배열에 기록)
+     *   3) 전체 완료 후 성공 URL ≥ 1 → sendImageMessage 1회 emit
+     *   4) 성공 URL = 0 → 즉시 markFailed
+     *   5) 10초 타임아웃 Handler → echo 미수신 시 markFailed
      */
     private void startSequentialUpload(@NonNull List<Uri> uris) {
         isUploading = true;
         binding.btnAttach.setEnabled(false);
-        Toast.makeText(this, "사진 " + uris.size() + "장 전송 중", Toast.LENGTH_SHORT).show();
-        uploadOne(uris, 0);
+
+        // 1) client_msg_id 생성
+        String clientMsgId = UUID.randomUUID().toString();
+
+        // 2) optimistic 메시지 즉시 추가
+        MessageData optimistic = new MessageData();
+        optimistic.setClient_msg_id(clientMsgId);
+        optimistic.setMsg_type("image");
+        optimistic.setContent("사진");
+        optimistic.setIs_mine(true);
+        optimistic.setStatus(MessageData.STATUS_SENDING);
+        optimistic.setLocalUris(new ArrayList<>(uris));   // Glide 미리보기용
+        optimistic.setSender_id(myUserId);
+        optimistic.setRoom_id(roomId);
+        runOnUiThread(() -> {
+            adapter.addMessage(optimistic);
+            scrollToBottom();
+        });
+
+        // 3) 업로드 결과 배열 (선택 순서 보존)
+        int count = uris.size();
+        String[] results = new String[count];
+        int[] done = {0}; // 완료 카운터 (배열로 감싸서 람다에서 수정 가능)
+
+        for (int i = 0; i < count; i++) {
+            final int idx = i;
+            uploadOneToResult(uris.get(idx), s3Url -> {
+                results[idx] = s3Url; // 실패면 null
+                done[0]++;
+
+                if (done[0] == count) {
+                    // 모든 업로드 완료
+                    isUploading = false;
+                    runOnUiThread(() -> binding.btnAttach.setEnabled(true));
+
+                    // 성공 URL만 추림
+                    List<String> successUrls = new ArrayList<>();
+                    for (String url : results) {
+                        if (url != null) successUrls.add(url);
+                    }
+
+                    if (successUrls.isEmpty()) {
+                        // 전부 실패
+                        Log.e("CHAT_UPLOAD", "모든 업로드 실패 → markFailed");
+                        runOnUiThread(() -> adapter.markFailed(clientMsgId));
+                    } else {
+                        // 묶음 emit 1회
+                        SocketManager.getInstance()
+                                .sendImageMessage(roomId, myUserId, successUrls, clientMsgId);
+
+                        // 10초 타임아웃: echo 안 오면 FAILED
+                        Handler handler = new Handler(Looper.getMainLooper());
+                        pendingTimeoutHandlers.put(clientMsgId, handler);
+                        handler.postDelayed(() -> {
+                            if (pendingTimeoutHandlers.containsKey(clientMsgId)) {
+                                // 아직 confirm 안 됨 → failed
+                                pendingTimeoutHandlers.remove(clientMsgId);
+                                adapter.markFailed(clientMsgId);
+                                Log.w("CHAT_UPLOAD", "타임아웃 → markFailed: " + clientMsgId);
+                            }
+                        }, 10_000);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * 단일 Uri → S3 업로드, 결과 URL을 콜백으로 반환.
+     * 실패 시 null 반환 (다음 장 진행 위해 onComplete 는 항상 호출).
+     */
+    private void uploadOneToResult(Uri uri, Consumer<String> onResult) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            if (inputStream == null) { onResult.accept(null); return; }
+
+            File tempFile = new File(getCacheDir(), "chat_" + System.currentTimeMillis() + ".jpg");
+            FileOutputStream fos = new FileOutputStream(tempFile);
+            byte[] buffer = new byte[4096];
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) fos.write(buffer, 0, len);
+            fos.close();
+            inputStream.close();
+
+            RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), tempFile);
+            MultipartBody.Part imagePart = MultipartBody.Part.createFormData(
+                    "chat_image", tempFile.getName(), requestFile);
+
+            ChatRepository.getInstance().uploadChatImage(roomId, myUserId, imagePart,
+                    new Callback<ApiResponse<ImageUploadData>>() {
+                        @Override
+                        public void onResponse(Call<ApiResponse<ImageUploadData>> call,
+                                               Response<ApiResponse<ImageUploadData>> response) {
+                            if (response.isSuccessful()
+                                    && response.body() != null
+                                    && response.body().isSuccess()
+                                    && response.body().getData() != null) {
+                                String url = response.body().getData().getImage_url();
+                                Log.d("CHAT_UPLOAD", "S3 성공: " + url);
+                                onResult.accept(url);
+                            } else {
+                                Log.w("CHAT_UPLOAD", "S3 실패 응답");
+                                onResult.accept(null);
+                            }
+                        }
+                        @Override
+                        public void onFailure(Call<ApiResponse<ImageUploadData>> call, Throwable t) {
+                            Log.e("CHAT_UPLOAD", "S3 네트워크 실패: " + t.getMessage());
+                            onResult.accept(null);
+                        }
+                    });
+        } catch (Exception e) {
+            Log.e("CHAT_UPLOAD", "업로드 예외: " + e.getMessage());
+            onResult.accept(null);
+        }
     }
 
     /**
@@ -595,19 +762,43 @@ public class ChatRoomActivity extends AppCompatActivity {
                 msg.setSender_profile_image(json.optString("sender_profile_image", ""));
                 msg.setMsg_type(json.optString("msg_type", "text"));
                 msg.setContent(json.getString("content"));
-                // 이미지 메시지면 image_url 도 함께 파싱 (텍스트면 null)
                 msg.setImage_url(json.optString("image_url", null));
                 msg.setCreated_at(json.getString("created_at"));
-                msg.setUnread_count(json.optInt("unread_count", 0)); //실시간 unread_count 파싱
+                msg.setUnread_count(json.optInt("unread_count", 0));
                 msg.setIs_mine(msg.getSender_id() == myUserId);
+                msg.setStatus(MessageData.STATUS_SENT);
+
+                // ── image_urls 파싱 ──
+                JSONArray urlsArr = json.optJSONArray("image_urls");
+                if (urlsArr != null && urlsArr.length() > 0) {
+                    List<String> imageUrls = new ArrayList<>();
+                    for (int i = 0; i < urlsArr.length(); i++) imageUrls.add(urlsArr.getString(i));
+                    msg.setImage_urls(imageUrls);
+                }
+
+                // ── client_msg_id — optimistic dedupe ──
+                String clientMsgId = json.optString("client_msg_id", null);
+                msg.setClient_msg_id(clientMsgId);
+
 
                 runOnUiThread(() -> {
-                    adapter.addMessage(msg);
+                    // 타임아웃 Handler 취소
+                    if (clientMsgId != null) {
+                        Handler handler = pendingTimeoutHandlers.remove(clientMsgId);
+                        if (handler != null) handler.removeCallbacksAndMessages(null);
+                    }
+
+                    // confirmMessage: client_msg_id 있으면 in-place 교체, 없으면 addMessage
+                    if (clientMsgId != null && !clientMsgId.isEmpty()) {
+                        adapter.confirmMessage(clientMsgId, msg);
+                    } else {
+                        adapter.addMessage(msg);
+                    }
                     scrollToBottom();
                     markRead();
                 });
             } catch (Exception e) {
-                // 파싱 실패
+                Log.e("CHAT_UPLOAD", "messageListener 파싱 실패: " + e.getMessage());
             }
         };
 
@@ -746,6 +937,51 @@ public class ChatRoomActivity extends AppCompatActivity {
         SocketManager.getInstance().getSocket().on("member_joined", memberJoinedListener);
         SocketManager.getInstance().getSocket().on("kicked", kickedListener);
     }
+
+    /**
+     * 실패 메시지 재전송 — 동일 client_msg_id 재사용
+     */
+    private void retryUpload(MessageData failedMsg, List<Uri> uris) {adapter.setImageClickListener((urls, startIndex) -> {
+        Intent intent = new Intent(this, FullScreenImageActivity.class);
+        intent.putStringArrayListExtra(
+                FullScreenImageActivity.EXTRA_IMAGE_URLS, new ArrayList<>(urls));
+        intent.putExtra(FullScreenImageActivity.EXTRA_START_INDEX, startIndex);
+        startActivity(intent);
+    });
+        String clientMsgId = failedMsg.getClient_msg_id();
+        int count = uris.size();
+        String[] results = new String[count];
+        int[] done = {0};
+
+        for (int i = 0; i < count; i++) {
+            final int idx = i;
+            uploadOneToResult(uris.get(idx), s3Url -> {
+                results[idx] = s3Url;
+                done[0]++;
+                if (done[0] == count) {
+                    List<String> successUrls = new ArrayList<>();
+                    for (String url : results) if (url != null) successUrls.add(url);
+
+                    if (successUrls.isEmpty()) {
+                        runOnUiThread(() -> adapter.markFailed(clientMsgId));
+                    } else {
+                        SocketManager.getInstance()
+                                .sendImageMessage(roomId, myUserId, successUrls, clientMsgId);
+
+                        Handler handler = new Handler(Looper.getMainLooper());
+                        pendingTimeoutHandlers.put(clientMsgId, handler);
+                        handler.postDelayed(() -> {
+                            if (pendingTimeoutHandlers.containsKey(clientMsgId)) {
+                                pendingTimeoutHandlers.remove(clientMsgId);
+                                adapter.markFailed(clientMsgId);
+                            }
+                        }, 10_000);
+                    }
+                }
+            });
+        }
+    }
+
 
     // ─────────────────────────────────────────
     // 메시지 전송

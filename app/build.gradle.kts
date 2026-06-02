@@ -79,6 +79,8 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.naver.maps:map-sdk:3.23.1")
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)

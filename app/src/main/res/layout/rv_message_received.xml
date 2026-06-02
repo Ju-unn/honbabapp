@@ -84,6 +84,16 @@
                     android:scaleType="fitCenter"
                     android:visibility="gone" />
 
+                <!-- 다중 이미지 그리드 (2장 이상일 때) -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvImageGrid"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/message_image_background"
+                    android:clipToOutline="true"
+                    android:nestedScrollingEnabled="false"
+                    android:visibility="gone" />
+
             </FrameLayout>
 
             <!-- 시간 + 읽지 않은 수: 말풍선 오른쪽, 하단 정렬 -->

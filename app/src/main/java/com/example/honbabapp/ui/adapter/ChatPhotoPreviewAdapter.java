@@ -20,31 +20,32 @@ import java.util.List;
  * - ChatRoomDetailActivity 의 사진 섹션에서 사용
  * - 가로 RecyclerView (LinearLayoutManager HORIZONTAL)
  * - 최대 10장 정사각 80dp 썸네일
- *
- * 현재는 아이템 클릭 시 동작 없음 (V2 에서 풀스크린 뷰어 추가 예정).
- * 사진 더보기는 "더보기 >" 헤더 클릭으로 별도 처리.
  */
 public class ChatPhotoPreviewAdapter
         extends RecyclerView.Adapter<ChatPhotoPreviewAdapter.ViewHolder> {
 
-    // ─────────────────────────────────────────
-    // 내부 상태
-    // ─────────────────────────────────────────
+    // ── 클릭 콜백 ─────────────────────────────
+
+    public interface OnPhotoClickListener {
+        void onPhotoClick(List<ChatPhotoData> items, int position);
+    }
+
+    private OnPhotoClickListener clickListener;
+
+    public void setOnPhotoClickListener(OnPhotoClickListener listener) {
+        this.clickListener = listener;
+    }
+
+    // ── 데이터 ────────────────────────────────
 
     private List<ChatPhotoData> items = new ArrayList<>();
-
-    // ─────────────────────────────────────────
-    // 데이터 갱신
-    // ─────────────────────────────────────────
 
     public void setItems(List<ChatPhotoData> newItems) {
         this.items = (newItems != null) ? newItems : new ArrayList<>();
         notifyDataSetChanged();
     }
 
-    // ─────────────────────────────────────────
-    // RecyclerView.Adapter 필수 메서드
-    // ─────────────────────────────────────────
+    // ── Adapter ───────────────────────────────
 
     @NonNull
     @Override
@@ -56,7 +57,7 @@ public class ChatPhotoPreviewAdapter
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(items.get(position));
+        holder.bind(items.get(position), position);
     }
 
     @Override
@@ -64,12 +65,9 @@ public class ChatPhotoPreviewAdapter
         return items.size();
     }
 
-    // ─────────────────────────────────────────
-    // ViewHolder
-    // ─────────────────────────────────────────
+    // ── ViewHolder ────────────────────────────
 
     class ViewHolder extends RecyclerView.ViewHolder {
-
         private final RvChatPhotoPreviewBinding binding;
 
         ViewHolder(RvChatPhotoPreviewBinding binding) {
@@ -77,13 +75,19 @@ public class ChatPhotoPreviewAdapter
             this.binding = binding;
         }
 
-        void bind(ChatPhotoData item) {
+        void bind(ChatPhotoData item, int position) {
             Glide.with(binding.getRoot().getContext())
                     .load(item.getImage_url())
-                    .placeholder(R.color.bg_300)   // 로딩 중 회색 박스
+                    .placeholder(R.color.bg_300)
                     .error(R.color.bg_300)
                     .centerCrop()
                     .into(binding.ivPhoto);
+
+            binding.getRoot().setOnClickListener(v -> {
+                if (clickListener != null) {
+                    clickListener.onPhotoClick(items, position);
+                }
+            });
         }
     }
 }

@@ -123,6 +123,10 @@
             android:name=".activity.chat.ChatRoomParticipantDetailActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".activity.chat.FullScreenImageActivity"
+            android:exported="false" />
+
 
         <activity
             android:name=".activity.SplashActivity"

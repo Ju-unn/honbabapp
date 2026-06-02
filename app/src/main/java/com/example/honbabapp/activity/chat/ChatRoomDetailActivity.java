@@ -183,6 +183,17 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
         binding.rvPhotoPreview.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.rvPhotoPreview.setAdapter(photoAdapter);
+
+        // 썸네일 탭 → 풀스크린 뷰어
+        photoAdapter.setOnPhotoClickListener((photos, position) -> {
+            ArrayList<String> urls = new ArrayList<>();
+            for (ChatPhotoData p : photos) urls.add(p.getImage_url());
+
+            Intent intent = new Intent(this, FullScreenImageActivity.class);
+            intent.putStringArrayListExtra(FullScreenImageActivity.EXTRA_IMAGE_URLS, urls);
+            intent.putExtra(FullScreenImageActivity.EXTRA_START_INDEX, position);
+            startActivity(intent);
+        });
     }
 
     /** 클릭 리스너 일괄 등록 */
