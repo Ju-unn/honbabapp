@@ -307,12 +307,16 @@ public class ChatRoomActivity extends AppCompatActivity {
         adapter.setFailedMessageListener(new MessageAdapter.OnFailedMessageListener() {
             @Override
             public void onRetry(MessageData msg) {
-                // SENDING 으로 되돌리고 동일 client_msg_id 로 재업로드
                 msg.setStatus(MessageData.STATUS_SENDING);
-                adapter.notifyItemChanged(adapter.getMessages().indexOf(msg)); // 오버레이 즉시 숨김
-                List<Uri> uris = msg.getLocalUris();
-                if (uris != null && !uris.isEmpty()) {
-                    retryUpload(msg, uris);
+                adapter.notifyItemChanged(adapter.getMessages().indexOf(msg));
+
+                if (msg.isImage()) {
+                    List<Uri> localUris = msg.getLocalUris();
+                    if (localUris != null && !localUris.isEmpty()) {
+                        retryUpload(msg, localUris);
+                    }
+                } else {
+                    retryText(msg);
                 }
             }
 
@@ -941,13 +945,8 @@ public class ChatRoomActivity extends AppCompatActivity {
     /**
      * 실패 메시지 재전송 — 동일 client_msg_id 재사용
      */
-    private void retryUpload(MessageData failedMsg, List<Uri> uris) {adapter.setImageClickListener((urls, startIndex) -> {
-        Intent intent = new Intent(this, FullScreenImageActivity.class);
-        intent.putStringArrayListExtra(
-                FullScreenImageActivity.EXTRA_IMAGE_URLS, new ArrayList<>(urls));
-        intent.putExtra(FullScreenImageActivity.EXTRA_START_INDEX, startIndex);
-        startActivity(intent);
-    });
+    // 수정 후
+    private void retryUpload(MessageData failedMsg, List<Uri> uris) {
         String clientMsgId = failedMsg.getClient_msg_id();
         int count = uris.size();
         String[] results = new String[count];
@@ -982,6 +981,38 @@ public class ChatRoomActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 텍스트 메시지 재전송 — 동일 client_msg_id 재사용
+     */
+    private void retryText(MessageData failedMsg) {
+        String clientMsgId = failedMsg.getClient_msg_id();
+
+        if (!SocketManager.getInstance().isConnected()) {
+            adapter.markFailed(clientMsgId);
+            return;
+        }
+
+        SocketManager.getInstance().sendMessage(roomId, myUserId, failedMsg.getContent(), clientMsgId);
+        armSendTimeout(clientMsgId);
+    }
+
+    /**
+     * client_msg_id 에 대해 10초 타임아웃 Handler 등록.
+     * echo 미수신 시 STATUS_FAILED 로 마킹.
+     * 이미지/텍스트 공통으로 사용.
+     */
+    private void armSendTimeout(String clientMsgId) {
+        Handler timeoutHandler = new Handler(Looper.getMainLooper());
+        pendingTimeoutHandlers.put(clientMsgId, timeoutHandler);
+        timeoutHandler.postDelayed(() -> {
+            if (pendingTimeoutHandlers.containsKey(clientMsgId)) {
+                pendingTimeoutHandlers.remove(clientMsgId);
+                adapter.markFailed(clientMsgId);
+                Log.w("CHAT_SEND", "타임아웃 → markFailed: " + clientMsgId);
+            }
+        }, 10_000);
+    }
+
 
     // ─────────────────────────────────────────
     // 메시지 전송
@@ -992,7 +1023,30 @@ public class ChatRoomActivity extends AppCompatActivity {
         if (content.isEmpty()) return;
 
         binding.etMessage.setText("");
-        SocketManager.getInstance().sendMessage(roomId, myUserId, content);
+
+        String clientMsgId = UUID.randomUUID().toString();
+
+        MessageData optimistic = new MessageData();
+        optimistic.setClient_msg_id(clientMsgId);
+        optimistic.setMsg_type("text");
+        optimistic.setContent(content);
+        optimistic.setIs_mine(true);
+        optimistic.setStatus(MessageData.STATUS_SENDING);
+        optimistic.setSender_id(myUserId);
+        optimistic.setRoom_id(roomId);
+        optimistic.setCreated_at(MessageData.nowUtcString());
+
+        adapter.addMessage(optimistic);
+        scrollToBottom();
+
+        // 네트워크 오프라인 즉시 감지 → 바로 FAILED
+        if (!SocketManager.getInstance().isConnected()) {
+            adapter.markFailed(clientMsgId);
+            return;
+        }
+
+        SocketManager.getInstance().sendMessage(roomId, myUserId, content, clientMsgId);
+        armSendTimeout(clientMsgId);
     }
 
     // ─────────────────────────────────────────

@@ -1,8 +1,13 @@
 package com.example.honbabapp.api.data.chat;
 
 import android.net.Uri;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * 채팅 메시지 데이터 모델
@@ -148,5 +153,18 @@ public class MessageData {
             return uriStrings;
         }
         return new ArrayList<>();
+    }
+
+    // ── 정적 유틸 ─────────────────────────────────
+
+    /**
+     * 현재 UTC 시각을 "yyyy-MM-dd HH:mm:ss" 포맷으로 반환.
+     * optimistic 메시지의 created_at 초기값으로 사용.
+     * MessageAdapter.formatTime()과 동일 포맷(UTC 파싱)이므로 시간 표시·그룹핑 정상 동작.
+     */
+    public static String nowUtcString() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return sdf.format(new Date());
     }
 }

@@ -121,14 +121,34 @@ public class SocketManager {
         }
     }
 
+    /**
+     * 텍스트 메시지 전송 — 하위 호환용
+     * @deprecated 새 코드는 sendMessage(roomId, userId, content, clientMsgId) 사용
+     */
+    @Deprecated
     public void sendMessage(int roomId, int userId, String content) {
+        sendMessage(roomId, userId, content, null);
+    }
+
+    /**
+     * 텍스트 메시지 전송 (client_msg_id 지원)
+     *
+     * @param roomId      채팅방 ID
+     * @param userId      보내는 user_id
+     * @param content     텍스트 내용
+     * @param clientMsgId optimistic dedupe 키 (null 이면 생략)
+     */
+    public void sendMessage(int roomId, int userId, String content, String clientMsgId) {
         try {
             JSONObject data = new JSONObject();
             data.put("room_id", roomId);
             data.put("user_id", userId);
             data.put("content", content);
+
+            if (clientMsgId != null) data.put("client_msg_id", clientMsgId);
+
             socket.emit("message", data);
-            Log.d(TAG, "메시지 전송! room:" + roomId);
+            Log.d(TAG, "텍스트 메시지 전송! room:" + roomId + " clientMsgId:" + clientMsgId);
         } catch (Exception e) {
             Log.e(TAG, "메시지 전송 실패: " + e.getMessage());
         }
@@ -138,6 +158,7 @@ public class SocketManager {
      * 단일 이미지 전송 — 구버전 호환용
      * @deprecated 새 코드는 sendImageMessage(roomId, userId, urls, clientMsgId) 사용
      */
+    @Deprecated
     public void sendImageMessage(int roomId, int userId, String imageUrl) {
         List<String> urls = new ArrayList<>();
         urls.add(imageUrl);
@@ -199,6 +220,10 @@ public class SocketManager {
         } catch (Exception e) {
             Log.e(TAG, "member_joined emit 실패: " + e.getMessage());
         }
+    }
+
+    public boolean isConnected() {
+        return socket != null && socket.connected();
     }
 
     public void disconnect() {
