@@ -24,13 +24,13 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.BuildConfig;
 import com.example.honbabapp.R;
 import com.example.honbabapp.api.data.ImageUploadData;
 import com.example.honbabapp.api.data.chat.MessageData;
+import com.example.honbabapp.api.data.local.PendingMessageStore;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
 import com.example.honbabapp.databinding.PageChatDetailBinding;
@@ -42,10 +42,7 @@ import com.example.honbabapp.ui.dialog.ChatAttachBottomSheetDialog;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import io.socket.emitter.Emitter;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +55,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import io.socket.emitter.Emitter;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -68,6 +66,9 @@ import retrofit2.Response;
 public class ChatRoomActivity extends AppCompatActivity {
     private PageChatDetailBinding binding;
     private MessageAdapter adapter;
+
+    /** 실패/대기 메시지 영속화(Room) 매니저 */
+    private PendingMessageStore pendingStore;
 
     // ── Optimistic UI ──────────────────────────────
     /** 업로드 중인 이미지의 client_msg_id → 타임아웃 Handler 취소용 */
@@ -187,6 +188,8 @@ public class ChatRoomActivity extends AppCompatActivity {
 
         SharedPreferences prefs = getSharedPreferences("honbabapp_prefs", Context.MODE_PRIVATE);
         myUserId = prefs.getInt("user_id", -1);
+
+        pendingStore = new PendingMessageStore(this);
 
         initToolbar();
         initRecyclerView();
@@ -323,6 +326,7 @@ public class ChatRoomActivity extends AppCompatActivity {
             @Override
             public void onDelete(MessageData msg) {
                 adapter.removeByClientMsgId(msg.getClient_msg_id());
+                pendingStore.remove(msg.getClient_msg_id());
             }
         });
 
@@ -446,17 +450,6 @@ public class ChatRoomActivity extends AppCompatActivity {
     // ─────────────────────────────────────────
 
     /**
-     * 선택된 Uri 목록을 모두 S3에 올린 뒤 묶음 소켓 메시지 1개 전송.
-     *
-     * 흐름:
-     *   1) optimistic 메시지 즉시 추가 (SENDING, localUris 세팅 → Glide 미리보기)
-     *   2) 각 Uri 병렬 업로드 (uploadOne 은 그대로 활용, 결과를 results[] 배열에 기록)
-     *   3) 전체 완료 후 성공 URL ≥ 1 → sendImageMessage 1회 emit
-     *   4) 성공 URL = 0 → 즉시 markFailed
-     *   5) 10초 타임아웃 Handler → echo 미수신 시 markFailed
-     */
-    /**
-     * 선택된 Uri 목록을 모두 S3에 올린 뒤 묶음 소켓 메시지 1개 전송.
      *
      * 흐름:
      *   1) optimistic 메시지 즉시 추가 (SENDING, localUris 세팅 → Glide 미리보기)
@@ -469,68 +462,79 @@ public class ChatRoomActivity extends AppCompatActivity {
         isUploading = true;
         binding.btnAttach.setEnabled(false);
 
-        // 1) client_msg_id 생성
         String clientMsgId = UUID.randomUUID().toString();
 
-        // 2) optimistic 메시지 즉시 추가
-        MessageData optimistic = new MessageData();
-        optimistic.setClient_msg_id(clientMsgId);
-        optimistic.setMsg_type("image");
-        optimistic.setContent("사진");
-        optimistic.setIs_mine(true);
-        optimistic.setStatus(MessageData.STATUS_SENDING);
-        optimistic.setLocalUris(new ArrayList<>(uris));   // Glide 미리보기용
-        optimistic.setSender_id(myUserId);
-        optimistic.setRoom_id(roomId);
-        runOnUiThread(() -> {
-            adapter.addMessage(optimistic);
-            scrollToBottom();
-        });
+        // 원본 Uri 를 앱 내부로 복사(백그라운드) → 복사본으로 미리보기/업로드/재전송.
+        // content:// 원본은 앱 재시작 후 접근 권한이 사라질 수 있어, 내 앱 저장소로 복사해둔다.
+        pendingStore.getDatabaseExecutor().execute(() -> {
+            List<Uri> copiedUris = pendingStore.copyImagesToInternal(clientMsgId, uris);
+            // 복사가 모두 실패하면 이번 세션 업로드는 원본으로라도 시도
+            List<Uri> usableUris = copiedUris.isEmpty() ? uris : copiedUris;
 
-        // 3) 업로드 결과 배열 (선택 순서 보존)
+            runOnUiThread(() -> {
+                MessageData optimistic = new MessageData();
+                optimistic.setClient_msg_id(clientMsgId);
+                optimistic.setMsg_type("image");
+                optimistic.setContent("사진");
+                optimistic.setIs_mine(true);
+                optimistic.setStatus(MessageData.STATUS_SENDING);
+                optimistic.setLocalUris(new ArrayList<>(usableUris));   // Glide 미리보기용(복사본)
+                optimistic.setSender_id(myUserId);
+                optimistic.setRoom_id(roomId);
+                optimistic.setCreated_at(MessageData.nowUtcString());
+
+                adapter.addMessage(optimistic);
+                scrollToBottom();
+                pendingStore.save(optimistic);   // 오프라인 실패도 DB 에 남도록 전송 전에 저장
+
+                uploadAllAndSend(clientMsgId, usableUris);
+            });
+        });
+    }
+
+    /**
+     * 최초 전송(startSequentialUpload)과 재전송(retryUpload)이 공유한다.
+     * emit 직전 isConnected 가드로 오프라인 자동 전송을 막는다.
+     */
+    private void uploadAllAndSend(String clientMsgId, List<Uri> uris) {
         int count = uris.size();
         String[] results = new String[count];
         int[] done = {0}; // 완료 카운터 (배열로 감싸서 람다에서 수정 가능)
 
         for (int i = 0; i < count; i++) {
-            final int idx = i;
-            uploadOneToResult(uris.get(idx), s3Url -> {
-                results[idx] = s3Url; // 실패면 null
+            final int index = i;
+            uploadOneToResult(uris.get(index), s3Url -> {
+                results[index] = s3Url; // 실패면 null
                 done[0]++;
+                if (done[0] != count) return;
 
-                if (done[0] == count) {
-                    // 모든 업로드 완료
-                    isUploading = false;
-                    runOnUiThread(() -> binding.btnAttach.setEnabled(true));
+                // 모든 업로드 완료
+                isUploading = false;
+                runOnUiThread(() -> binding.btnAttach.setEnabled(true));
 
-                    // 성공 URL만 추림
-                    List<String> successUrls = new ArrayList<>();
-                    for (String url : results) {
-                        if (url != null) successUrls.add(url);
-                    }
-
-                    if (successUrls.isEmpty()) {
-                        // 전부 실패
-                        Log.e("CHAT_UPLOAD", "모든 업로드 실패 → markFailed");
-                        runOnUiThread(() -> adapter.markFailed(clientMsgId));
-                    } else {
-                        // 묶음 emit 1회
-                        SocketManager.getInstance()
-                                .sendImageMessage(roomId, myUserId, successUrls, clientMsgId);
-
-                        // 10초 타임아웃: echo 안 오면 FAILED
-                        Handler handler = new Handler(Looper.getMainLooper());
-                        pendingTimeoutHandlers.put(clientMsgId, handler);
-                        handler.postDelayed(() -> {
-                            if (pendingTimeoutHandlers.containsKey(clientMsgId)) {
-                                // 아직 confirm 안 됨 → failed
-                                pendingTimeoutHandlers.remove(clientMsgId);
-                                adapter.markFailed(clientMsgId);
-                                Log.w("CHAT_UPLOAD", "타임아웃 → markFailed: " + clientMsgId);
-                            }
-                        }, 10_000);
-                    }
+                List<String> successUrls = new ArrayList<>();
+                for (String url : results) {
+                    if (url != null) successUrls.add(url);
                 }
+
+                if (successUrls.isEmpty()) {
+                    Log.e("CHAT_UPLOAD", "모든 업로드 실패 → failLocally");
+                    runOnUiThread(() -> failLocally(clientMsgId));
+                    return;
+                }
+
+                // 업로드 성공분을 DB 에 기록 → echo 만 실패해도 재전송 시 재업로드 생략 가능
+                pendingStore.updateServerImageUrls(clientMsgId, successUrls);
+
+                // 오프라인이면 emit 하지 않고 실패 처리(소켓 버퍼 자동 flush 차단)
+                if (!SocketManager.getInstance().isConnected()) {
+                    runOnUiThread(() -> failLocally(clientMsgId));
+                    return;
+                }
+
+                SocketManager.getInstance()
+                        .sendImageMessage(roomId, myUserId, successUrls, clientMsgId);
+                armSendTimeout(clientMsgId);
             });
         }
     }
@@ -727,6 +731,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                                 adapter.setMessages(history);
                                 hasMorePages = data.getTotal_pages() > 1;
                                 scrollToBottom();
+                                restorePendingMessages();   // 히스토리 교체 직후, 실패 메시지 맨 아래 복원
                             }
                         }
                     }
@@ -736,6 +741,24 @@ public class ChatRoomActivity extends AppCompatActivity {
                         // 히스토리 로드 실패 — 빈 화면으로 진입
                     }
                 });
+    }
+
+    /**
+     * 재진입/재시작 시 DB 의 실패 메시지를 맨 아래에 복원한다.
+     * setMessages(history) 가 리스트를 통째 교체한 "이후"에 호출해야 한다.
+     * 복원 항목은 모두 FAILED 상태이며, 자동 전송하지 않는다
+     */
+    private void restorePendingMessages() {
+        pendingStore.getDatabaseExecutor().execute(() -> {
+            List<MessageData> pending = pendingStore.loadForRoom(roomId);
+            if (pending.isEmpty()) return;
+            runOnUiThread(() -> {
+                for (MessageData message : pending) {
+                    adapter.addMessage(message);  // 맨 아래 append → Step 1 불변식상 SENT 블록 아래
+                }
+                scrollToBottom();
+            });
+        });
     }
 
     // ─────────────────────────────────────────
@@ -792,11 +815,12 @@ public class ChatRoomActivity extends AppCompatActivity {
                         if (handler != null) handler.removeCallbacksAndMessages(null);
                     }
 
-                    // confirmMessage: client_msg_id 있으면 in-place 교체, 없으면 addMessage
+                    // confirmMessage: client_msg_id 있으면 in-place 교체, 없으면 addIncomingSent
                     if (clientMsgId != null && !clientMsgId.isEmpty()) {
                         adapter.confirmMessage(clientMsgId, msg);
+                        pendingStore.remove(clientMsgId);   // 성공 확정 → DB row + 복사파일 정리
                     } else {
-                        adapter.addMessage(msg);
+                        adapter.addIncomingSent(msg);
                     }
                     scrollToBottom();
                     markRead();
@@ -943,42 +967,11 @@ public class ChatRoomActivity extends AppCompatActivity {
     }
 
     /**
-     * 실패 메시지 재전송 — 동일 client_msg_id 재사용
+     * 실패 이미지 재전송 — 동일 client_msg_id 재사용.
+     * 복원된 메시지의 localUris(내부 복사본)로 재업로드한다.
      */
-    // 수정 후
     private void retryUpload(MessageData failedMsg, List<Uri> uris) {
-        String clientMsgId = failedMsg.getClient_msg_id();
-        int count = uris.size();
-        String[] results = new String[count];
-        int[] done = {0};
-
-        for (int i = 0; i < count; i++) {
-            final int idx = i;
-            uploadOneToResult(uris.get(idx), s3Url -> {
-                results[idx] = s3Url;
-                done[0]++;
-                if (done[0] == count) {
-                    List<String> successUrls = new ArrayList<>();
-                    for (String url : results) if (url != null) successUrls.add(url);
-
-                    if (successUrls.isEmpty()) {
-                        runOnUiThread(() -> adapter.markFailed(clientMsgId));
-                    } else {
-                        SocketManager.getInstance()
-                                .sendImageMessage(roomId, myUserId, successUrls, clientMsgId);
-
-                        Handler handler = new Handler(Looper.getMainLooper());
-                        pendingTimeoutHandlers.put(clientMsgId, handler);
-                        handler.postDelayed(() -> {
-                            if (pendingTimeoutHandlers.containsKey(clientMsgId)) {
-                                pendingTimeoutHandlers.remove(clientMsgId);
-                                adapter.markFailed(clientMsgId);
-                            }
-                        }, 10_000);
-                    }
-                }
-            });
-        }
+        uploadAllAndSend(failedMsg.getClient_msg_id(), uris);
     }
 
     /**
@@ -988,7 +981,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         String clientMsgId = failedMsg.getClient_msg_id();
 
         if (!SocketManager.getInstance().isConnected()) {
-            adapter.markFailed(clientMsgId);
+            failLocally(clientMsgId);
             return;
         }
 
@@ -1007,10 +1000,19 @@ public class ChatRoomActivity extends AppCompatActivity {
         timeoutHandler.postDelayed(() -> {
             if (pendingTimeoutHandlers.containsKey(clientMsgId)) {
                 pendingTimeoutHandlers.remove(clientMsgId);
-                adapter.markFailed(clientMsgId);
-                Log.w("CHAT_SEND", "타임아웃 → markFailed: " + clientMsgId);
+                failLocally(clientMsgId);
+                Log.w("CHAT_SEND", "타임아웃 → failLocally: " + clientMsgId);
             }
         }, 10_000);
+    }
+
+    /**
+     * 실패 처리 일원화: 화면(어댑터) + 영속화(DB)를 함께 실패로 표시한다.
+     * 반드시 UI 스레드에서 호출(adapter 접근). pendingStore 는 내부에서 백그라운드로 위임하므로 안전.
+     */
+    private void failLocally(String clientMsgId) {
+        adapter.markFailed(clientMsgId);
+        pendingStore.markFailed(clientMsgId);
     }
 
 
@@ -1038,10 +1040,11 @@ public class ChatRoomActivity extends AppCompatActivity {
 
         adapter.addMessage(optimistic);
         scrollToBottom();
+        pendingStore.save(optimistic);   // 오프라인 실패도 DB 에 남도록 전송 전에 저장
 
         // 네트워크 오프라인 즉시 감지 → 바로 FAILED
         if (!SocketManager.getInstance().isConnected()) {
-            adapter.markFailed(clientMsgId);
+            failLocally(clientMsgId);
             return;
         }
 

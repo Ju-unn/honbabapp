@@ -23,12 +23,15 @@ import java.util.TimeZone;
 
 public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    static final int VIEW_TYPE_MINE   = 1;
-    static final int VIEW_TYPE_OTHER  = 2;
+    static final int VIEW_TYPE_MINE = 1;
+    static final int VIEW_TYPE_OTHER = 2;
     static final int VIEW_TYPE_SYSTEM = 3;
 
     private List<MessageData> messages = new ArrayList<>();
-    public List<MessageData> getMessages() { return messages; }
+
+    public List<MessageData> getMessages() {
+        return messages;
+    }
 
     // ── 콜백 인터페이스 ──────────────────────────
 
@@ -40,15 +43,18 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         void onImageClick(List<String> urls, int startIndex);
     }
 
-    /** 실패 메시지 재전송/삭제 콜백 */
+    /**
+     * 실패 메시지 재전송/삭제 콜백
+     */
     public interface OnFailedMessageListener {
         void onRetry(MessageData msg);
+
         void onDelete(MessageData msg);
     }
 
-    private final OnProfileClickListener    profileClickListener;
-    private       OnImageClickListener      imageClickListener;
-    private       OnFailedMessageListener   failedMessageListener;
+    private final OnProfileClickListener profileClickListener;
+    private OnImageClickListener imageClickListener;
+    private OnFailedMessageListener failedMessageListener;
 
     public MessageAdapter() {
         profileClickListener = null;
@@ -58,8 +64,13 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         this.profileClickListener = listener;
     }
 
-    public void setImageClickListener(OnImageClickListener l)   { this.imageClickListener    = l; }
-    public void setFailedMessageListener(OnFailedMessageListener l) { this.failedMessageListener = l; }
+    public void setImageClickListener(OnImageClickListener l) {
+        this.imageClickListener = l;
+    }
+
+    public void setFailedMessageListener(OnFailedMessageListener l) {
+        this.failedMessageListener = l;
+    }
 
     // ── ViewType ─────────────────────────────────
 
@@ -67,7 +78,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public int getItemViewType(int position) {
         MessageData msg = messages.get(position);
         if ("system".equals(msg.getMsg_type())) return VIEW_TYPE_SYSTEM;
-        if (msg.isIs_mine())                    return VIEW_TYPE_MINE;
+        if (msg.isIs_mine()) return VIEW_TYPE_MINE;
         return VIEW_TYPE_OTHER;
     }
 
@@ -102,7 +113,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     @Override
-    public int getItemCount() { return messages.size(); }
+    public int getItemCount() {
+        return messages.size();
+    }
 
     // ── 데이터 갱신 메서드 ────────────────────────
 
@@ -139,21 +152,36 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     // ── Optimistic UI 메서드 ──────────────────────
 
     /**
-     * 서버 echo 수신 시 로컬 SENDING 메시지를 서버 확정 데이터로 교체
-     * client_msg_id 로 탐색 → in-place 교체 → notifyItemChanged
-     * 없으면(구 서버 echo) 일반 addMessage 처리
+     * 서버 echo 수신 시 로컬 optimistic(SENDING) 메시지를 서버 확정 데이터로 교체한다.
+     * → 재전송 성공 시 그 메시지가 pending 블록을 벗어나 시간순(맨 아래 성공 자리)으로 올라간다.
+     * optimistic 을 못 찾으면(구 서버 echo) addIncomingSent 로 처리.
      */
-    public void confirmMessage(String clientMsgId, MessageData serverMsg) {
-        int idx = findByClientMsgId(clientMsgId);
-        if (idx >= 0) {
-            messages.set(idx, serverMsg);
-            notifyItemChanged(idx);
-        } else {
-            addMessage(serverMsg);
+    public void confirmMessage(String clientMsgId, MessageData serverMessage) {
+        int oldIndex = findByClientMsgId(clientMsgId);
+        if (oldIndex < 0) {
+            addIncomingSent(serverMessage);
+            return;
         }
+
+        // optimistic 제거 후, 제거 직후 기준 firstPendingIndex(= SENT 블록 끝)에 재삽입.
+        // 방금 확정된 메시지는 message_id 가 가장 크므로 SENT 블록의 마지막에 놓인다.
+        messages.remove(oldIndex);
+        int insertIndex = firstPendingIndex();
+        messages.add(insertIndex, serverMessage);
+
+        if (oldIndex == insertIndex) {
+            // 위치 동일(대기 항목이 하나뿐인 일반 케이스) → 단순 교체로 처리해 깜빡임 제거
+            notifyItemChanged(insertIndex);
+        } else {
+            notifyItemRemoved(oldIndex);
+            notifyItemInserted(insertIndex);
+        }
+        refreshNeighbors(insertIndex);
     }
 
-    /** client_msg_id 로 찾아서 STATUS_FAILED 로 마킹 */
+    /**
+     * client_msg_id 로 찾아서 STATUS_FAILED 로 마킹
+     */
     public void markFailed(String clientMsgId) {
         int idx = findByClientMsgId(clientMsgId);
         if (idx >= 0) {
@@ -162,7 +190,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
-    /** 로컬 메시지 제거 (실패 → 삭제 버튼, 서버 호출 없음) */
+    /**
+     * 로컬 메시지 제거 (실패 → 삭제 버튼, 서버 호출 없음)
+     */
     public void removeByClientMsgId(String clientMsgId) {
         int idx = findByClientMsgId(clientMsgId);
         if (idx >= 0) {
@@ -179,6 +209,47 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
         return -1;
     }
+
+    /**
+     * 불변식 유지를 위한 첫 pending 인덱스 탐색.
+     * 리스트는 [SENT 블록] ++ [SENDING/FAILED 블록] 구조이므로,
+     * 앞에서부터 STATUS_SENT 가 아닌 첫 항목의 인덱스가 곧 pending 블록의 시작점이다.
+     * pending 항목이 없으면 리스트 크기를 반환한다(= SENT 블록의 끝 위치).
+     */
+    private int firstPendingIndex() {
+        for (int index = 0; index < messages.size(); index++) {
+            if (messages.get(index).getStatus() != MessageData.STATUS_SENT) {
+                return index;
+            }
+        }
+        return messages.size();
+    }
+
+    /**
+     * 서버 확정(SENT) 메시지를 SENT 블록의 끝(= pending 블록 바로 위)에 삽입한다.
+     * 타인 메시지 수신, 또는 confirmMessage 에서 optimistic 을 못 찾은 경우에 사용한다.
+     * 이로써 전송중/실패 메시지는 항상 리스트 맨 아래에 유지된다.
+     */
+    public void addIncomingSent(MessageData incomingMessage) {
+        int insertIndex = firstPendingIndex();
+        messages.add(insertIndex, incomingMessage);
+        notifyItemInserted(insertIndex);
+        refreshNeighbors(insertIndex);
+    }
+
+    /**
+     * 삽입/이동 후 인접 항목의 시간·발신자 그룹 표시를 다시 계산한다.
+     * (이전 항목의 isLastInTimeRun, 다음 항목의 isFirstInSenderRun 이 바뀔 수 있음)
+     */
+    private void refreshNeighbors(int index) {
+        if (index - 1 >= 0) {
+            notifyItemChanged(index - 1);
+        }
+        if (index + 1 < messages.size()) {
+            notifyItemChanged(index + 1);
+        }
+    }
+
 
     // ── ViewHolder ────────────────────────────────
 
@@ -344,7 +415,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             }
 
             View.OnClickListener profileClick = v -> {
-                if (profileClickListener != null) profileClickListener.onProfileClick(msg.getSender_id());
+                if (profileClickListener != null)
+                    profileClickListener.onProfileClick(msg.getSender_id());
             };
             binding.imgProfile.setOnClickListener(profileClick);
             binding.textSenderName.setOnClickListener(profileClick);
@@ -353,11 +425,15 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     static class SystemViewHolder extends RecyclerView.ViewHolder {
         private final RvMessageSystemBinding binding;
+
         SystemViewHolder(RvMessageSystemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
-        void bind(MessageData msg) { binding.textContent.setText(msg.getContent()); }
+
+        void bind(MessageData msg) {
+            binding.textContent.setText(msg.getContent());
+        }
     }
 
     // ── 시간 포맷 유틸 ────────────────────────────
@@ -369,7 +445,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private boolean isLastInTimeRun(int position) {
         if (position == messages.size() - 1) return true;
-        MessageData cur  = messages.get(position);
+        MessageData cur = messages.get(position);
         MessageData next = messages.get(position + 1);
         if (!cur.isIs_mine() || !next.isIs_mine()) {
             if (cur.getSender_id() != next.getSender_id()) return true;
@@ -379,7 +455,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private boolean isFirstInSenderRun(int position) {
         if (position == 0) return true;
-        MessageData cur  = messages.get(position);
+        MessageData cur = messages.get(position);
         MessageData prev = messages.get(position - 1);
         return cur.getSender_id() != prev.getSender_id()
                 || !minuteKey(cur.getCreated_at()).equals(minuteKey(prev.getCreated_at()));
