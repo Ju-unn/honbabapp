@@ -1,5 +1,6 @@
 package com.example.honbabapp.ui.adapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -354,6 +355,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             }
 
             List<String> images = msg.getImages();
+
+            Log.d("PROFILE", "url=" + msg.getSender_profile_image());
 
             // ── 3분기 ──
             if (!msg.isImage()) {
