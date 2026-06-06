@@ -6,19 +6,14 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.example.honbabapp.R;
 import com.example.honbabapp.api.data.chat.ChatMemberData;
 import com.example.honbabapp.api.data.chat.ChatRoomData;
 import com.example.honbabapp.databinding.RvChatListBinding;
+import com.example.honbabapp.util.ChatGlide;
+import com.example.honbabapp.util.ChatTimeFormatter;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 
 public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapter.ViewHolder> {
 
@@ -91,7 +86,7 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
             binding.textLastMessage.setText(lastMsg != null ? lastMsg : "");
 
             // 시간 포맷 (오늘이면 "HH:mm", 아니면 "MM/dd")
-            binding.textTime.setText(formatTime(room.getLast_msg_time()));
+            binding.textTime.setText(ChatTimeFormatter.formatRoomListTime(room.getLast_msg_time()));
 
             // 읽지 않은 메시지 수 뱃지
             int unread = room.getUnread_count();
@@ -124,13 +119,8 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
                     }
                 }
 
-                // profileUrl이 null이면 Glide의 error()가 ic_profile 기본 이미지 표시
-                Glide.with(binding.getRoot().getContext())
-                        .load(profileUrl)
-                        .placeholder(R.drawable.ic_profile)
-                        .error(R.drawable.ic_profile)
-                        .circleCrop()
-                        .into(binding.imgRoomProfile);
+                // profileUrl이 null이면 ChatGlide의 error()가 ic_profile 기본 이미지 표시
+                ChatGlide.loadCircleProfile(binding.imgRoomProfile, profileUrl);
             }
 
             // 클릭 이벤트
@@ -139,55 +129,5 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
             });
         }
 
-        /**
-         * "2026-04-17 10:00:00" → 오늘: "오전 10:00" / 어제: "어제" / 그외: "04/17"
-         */
-        private String formatTime(String timeStr) {
-            if (timeStr == null || timeStr.isEmpty()) return "";
-            try {
-                // 1. UTC 입력 파싱
-                SimpleDateFormat inputFormat =
-                        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
-                inputFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-                Date date = inputFormat.parse(timeStr);
-
-                // 2. Seoul 타임존으로 날짜 비교
-                Calendar msgCal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"));
-                msgCal.setTime(date);
-                Calendar now = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"));
-
-                // 3. 오늘 판정 (년도 + 일년중날짜)
-                boolean isToday = msgCal.get(Calendar.YEAR) == now.get(Calendar.YEAR)
-                        && msgCal.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR);
-
-                if (isToday) {
-                    // 오늘 → "오전 9:05", "오후 3:42"
-                    SimpleDateFormat outputFormat =
-                            new SimpleDateFormat("a h:mm", Locale.KOREAN);
-                    outputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
-                    return outputFormat.format(date);
-                }
-
-                // 4. 어제 판정
-                Calendar yesterday = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"));
-                yesterday.add(Calendar.DAY_OF_YEAR, -1);
-
-                boolean isYesterday = msgCal.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR)
-                        && msgCal.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR);
-
-                if (isYesterday) {
-                    return "어제";
-                }
-
-                // 5. 그 외 → "04/17"
-                SimpleDateFormat outputFormat =
-                        new SimpleDateFormat("MM/dd", Locale.KOREA);
-                outputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
-                return outputFormat.format(date);
-
-            } catch (Exception e) {
-                return "";
-            }
-        }
     }
 }

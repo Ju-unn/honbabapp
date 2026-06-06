@@ -122,15 +122,6 @@ public class SocketManager {
     }
 
     /**
-     * 텍스트 메시지 전송 — 하위 호환용
-     * @deprecated 새 코드는 sendMessage(roomId, userId, content, clientMsgId) 사용
-     */
-    @Deprecated
-    public void sendMessage(int roomId, int userId, String content) {
-        sendMessage(roomId, userId, content, null);
-    }
-
-    /**
      * 텍스트 메시지 전송 (client_msg_id 지원)
      *
      * @param roomId      채팅방 ID
@@ -152,17 +143,6 @@ public class SocketManager {
         } catch (Exception e) {
             Log.e(TAG, "메시지 전송 실패: " + e.getMessage());
         }
-    }
-
-    /**
-     * 단일 이미지 전송 — 구버전 호환용
-     * @deprecated 새 코드는 sendImageMessage(roomId, userId, urls, clientMsgId) 사용
-     */
-    @Deprecated
-    public void sendImageMessage(int roomId, int userId, String imageUrl) {
-        List<String> urls = new ArrayList<>();
-        urls.add(imageUrl);
-        sendImageMessage(roomId, userId, urls, null);
     }
 
     /**

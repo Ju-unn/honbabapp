@@ -95,7 +95,7 @@ public class PendingMessageStore {
         List<Uri> copiedUris = new ArrayList<>();
         File directory = new File(pendingImageRoot , clientMessageId);
         if (!directory.exists()) {
-            directory.mkdir();
+            directory.mkdirs();
         }
 
         for (int index = 0; index < sourceUris.size(); index++) {

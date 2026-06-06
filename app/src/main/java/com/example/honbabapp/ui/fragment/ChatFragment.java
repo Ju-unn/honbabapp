@@ -23,6 +23,7 @@ import com.example.honbabapp.databinding.FragmentChatBinding;
 import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.ChatRoomListAdapter;
+import com.example.honbabapp.util.ChatSocketEvents;
 import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONObject;
@@ -81,37 +82,36 @@ public class ChatFragment extends Fragment {
 
         // message 이벤트 리스너
         roomMessageListener = args -> {
-            try {
-                JSONObject json    = (JSONObject) args[0];
-                int roomId         = json.getInt("room_id");
-                String content     = json.getString("content");
-                String time        = json.getString("created_at");
-                int senderId       = json.optInt("user_id", -1);
+            JSONObject payload = ChatSocketEvents.asJsonObject(args);
+            if (payload == null) return;
+            int roomId     = ChatSocketEvents.getInt(payload, "room_id", -1);
+            String content = ChatSocketEvents.getString(payload, "content");
+            String time    = ChatSocketEvents.getString(payload, "created_at");
+            int senderId   = ChatSocketEvents.getInt(payload, "user_id", -1);
 
-                requireActivity().runOnUiThread(() -> {
-                    // allRooms 직접 수정
-                    for (ChatRoomData room : allRooms) {
-                        if (room.getRoom_id() == roomId) {
-                            room.setLast_message(content);
-                            room.setLast_msg_time(time);
-                            // 내가 보낸 메시지가 아닐 때만 뱃지 +1
-                            if (senderId != myUserId) {
-                                room.setUnread_count(room.getUnread_count() + 1);
-                            }
-                            break;
+            requireActivity().runOnUiThread(() -> {
+                // allRooms 직접 수정
+                for (ChatRoomData room : allRooms) {
+                    if (room.getRoom_id() == roomId) {
+                        room.setLast_message(content);
+                        room.setLast_msg_time(time);
+                        // 내가 보낸 메시지가 아닐 때만 뱃지 +1
+                        if (senderId != myUserId) {
+                            room.setUnread_count(room.getUnread_count() + 1);
                         }
+                        break;
                     }
-                    // 최신 메시지 방을 위로 정렬 후 화면 갱신
-                    Collections.sort(allRooms, (a, b) -> {
-                        String tA = a.getLast_msg_time();
-                        String tB = b.getLast_msg_time();
-                        if (tA == null) return 1;
-                        if (tB == null) return -1;
-                        return tB.compareTo(tA); // 내림차순 (최신이 위)
-                    });
-                    applyFilter();
+                }
+                // 최신 메시지 방을 위로 정렬 후 화면 갱신
+                Collections.sort(allRooms, (a, b) -> {
+                    String tA = a.getLast_msg_time();
+                    String tB = b.getLast_msg_time();
+                    if (tA == null) return 1;
+                    if (tB == null) return -1;
+                    return tB.compareTo(tA); // 내림차순 (최신이 위)
                 });
-            } catch (Exception e) { /* 파싱 실패 무시 */ }
+                applyFilter();
+            });
         };
         SocketManager.getInstance().getSocket().on("message", roomMessageListener);
 
