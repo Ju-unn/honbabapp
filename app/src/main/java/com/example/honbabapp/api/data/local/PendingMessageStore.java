@@ -28,10 +28,10 @@ public class PendingMessageStore {
     private static final Type STRING_LIST_TYPE = new TypeToken<List<String>>() {}.getType();
 
 
-    public PendingMessageStore(Context context) {
-        this.appContext = context.getApplicationContext();
-        this.dao = AppDatabase.getInstance(appContext).pendingMessageDao();
-        this.pendingImageRoot = new File(appContext.getFilesDir(), "pending");
+    public PendingMessageStore(Context appContext, PendingMessageDao dao, File pendingImageRoot) {
+        this.appContext = appContext;
+        this.dao = dao;
+        this.pendingImageRoot = pendingImageRoot;
     }
 
     /** 작업 직렬화를 위해 같은 Execut

@@ -29,6 +29,8 @@ import com.bumptech.glide.Glide;
 import com.example.honbabapp.BuildConfig;
 import com.example.honbabapp.R;
 import com.example.honbabapp.api.data.chat.MessageData;
+import com.example.honbabapp.api.data.local.AppDatabase;
+import com.example.honbabapp.api.data.local.PendingMessageDao;
 import com.example.honbabapp.api.data.local.PendingMessageStore;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
@@ -136,7 +138,10 @@ public class ChatRoomActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("honbabapp_prefs", Context.MODE_PRIVATE);
         myUserId = prefs.getInt("user_id", -1);
 
-        pendingStore = new PendingMessageStore(this);
+        Context appContext = getApplicationContext();
+        PendingMessageDao pendingMessageDao = AppDatabase.getInstance(appContext).pendingMessageDao();
+        File pendingImageRoot = new File(appContext.getFilesDir(), "pending");
+        pendingStore = new PendingMessageStore(appContext, pendingMessageDao, pendingImageRoot);
 
         socketHandler = new ChatRoomSocketHandler(roomId, myUserId, new ChatRoomSocketHandler.Callbacks() {
             @Override
