@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- 실제 카메라 프리뷰 + QR 인식 영역 -->
+    <com.journeyapps.barcodescanner.BarcodeView
+        android:id="@+id/zxing_barcode_surface"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:zxing_framing_rect_width="260dp"
+        app:zxing_framing_rect_height="260dp"
+        app:zxing_preview_scaling_strategy="fitCenter" />
+
+    <!-- 스캔 영역 외곽 마스크 + 레이저 라인 -->
+    <com.journeyapps.barcodescanner.ViewfinderView
+        android:id="@+id/zxing_viewfinder_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:zxing_viewfinder_laser="@color/primary_200"
+        app:zxing_viewfinder_laser_visibility="true"
+        app:zxing_viewfinder_mask="#AA000000"
+        app:zxing_possible_result_points="@color/primary_200" />
+
+    <!-- 스캔 영역 하단 안내 텍스트 -->
+    <TextView
+        android:id="@+id/zxing_status_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:background="@android:color/transparent"
+        android:padding="10dp"
+        android:text="QR 코드를 네모 안에 맞춰주세요"
+        android:textColor="@color/white"
+        android:textSize="13sp" />
+
+</merge>

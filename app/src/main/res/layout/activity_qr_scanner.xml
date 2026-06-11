@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <!-- 뒤로가기 버튼 -->
+    <ImageButton
+        android:id="@+id/btn_scanner_back"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_margin="16dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_arrow_back"
+        app:tint="@color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 상단 안내 문구 -->
+    <TextView
+        android:id="@+id/tv_scanner_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="QR 스캔"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btn_scanner_back"
+        app:layout_constraintBottom_toBottomOf="@id/btn_scanner_back"/>
+
+    <!-- QR 스캔 영역 안내 문구 -->
+    <TextView
+        android:id="@+id/tv_scanner_guide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="호스트의 QR 코드를 스캔하세요"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_scanner_back" />
+
+    <!-- DecoratedBarcodeView — 실제 카메라 스캔 뷰 -->
+    <com.journeyapps.barcodescanner.DecoratedBarcodeView
+        android:id="@+id/decorated_barcode_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="32dp"
+        app:layout_constraintBottom_toTopOf="@id/btn_scanner_flash"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_scanner_guide"
+        app:zxing_scanner_layout="@layout/custom_barcode_scanner" />
+
+    <!-- 플래시 토글 버튼 -->
+    <Button
+        android:id="@+id/btn_scanner_flash"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginBottom="40dp"
+        android:paddingHorizontal="24dp"
+        android:text="플래시 켜기"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/primary_200"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

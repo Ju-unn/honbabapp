@@ -1,12 +1,17 @@
 package com.example.honbabapp.api;
 
 import com.example.honbabapp.api.data.chat.ChatRoomData;
+import com.example.honbabapp.api.data.meeting.QrCodeData;
+import com.example.honbabapp.api.data.meeting.QrScanResultData;
+import com.example.honbabapp.api.data.meeting.QrStatusData;
 import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
 import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
 import com.example.honbabapp.api.data.request.chat.KickMemberRequest;
 import com.example.honbabapp.api.data.request.chat.LeaveRoomRequest;
 import com.example.honbabapp.api.data.request.chat.MarkReadRequest;
 import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
+import com.example.honbabapp.api.data.request.meeting.QrGenerateRequest;
+import com.example.honbabapp.api.data.request.meeting.QrScanRequest;
 import com.example.honbabapp.api.data.request.meeting.UpdateMeetingRequest;
 import com.example.honbabapp.api.data.request.user.ChangePasswordRequest;
 import com.example.honbabapp.api.data.request.user.CheckCurrentPasswordRequest;
@@ -396,6 +401,30 @@ public interface ApiService {
             @Part("user_id") RequestBody userId
     );
 
+    // ==================== QR 출석 인증 API ====================
+
+    /**
+     * QR 버튼 상태 조회 (채팅방 진입 시 호출)
+     * state: before_window / available / generated / expired
+     */
+
+    @GET("api/qr/qr_status.php")
+    Call<ApiResponse<QrStatusData>> getQrStatus(
+            @Query("meeting_id") int meeting_id,
+            @Query("user_id") int user_id
+    );
+
+    /**
+     * QR 토큰 생성 (호스트 전용)
+     */
+    @POST("api/qr/qr_generate.php")
+    Call<ApiResponse<QrCodeData>> generateQrCode(@Body QrGenerateRequest body);
+
+    /**
+     * QR 스캔 인증 (승인된 참여자 전용)
+     */
+    @POST("api/qr/qr_scan.php")
+    Call<ApiResponse<QrScanResultData>> scanQrCode(@Body QrScanRequest body);
 
 }
 

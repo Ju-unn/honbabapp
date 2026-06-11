@@ -54,6 +54,12 @@
         </provider>
 
         <activity
+            android:name=".activity.chat.QrScannerActivity"
+            android:screenOrientation="portrait"
+            android:stateNotNeeded="true"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+
+        <activity
             android:name=".activity.chat.ChatRoomActivity"
             android:exported="false" />
 

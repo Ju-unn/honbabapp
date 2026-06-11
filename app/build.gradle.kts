@@ -83,6 +83,7 @@ dependencies {
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
     implementation("androidx.room:room-runtime:2.6.1")
     annotationProcessor("androidx.room:room-compiler:2.6.1")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 
 
     implementation(libs.appcompat)

@@ -28,6 +28,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.BuildConfig;
 import com.example.honbabapp.R;
+import com.example.honbabapp.api.ApiService;
+import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.chat.MessageData;
 import com.example.honbabapp.api.data.local.AppDatabase;
 import com.example.honbabapp.api.data.local.PendingMessageDao;
@@ -39,6 +41,8 @@ import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.MessageAdapter;
 import com.example.honbabapp.ui.dialog.ChatAttachBottomSheetDialog;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -78,6 +82,18 @@ public class ChatRoomActivity extends AppCompatActivity {
 
     private static final int MAX_GALLERY_PICK = 10;
 
+    private MeetingQrHelper meetingQrHelper;
+
+    private final ActivityResultLauncher<ScanOptions> qrScanLauncher =
+            registerForActivityResult(
+                    new ScanContract(),
+                    result -> {
+                        if (result.getContents() != null && meetingQrHelper != null ) {
+                            meetingQrHelper.onScanResult(result.getContents());
+                        }
+                    }
+            );
+
     private final ActivityResultLauncher<PickVisualMediaRequest> galleryLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.PickMultipleVisualMedia(MAX_GALLERY_PICK),
@@ -94,7 +110,12 @@ public class ChatRoomActivity extends AppCompatActivity {
                     new ActivityResultContracts.RequestPermission(),
                     granted -> {
                         if (granted) {
-                            launchCamera();
+                            // QR 스캔 목적이면 스캐너 실행, 아니면 일반 카메라
+                            if (meetingQrHelper != null && meetingQrHelper.isWaitingForCameraPermission()) {
+                                meetingQrHelper.launchQrScanner();
+                            } else {
+                                launchCamera();
+                            }
                         } else {
                             Toast.makeText(this, "카메라 권한이 필요합니다", Toast.LENGTH_SHORT).show();
                         }
@@ -243,6 +264,23 @@ public class ChatRoomActivity extends AppCompatActivity {
         initInputArea();
         loadMessageHistory();
         socketHandler.register();
+
+        //  그룹 채팅방 + meeting_id 있을 때만 QR 기능 활성화
+        if ("group".equals(roomType) && meetingId != -1) {
+            binding.btnQr.setVisibility(View.VISIBLE);
+            meetingQrHelper = new MeetingQrHelper(
+                    this,
+                    RetrofitClient.getClient()
+                            .create(ApiService.class),
+                    meetingId,
+                    myUserId,
+                    qrScanLauncher,
+                    cameraPermissionLauncher
+            );
+            meetingQrHelper.loadQrStatus();
+        } else {
+            binding.btnQr.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -308,6 +346,12 @@ public class ChatRoomActivity extends AppCompatActivity {
             intent.putExtra("room_image", roomImage);
             intent.putExtra("meeting_id", meetingId);
             startActivityForResult(intent, REQ_DETAIL);
+        });
+
+        binding.btnQr.setOnClickListener(v -> {
+            if (meetingQrHelper != null) {
+                meetingQrHelper.onQrButtonClicked();
+            }
         });
     }
 
