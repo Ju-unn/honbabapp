@@ -118,6 +118,12 @@ public class MessageData {
     /** 이미지 메시지 여부 */
     public boolean isImage() { return "image".equals(msg_type); }
 
+    /** msg_type이 "review_prompt"인지 여부 — 후기 안내 시스템 메시지 */
+    public boolean isReviewPrompt() {
+        return "review_prompt".equals(msg_type);
+    }
+
+
     /** 전송 중 여부 */
     public boolean isSending() { return status == STATUS_SENDING; }
 

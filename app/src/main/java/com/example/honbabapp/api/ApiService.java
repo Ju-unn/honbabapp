@@ -13,6 +13,7 @@ import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
 import com.example.honbabapp.api.data.request.meeting.QrGenerateRequest;
 import com.example.honbabapp.api.data.request.meeting.QrScanRequest;
 import com.example.honbabapp.api.data.request.meeting.UpdateMeetingRequest;
+import com.example.honbabapp.api.data.request.review.ReviewSubmitRequest;
 import com.example.honbabapp.api.data.request.user.ChangePasswordRequest;
 import com.example.honbabapp.api.data.request.user.CheckCurrentPasswordRequest;
 import com.example.honbabapp.api.data.request.user.DeleteAccountRequest;
@@ -44,6 +45,8 @@ import com.example.honbabapp.api.data.request.RegisterRequest;
 import com.example.honbabapp.api.data.request.SendVerificationRequest;
 import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
+import com.example.honbabapp.api.data.review.ReviewSubmitData;
+import com.example.honbabapp.api.data.review.ReviewTargetsData;
 
 import java.util.List;
 
@@ -425,6 +428,33 @@ public interface ApiService {
      */
     @POST("api/qr/qr_scan.php")
     Call<ApiResponse<QrScanResultData>> scanQrCode(@Body QrScanRequest body);
+
+
+    // ==================== 모임 후기 API ====================
+
+    /**
+     * 후기 대상 목록 조회
+     *
+     * 채팅방의 "후기작성" 버튼 클릭 시 호출.
+     * - is_eligible=false 이면 요청자가 QR 인증을 하지 않은 상태 (targets는 빈 배열)
+     * - targets: 요청자 본인을 제외한 QR 인증자 목록 (already_reviewed 포함)
+     */
+    @GET("api/review/targets.php")
+    Call<ApiResponse<ReviewTargetsData>> getReviewTargets(
+            @Query("meeting_id") int meetingId,
+            @Query("user_id") int userId
+    );
+
+    /**
+     * 후기 제출
+     *
+     * 성공 시 reviewee의 user_manner_score에 (rating * 0.2)가 누적 가산됨.
+     * 같은 모임·같은 대상에게 중복 제출 시 에러 응답 (success=false).
+     */
+    @POST("api/review/submit.php")
+    Call<ApiResponse<ReviewSubmitData>> submitReview(@Body ReviewSubmitRequest body);
+
+
 
 }
 

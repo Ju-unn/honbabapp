@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    후기 안내 메시지 (review_prompt)
+
+    rv_message_system.xml 기반의 중앙 정렬 카드.
+    시스템 메시지와 달리 안내 텍스트 아래 "후기작성" 버튼을 포함한다.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="8dp"
+    android:paddingEnd="32dp"
+    android:paddingStart="32dp"
+    android:paddingTop="8dp">
+
+    <!-- 후기 안내 카드 (중앙 정렬, 둥근 연회색 배경) -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_message_system"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingBottom="10dp"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:paddingTop="10dp">
+
+        <!-- 안내 텍스트 -->
+        <TextView
+            android:id="@+id/textContent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/text_200"
+            android:textSize="12sp" />
+
+        <!-- 후기작성 버튼 -->
+        <Button
+            android:id="@+id/btnWriteReview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:text="후기작성"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
+</FrameLayout>

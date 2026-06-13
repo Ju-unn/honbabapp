@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.honbabapp.api.data.chat.MessageData;
 import com.example.honbabapp.databinding.RvMessageReceivedBinding;
+import com.example.honbabapp.databinding.RvMessageReviewPromptBinding;
 import com.example.honbabapp.databinding.RvMessageSentBinding;
 import com.example.honbabapp.databinding.RvMessageSystemBinding;
 
@@ -31,6 +32,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     static final int VIEW_TYPE_MINE = 1;
     static final int VIEW_TYPE_OTHER = 2;
     static final int VIEW_TYPE_SYSTEM = 3;
+    static final int VIEW_TYPE_REVIEW_PROMPT = 4;
 
     private List<MessageData> messages = new ArrayList<>();
 
@@ -48,6 +50,11 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         void onImageClick(List<String> urls, int startIndex);
     }
 
+    /** 후기 안내 메시지의 "후기작성" 버튼 클릭 콜백 */
+    public interface OnReviewPromptClickListener {
+        void onReviewPromptClick();
+    }
+
     /** 실패 메시지 재전송/삭제 콜백 */
     public interface OnFailedMessageListener {
         void onRetry(MessageData message);
@@ -57,6 +64,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private final OnProfileClickListener profileClickListener;
     private OnImageClickListener imageClickListener;
     private OnFailedMessageListener failedMessageListener;
+    private OnReviewPromptClickListener reviewPromptClickListener;
 
     public MessageAdapter() {
         this.profileClickListener = null;
@@ -74,11 +82,18 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         this.failedMessageListener = listener;
     }
 
+    public void setReviewPromptClickListener(OnReviewPromptClickListener listener) {
+        this.reviewPromptClickListener = listener;
+    }
+
+
+
     // ── ViewType ─────────────────────────────────
 
     @Override
     public int getItemViewType(int position) {
         MessageData message = messages.get(position);
+        if (message.isReviewPrompt()) return VIEW_TYPE_REVIEW_PROMPT;
         if ("system".equals(message.getMsg_type())) return VIEW_TYPE_SYSTEM;
         if (message.isIs_mine()) return VIEW_TYPE_MINE;
         return VIEW_TYPE_OTHER;
@@ -93,6 +108,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         } else if (viewType == VIEW_TYPE_OTHER) {
             return new OtherMessageViewHolder(
                     RvMessageReceivedBinding.inflate(inflater, parent, false), profileClickListener);
+        } else if (viewType == VIEW_TYPE_REVIEW_PROMPT) {
+            return new ReviewPromptViewHolder(RvMessageReviewPromptBinding.inflate(inflater, parent, false));
         } else {
             return new SystemMessageViewHolder(RvMessageSystemBinding.inflate(inflater, parent, false));
         }
@@ -107,6 +124,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         } else if (holder instanceof OtherMessageViewHolder) {
             ((OtherMessageViewHolder) holder).bind(
                     message, isLastInTimeRun(position), isFirstInSenderRun(position), imageClickListener);
+        } else if (holder instanceof ReviewPromptViewHolder) {
+            ((ReviewPromptViewHolder) holder).bind(message, reviewPromptClickListener);
         } else if (holder instanceof SystemMessageViewHolder) {
             ((SystemMessageViewHolder) holder).bind(message);
         }

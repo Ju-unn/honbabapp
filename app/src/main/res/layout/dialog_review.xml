@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    후기 작성 다이얼로그 (dialog_meeting_qr.xml 스타일 기반)
+
+    구성:
+      1) 타이틀 + 안내문구
+      2) 가로 RecyclerView — QR 인증자 프로필 목록 (rv_review_target.xml)
+      3) 선택 영역 (선택 전까지 숨김)
+         - 선택된 닉네임
+         - RatingBar (별점 1~5)
+         - EditText (후기 내용, 최대 500자)
+         - 제출 버튼
+      4) 닫기 버튼
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center">
+
+    <!-- 타이틀 -->
+    <TextView
+        android:id="@+id/tv_review_dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="모임은 어떠셨나요?"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- 안내 문구 -->
+    <TextView
+        android:id="@+id/tv_review_dialog_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="함께한 멤버를 선택하고 후기를 남겨주세요"
+        android:textSize="13sp"
+        android:textColor="#888888"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- QR 인증자 프로필 가로 목록 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_review_targets"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:clipToPadding="false"
+        android:orientation="horizontal" />
+
+    <!-- 선택 영역: 프로필 선택 전까지 GONE -->
+    <LinearLayout
+        android:id="@+id/layout_review_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <!-- 선택된 멤버 닉네임 -->
+        <TextView
+            android:id="@+id/tv_selected_nickname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- 별점 -->
+        <RatingBar
+            android:id="@+id/rating_bar"
+            style="?android:attr/ratingBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:stepSize="1.0"
+            android:rating="0"
+            android:progressTint="@color/primary_200"
+            android:progressBackgroundTint="@color/bg_300"
+            android:secondaryProgressTint="@color/primary_200"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- 텍스트 후기 -->
+        <EditText
+            android:id="@+id/et_review_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="2"
+            android:maxLines="4"
+            android:maxLength="500"
+            android:gravity="top|start"
+            android:hint="후기를 남겨주세요 (선택)"
+            android:textSize="14sp"
+            android:background="@drawable/bg_message_system"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- 제출 버튼 -->
+        <Button
+            android:id="@+id/btn_review_submit"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="제출"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/primary_200"
+            android:layout_marginBottom="8dp"/>
+
+    </LinearLayout>
+
+    <!-- 닫기 버튼 -->
+    <Button
+        android:id="@+id/btn_review_dialog_close"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="닫기"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/primary_200"/>
+
+</LinearLayout>

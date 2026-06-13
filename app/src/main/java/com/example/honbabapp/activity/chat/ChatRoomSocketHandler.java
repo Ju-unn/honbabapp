@@ -63,7 +63,7 @@ public class ChatRoomSocketHandler {
                 MessageData message = new MessageData();
                 message.setMessage_id(payload.getInt("message_id"));
                 message.setRoom_id(payload.getInt("room_id"));
-                message.setSender_id(payload.getInt("user_id"));
+                message.setSender_id(payload.optInt("user_id", 0));
                 message.setSender_name(payload.optString("sender_name", ""));
                 message.setSender_profile_image(payload.optString("sender_profile_image", ""));
                 message.setMsg_type(payload.optString("msg_type", "text"));

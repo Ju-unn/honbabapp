@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    후기 대상 프로필 1개 (가로 RecyclerView 아이템)
+
+    - 원형 프로필 이미지 + 닉네임
+    - already_reviewed=true 인 경우 어댑터에서 alpha=0.4 + 체크 아이콘 표시
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
+
+    <!-- 프로필 이미지 + 체크 표시를 겹쳐서 표시 -->
+    <FrameLayout
+        android:layout_width="64dp"
+        android:layout_height="64dp">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/img_target_profile"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_profile"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Honbab.Profile.Circle" />
+
+        <!-- already_reviewed=true 일 때만 표시되는 체크 오버레이 -->
+        <ImageView
+            android:id="@+id/img_target_checked"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="bottom|end"
+            android:background="@drawable/participant_avatar_background_1"
+            android:padding="2dp"
+            android:src="@drawable/ic_check"
+            android:visibility="gone"
+            android:contentDescription="이미 작성한 후기" />
+
+    </FrameLayout>
+
+    <!-- 닉네임 -->
+    <TextView
+        android:id="@+id/tv_target_nickname"
+        android:layout_width="64dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textSize="12sp"
+        android:textColor="@color/text_200" />
+
+</LinearLayout>

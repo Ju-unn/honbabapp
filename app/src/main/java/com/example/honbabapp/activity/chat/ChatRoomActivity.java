@@ -1,5 +1,7 @@
 package com.example.honbabapp.activity.chat;
 
+import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
@@ -83,6 +85,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     private static final int MAX_GALLERY_PICK = 10;
 
     private MeetingQrHelper meetingQrHelper;
+    private ReviewDialogHelper reviewDialogHelper;
 
     private final ActivityResultLauncher<ScanOptions> qrScanLauncher =
             registerForActivityResult(
@@ -278,6 +281,16 @@ public class ChatRoomActivity extends AppCompatActivity {
                     cameraPermissionLauncher
             );
             meetingQrHelper.loadQrStatus();
+
+            // 후기 다이얼로그 헬퍼 + 어댑터 콜백 등록
+            reviewDialogHelper = new ReviewDialogHelper(
+                    this,
+                    RetrofitClient.getClient()
+                            .create(ApiService.class),
+                    meetingId,
+                    myUserId
+            );
+            adapter.setReviewPromptClickListener(() -> reviewDialogHelper.onReviewButtonClicked());
         } else {
             binding.btnQr.setVisibility(View.GONE);
         }
