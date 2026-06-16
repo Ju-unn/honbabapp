@@ -12,8 +12,10 @@ import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.login.LoginData;
 import com.example.honbabapp.api.data.request.LoginRequest;
+import com.example.honbabapp.api.data.request.fcm.RegisterFcmTokenRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.ActivityLoginBinding;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,6 +44,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_SIGUNGU = "user_sigungu";
     private static final String KEY_DONG    = "user_dong";
+    private static final String KEY_FCM_TOKEN = "fcm_token";
 
 
 
@@ -221,6 +224,9 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "위치 저장: sigungu=" + parsed[0] + ", dong=" + parsed[1]);
         Log.d(TAG, "SharedPreferences 저장 완료: user_id=" + loginData.getUser_id());
 
+        // FCM 디바이스 토큰 발급 후 서버에 등록
+        registerFcmToken(loginData.getUser_id());
+
         // 환영 메시지 (서버에서 받은 데이터로 표시)
         Toast.makeText(this,
                 loginData.getUser_nickname() + "님 환영합니다!",
@@ -228,6 +234,44 @@ public class LoginActivity extends AppCompatActivity {
 
         // 메인 화면으로 이동
         goToMainActivity();
+    }
+
+    /**
+     * FCM 디바이스 토큰을 발급받아 SharedPreferences에 저장하고 서버에 등록한다.
+     *
+     * 로그인 성공 직후 1회 호출되며, 토큰 발급/등록이 실패해도 로그인 자체
+     * 흐름(goToMainActivity)에는 영향을 주지 않는다 (이미 호출됨).
+     */
+    private void registerFcmToken(int userId) {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.e(TAG, "FCM 토큰 발급 실패", task.getException());
+                        return;
+                    }
+
+                    String token = task.getResult();
+                    Log.d(TAG, "FCM 토큰 발급 완료: " + token);
+
+                    sharedPreferences.edit().putString(KEY_FCM_TOKEN, token).apply();
+
+                    RegisterFcmTokenRequest request = new RegisterFcmTokenRequest(userId, token);
+                    apiService.registerFcmToken(request).enqueue(new Callback<ApiResponse<Void>>() {
+                        @Override
+                        public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                            if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                                Log.d(TAG, "FCM 토큰 서버 등록 완료 (user_id=" + userId + ")");
+                            } else {
+                                Log.e(TAG, "FCM 토큰 서버 등록 실패: HTTP " + response.code());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                            Log.e(TAG, "FCM 토큰 서버 등록 네트워크 오류: " + t.getMessage(), t);
+                        }
+                    });
+                });
     }
 
     /**

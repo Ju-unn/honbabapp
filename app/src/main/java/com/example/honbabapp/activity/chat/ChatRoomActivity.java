@@ -32,6 +32,7 @@ import com.example.honbabapp.BuildConfig;
 import com.example.honbabapp.R;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
+import com.example.honbabapp.api.data.chat.ChatRoomData;
 import com.example.honbabapp.api.data.chat.MessageData;
 import com.example.honbabapp.api.data.local.AppDatabase;
 import com.example.honbabapp.api.data.local.PendingMessageDao;
@@ -59,6 +60,18 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ChatRoomActivity extends AppCompatActivity {
+
+    /**
+     * 현재 화면에 떠 있는 채팅방의 room_id.
+     *
+     * FirebaseInstanceIdService.onMessageReceived 에서 'chat' 타입 푸시를 받았을 때,
+     * 이 값과 푸시의 room_id 가 같으면 알림을 표시하지 않는다
+     * (소켓이 이미 화면을 갱신했으므로 중복 알림 방지).
+     *
+     * onResume 에서 roomId 로 설정, onPause 에서 -1 로 초기화.
+     */
+    public static volatile int currentOpenRoomId = -1;
+
     private PageChatDetailBinding binding;
     private MessageAdapter adapter;
 
@@ -268,7 +281,23 @@ public class ChatRoomActivity extends AppCompatActivity {
         loadMessageHistory();
         socketHandler.register();
 
-        //  그룹 채팅방 + meeting_id 있을 때만 QR 기능 활성화
+        setupQrAndReviewIfNeeded();
+
+        // 알림 딥링크 등으로 room_name/room_image 없이 room_id만 들고 들어온 경우
+        // (정상적인 채팅 목록 진입 시에는 항상 채워져 있음) → 서버에서 방 정보를 다시 조회
+        if (roomName.isEmpty() && roomImage == null) {
+            refreshRoomInfoFromServer();
+        }
+    }
+
+    /**
+     *  그룹 채팅방 + meeting_id 있을 때만 QR/후기 기능 활성화.
+     *
+     *  알림 딥링크로 들어와 roomType/meetingId 가 아직 기본값(group/-1)인 상태로
+     *  한 번 호출되었다가, refreshRoomInfoFromServer() 로 실제 값을 받아온 뒤
+     *  다시 호출될 수 있다 (두 번 호출되어도 안전 — 헬퍼 인스턴스만 재생성됨).
+     */
+    private void setupQrAndReviewIfNeeded() {
         if ("group".equals(roomType) && meetingId != -1) {
             binding.btnQr.setVisibility(View.VISIBLE);
             meetingQrHelper = new MeetingQrHelper(
@@ -296,11 +325,73 @@ public class ChatRoomActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 알림 딥링크로 room_id만 받아 들어온 경우, 채팅방 목록 API(getChatRooms)에서
+     * room_id가 일치하는 항목을 찾아 roomName/roomImage/roomType/memberCount/meetingId를
+     * 다시 채우고 화면을 갱신한다.
+     *
+     * myUserId가 없으면(prefs에 user_id 없음 = 로그인 정보 없음) 호출하지 않는다.
+     * 조회 실패 시에는 기존 placeholder(ic_profile)/빈 제목이 그대로 유지된다.
+     */
+    private void refreshRoomInfoFromServer() {
+        if (roomId == -1 || myUserId == -1) {
+            Log.w("ChatRoomActivity", "방 정보 재조회 생략: roomId=" + roomId + ", myUserId=" + myUserId);
+            return;
+        }
+
+        RetrofitClient.getClient().create(ApiService.class)
+                .getChatRooms(myUserId)
+                .enqueue(new Callback<ApiResponse<List<ChatRoomData>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<List<ChatRoomData>>> call,
+                                           Response<ApiResponse<List<ChatRoomData>>> response) {
+                        if (!response.isSuccessful() || response.body() == null
+                                || !response.body().isSuccess() || response.body().getData() == null) {
+                            Log.e("ChatRoomActivity", "방 정보 재조회 실패: HTTP " + response.code());
+                            return;
+                        }
+
+                        for (ChatRoomData room : response.body().getData()) {
+                            if (room.getRoom_id() == roomId) {
+                                roomName = room.getRoom_name() != null ? room.getRoom_name() : "";
+                                roomImage = room.getRoom_image();
+                                roomType = room.getRoom_type() != null ? room.getRoom_type() : "group";
+                                memberCount = room.getParticipants() != null ? room.getParticipants().size() : 0;
+                                meetingId = room.getMeeting_id() != null ? room.getMeeting_id() : -1;
+
+                                applyRoomInfoToToolbar();
+                                setupQrAndReviewIfNeeded();
+                                break;
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<List<ChatRoomData>>> call, Throwable t) {
+                        Log.e("ChatRoomActivity", "방 정보 재조회 네트워크 오류: " + t.getMessage(), t);
+                    }
+                });
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+
+        // 이 방을 보고 있는 동안에는 FCM 'chat' 알림을 표시하지 않도록 등록
+        currentOpenRoomId = roomId;
+
         if (roomId != -1 && myUserId != -1) {
             markRead();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // 화면을 벗어나면 이 방에 대한 FCM 알림 억제를 해제
+        if (currentOpenRoomId == roomId) {
+            currentOpenRoomId = -1;
         }
     }
 
@@ -333,21 +424,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     // ─────────────────────────────────────────
 
     private void initToolbar() {
-        binding.tvChatTitle.setText(roomName);
-
-        Glide.with(this)
-                .load(roomImage)
-                .placeholder(R.drawable.ic_profile)
-                .error(R.drawable.ic_profile)
-                .circleCrop()
-                .into(binding.imChatAvatar);
-
-        if ("group".equals(roomType) && memberCount > 0) {
-            binding.tvChatStatus.setVisibility(View.VISIBLE);
-            binding.tvChatStatus.setText(memberCount + "명");
-        } else {
-            binding.tvChatStatus.setVisibility(View.GONE);
-        }
+        applyRoomInfoToToolbar();
 
         binding.btnBack.setOnClickListener(v -> finish());
 
@@ -366,6 +443,30 @@ public class ChatRoomActivity extends AppCompatActivity {
                 meetingQrHelper.onQrButtonClicked();
             }
         });
+    }
+
+    /**
+     * roomName/roomImage/roomType/memberCount 값을 툴바(제목, 프로필 이미지, 인원수)에 반영한다.
+     *
+     * onCreate 최초 1회 호출되며, 알림 딥링크로 들어와 이 값들이 비어있던 경우에는
+     * refreshRoomInfoFromServer()가 값을 채운 뒤 다시 호출한다.
+     */
+    private void applyRoomInfoToToolbar() {
+        binding.tvChatTitle.setText(roomName);
+
+        Glide.with(this)
+                .load(roomImage)
+                .placeholder(R.drawable.ic_profile)
+                .error(R.drawable.ic_profile)
+                .circleCrop()
+                .into(binding.imChatAvatar);
+
+        if ("group".equals(roomType) && memberCount > 0) {
+            binding.tvChatStatus.setVisibility(View.VISIBLE);
+            binding.tvChatStatus.setText(memberCount + "명");
+        } else {
+            binding.tvChatStatus.setVisibility(View.GONE);
+        }
     }
 
     private void initRecyclerView() {

@@ -9,6 +9,8 @@ import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
 import com.example.honbabapp.api.data.request.chat.KickMemberRequest;
 import com.example.honbabapp.api.data.request.chat.LeaveRoomRequest;
 import com.example.honbabapp.api.data.request.chat.MarkReadRequest;
+import com.example.honbabapp.api.data.request.fcm.RegisterFcmTokenRequest;
+import com.example.honbabapp.api.data.request.fcm.UpdatePushSettingRequest;
 import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
 import com.example.honbabapp.api.data.request.meeting.QrGenerateRequest;
 import com.example.honbabapp.api.data.request.meeting.QrScanRequest;
@@ -296,6 +298,22 @@ public interface ApiService {
      */
     @POST("api/user/update_location.php")
     Call<ApiResponse<Void>> updateLocation(@Body UpdateLocationRequest request);
+
+    /**
+     * 7. fcm토근 생성
+     */
+    @POST("api/user/register_fcm_token.php")
+    Call<ApiResponse<Void>> registerFcmToken(@Body RegisterFcmTokenRequest request);
+
+    /**
+     * 8. 푸시 알림 on/off 설정 변경
+     *
+     * push_enabled=0 이면 서버에서 해당 사용자에게 FCM 푸시를 발송하지 않음.
+     */
+    @POST("api/user/update_push_setting.php")
+    Call<ApiResponse<Void>> updatePushSetting(@Body UpdatePushSettingRequest request);
+
+
 
 
     // ==================== Chat API ====================

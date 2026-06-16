@@ -1,7 +1,10 @@
 package com.example.honbabapp.activity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -9,6 +12,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -28,6 +33,8 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CODE_NOTIFICATION_PERMISSION = 2001;
+
     private ActivityMainBinding binding;
     private MainFragmentAdapter adapter;
 
@@ -41,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
         initViewPager();
         initNavigation();
         handleIntent(getIntent());
+        requestNotificationPermissionIfNeeded();
 
         // SharedPreferences에서 userId 읽기
         SharedPreferences prefs =
@@ -50,6 +58,38 @@ public class MainActivity extends AppCompatActivity {
         // 앱 시작하자마자 서버에 "나 접속했어요" 등록
         // → 이제부터 내 모든 채팅방 메시지를 어느 화면에 있어도 수신
         SocketManager.getInstance().login(userId);
+    }
+
+    /**
+     * Android 13(API 33) 이상에서 푸시 알림을 표시하려면
+     * POST_NOTIFICATIONS 런타임 권한이 필요하다.
+     * 이미 허용되어 있으면 아무 동작도 하지 않는다.
+     */
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    REQUEST_CODE_NOTIFICATION_PERMISSION
+            );
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_CODE_NOTIFICATION_PERMISSION) {
+            boolean granted = grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            Log.d("MainActivity", "POST_NOTIFICATIONS 권한 결과: " + granted);
+        }
     }
 
 
@@ -170,11 +210,11 @@ public class MainActivity extends AppCompatActivity {
 
                 switch (position) {
                     case 0 : item = R.id.nav_home;
-                    break;
+                        break;
                     case 1 : item = R.id.nav_map;
-                    break;
+                        break;
                     case 2 : item = R.id.nav_chat;
-                    break;
+                        break;
                     case 3 : item = R.id.nav_profile;
                 }
 

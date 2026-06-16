@@ -15,6 +15,9 @@
     <!-- 카메라 권한: 채팅 이미지 첨부 시 카메라로 직접 촬영용 -->
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- FCM 푸시 알림 표시 권한-->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- 카메라 하드웨어 요구 사항: required=false 로 카메라 없는 기기도 설치 허용 -->
     <uses-feature
         android:name="android.hardware.camera"
@@ -52,6 +55,26 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!--
+          FCM(Firebase Cloud Messaging) 푸시 알림 수신 서비스
+        -->
+
+        <service
+            android:name=".fcm.FirebaseInstanceIdService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- FCM 기본 알림 아이콘/채널-->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/app_logo2" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="general" />
 
         <activity
             android:name=".activity.chat.QrScannerActivity"

@@ -10,6 +10,7 @@ public class UserProfileResponse {
     private String user_email;
     private String user_birthday;
     private String user_gender;
+    private int push_enabled;
 
     // Getter들 - Activity에서 데이터 꺼낼 때 사용
     public int getUser_id() { return user_id; }
@@ -21,4 +22,5 @@ public class UserProfileResponse {
     public String getUser_email() { return user_email; }
     public String getUser_birthday() { return user_birthday; }
     public String getUser_gender() { return user_gender; }
+    public int getPush_enabled() { return push_enabled; }
 }
