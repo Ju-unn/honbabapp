@@ -26,7 +26,6 @@ import retrofit2.Response;
 public class ProfileLogoutActivity extends AppCompatActivity {
 
     private static final String TAG = "ProfileLogoutActivity";
-
     private static final String PREF_NAME  = "honbabapp_prefs";
     private static final String KEY_USER_ID = "user_id";
 

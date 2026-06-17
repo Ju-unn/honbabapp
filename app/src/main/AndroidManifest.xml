@@ -83,6 +83,11 @@
             android:windowSoftInputMode="stateAlwaysHidden" />
 
         <activity
+            android:name=".activity.profile.ProfileLogoutActivity"
+            android:exported="false" />
+
+
+        <activity
             android:name=".activity.chat.ChatRoomActivity"
             android:exported="false" />
 

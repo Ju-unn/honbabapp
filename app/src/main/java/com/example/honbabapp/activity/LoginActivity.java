@@ -51,17 +51,16 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        if (checkAutoLogin()) {
+            return;
+        }
+
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-
-        // 초기화
         initializeComponents();
-
-//        // 자동 로그인 확인
-//        checkAutoLogin();
-
-        // 이벤트 리스너 설정
         setupListeners();
 
     }
@@ -76,23 +75,23 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "LoginActivity 초기화 완료");
     }
 
-//    /**
-//     * 자동 로그인 확인
-//     * SharedPreferences에 로그인 정보가 있다면 자동으로 메인 화면으로 이동
-//     */
-//    private void checkAutoLogin() {
-//        boolean isLoggedIn = sharedPreferences.getBoolean(KEY_IS_LOGGED_IN , false);
-//        int userId = sharedPreferences.getInt(KEY_USER_ID , -1);
-//
-//        if (isLoggedIn && userId != -1) {
-//            Log.d(TAG, "자동 로그인: user_id = " + userId);
-//
-//            // 바로 메인 화면으로 이동
-//            goToMainActivity();
-//        } else {
-//            Log.d(TAG, "자동 로그인 정보 없음 - 로그인 화면 표시");
-//        }
-//    }
+    /**
+     * 자동 로그인 확인
+     * SharedPreferences에 로그인 정보가 있다면 자동으로 메인 화면으로 이동
+     */
+    private boolean checkAutoLogin() {
+        boolean isLoggedIn = sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false);
+        int userId = sharedPreferences.getInt(KEY_USER_ID, -1);
+
+        if (isLoggedIn && userId != -1) {
+            Log.d(TAG, "자동 로그인: user_id=" + userId);
+            goToMainActivity();
+            return true;
+        }
+
+        Log.d(TAG, "자동 로그인 정보 없음 — 로그인 화면 표시");
+        return false;
+    }
 
     /**
      * 이벤트 리스너 설정
@@ -210,7 +209,7 @@ public class LoginActivity extends AppCompatActivity {
 
         //SharedPreferences에 최소 정보만 저장
         SharedPreferences.Editor editor = sharedPreferences.edit();
-//        editor.putBoolean(KEY_IS_LOGGED_IN , true);
+        editor.putBoolean(KEY_IS_LOGGED_IN , true);
         editor.putInt(KEY_USER_ID , loginData.getUser_id());
 
         // user_location 파싱해서 저장
