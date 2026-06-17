@@ -4,6 +4,7 @@ import com.example.honbabapp.api.data.chat.ChatRoomData;
 import com.example.honbabapp.api.data.meeting.QrCodeData;
 import com.example.honbabapp.api.data.meeting.QrScanResultData;
 import com.example.honbabapp.api.data.meeting.QrStatusData;
+import com.example.honbabapp.api.data.request.LogoutRequest;
 import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
 import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
 import com.example.honbabapp.api.data.request.chat.KickMemberRequest;
@@ -73,6 +74,19 @@ public interface ApiService {
      */
     @POST("api/auth/login.php")
     Call<ApiResponse<LoginData>> login(@Body LoginRequest loginRequest);
+
+
+    /**
+     * 로그아웃
+     *
+     * 서버의 fcm_token 을 NULL 로 초기화해 이 기기로 푸시 알림이
+     * 오지 않게 한다.
+     * 클라이언트는 호출 후 로컬 SharedPreferences 초기화 + LoginActivity 이동.
+     */
+    @POST("api/user/logout.php")
+    Call<ApiResponse<Void>> logout(@Body LogoutRequest request);
+
+
 
     // ==================== 회원가입 ====================
 

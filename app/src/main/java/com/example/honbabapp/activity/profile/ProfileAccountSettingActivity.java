@@ -44,9 +44,14 @@ public class ProfileAccountSettingActivity extends AppCompatActivity {
         binding.btnChangePassword.setOnClickListener(v ->
                 startActivity(new Intent(this, ProfileChangePasswordActivity.class)));
 
+        // 로그아웃 변경 이동
+        binding.btnLogout.setOnClickListener(v ->
+                startActivity(new Intent(this, ProfileLogoutActivity.class)));
+
         // 계정 탈퇴 이동
         binding.btnDeleteAccount.setOnClickListener(v ->
                 startActivity(new Intent(this, ProfileDeleteAccountActivity.class)));
+
     }
 
     private void loadAccountInfo() {

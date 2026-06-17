@@ -359,11 +359,24 @@ public class ChatRoomActivity extends AppCompatActivity {
                                 memberCount = room.getParticipants() != null ? room.getParticipants().size() : 0;
                                 meetingId = room.getMeeting_id() != null ? room.getMeeting_id() : -1;
 
-                                applyRoomInfoToToolbar();
-                                setupQrAndReviewIfNeeded();
-                                break;
+                                runOnUiThread(() -> {
+                                    applyRoomInfoToToolbar();
+                                    setupQrAndReviewIfNeeded();
+                                });
+                                return;
                             }
                         }
+
+                        Log.w("ChatRoomActivity",
+                                "접근 불가 채팅방 — roomId=" + roomId
+                                        + " 는 myUserId=" + myUserId + " 의 방 목록에 없음");
+
+                        runOnUiThread(() -> {
+                            Toast.makeText(ChatRoomActivity.this,
+                                    "접근할 수 없는 채팅방입니다",
+                                    Toast.LENGTH_SHORT).show();
+                            finish();
+                        });
                     }
 
                     @Override
