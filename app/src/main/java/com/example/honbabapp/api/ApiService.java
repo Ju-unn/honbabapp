@@ -83,7 +83,7 @@ public interface ApiService {
      * 오지 않게 한다.
      * 클라이언트는 호출 후 로컬 SharedPreferences 초기화 + LoginActivity 이동.
      */
-    @POST("api/user/logout.php")
+    @POST("api/auth/logout.php")
     Call<ApiResponse<Void>> logout(@Body LogoutRequest request);
 
 

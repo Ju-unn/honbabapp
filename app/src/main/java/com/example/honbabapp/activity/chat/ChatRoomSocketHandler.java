@@ -52,7 +52,7 @@ public class ChatRoomSocketHandler {
     /** 소켓 연결 보장 후 6개 리스너 등록. */
     public void register() {
         if (myUserId == -1 || roomId == -1) return;
-        SocketManager.getInstance().connect();
+        SocketManager.getInstance().login(myUserId);
         Socket socket = SocketManager.getInstance().getSocket();
 
         // ── 새 메시지 수신 ──
