@@ -45,6 +45,10 @@ public class ReviewDialogHelper {
     private final int meetingId;
     private final int myUserId;
 
+    private ReviewTargetAdapter reviewAdapter;
+    private ReviewTarget selectedTarget;
+    private int selectedPosition = RecyclerView.NO_POSITION;
+
     public ReviewDialogHelper(Activity activity, ApiService apiService, int meetingId, int myUserId) {
         this.activity = activity;
         this.apiService = apiService;
@@ -110,19 +114,18 @@ public class ReviewDialogHelper {
                 LayoutInflater.from(activity)
         );
 
-        // 가로 RecyclerView 세팅
-        ReviewTargetAdapter[] adapterHolder = new ReviewTargetAdapter[1];
-        ReviewTarget[] selectedTargetHolder = new ReviewTarget[1];
-        int[] selectedPositionHolder = { RecyclerView.NO_POSITION };
+       // 세션 상태 리셋
+        selectedTarget = null;
+        selectedPosition = RecyclerView.NO_POSITION;
 
-        ReviewTargetAdapter adapter = new ReviewTargetAdapter(targets, (target, position) -> {
+        reviewAdapter = new ReviewTargetAdapter(targets , (target , position) -> {
             Log.i(TAG, "클릭됨: position=" + position
-                    + ", 이전 selectedPosition=" + selectedPositionHolder[0]
-                    + ", 이전 target=" + (selectedTargetHolder[0] != null ? selectedTargetHolder[0].getUser_id() : "null"));
-
-            selectedTargetHolder[0] = target;
-            selectedPositionHolder[0] = position;
-            adapterHolder[0].setSelectedPosition(position);
+                    + ", 이전 selectedPosition=" + selectedPosition
+                    + ", 이전 target=" + (selectedTarget != null ?
+                    selectedTarget.getUser_id() : "null"));
+            selectedTarget = target;
+            selectedPosition = position;
+            reviewAdapter.setSelectedPosition(position);
 
             // 선택 영역 표시 + 입력값 초기화
             dialogBinding.layoutReviewInput.setVisibility(View.VISIBLE);
@@ -130,11 +133,10 @@ public class ReviewDialogHelper {
             dialogBinding.ratingBar.setRating(0);
             dialogBinding.etReviewContent.setText("");
         });
-        adapterHolder[0] = adapter;
 
         dialogBinding.rvReviewTargets.setLayoutManager(
                 new LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false));
-        dialogBinding.rvReviewTargets.setAdapter(adapter);
+        dialogBinding.rvReviewTargets.setAdapter(reviewAdapter);
         dialogBinding.rvReviewTargets.setItemAnimator(null);
 
         AlertDialog reviewDialog = new AlertDialog.Builder(activity)
@@ -144,7 +146,6 @@ public class ReviewDialogHelper {
 
         // 제출 버튼
         dialogBinding.btnReviewSubmit.setOnClickListener(view -> {
-            ReviewTarget selectedTarget = selectedTargetHolder[0];
             if (selectedTarget == null) {
                 Toast.makeText(activity, "멤버를 선택해주세요", Toast.LENGTH_SHORT).show();
                 return;
@@ -158,8 +159,8 @@ public class ReviewDialogHelper {
 
             String content = dialogBinding.etReviewContent.getText().toString().trim();
 
-            submitReview(selectedTarget, rating, content, adapter,
-                    selectedPositionHolder[0], dialogBinding);
+            submitReview(selectedTarget, rating, content, reviewAdapter,
+                    selectedPosition, dialogBinding);
         });
 
         // 닫기 버튼
