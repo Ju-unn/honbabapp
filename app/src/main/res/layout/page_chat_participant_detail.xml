@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     참가자 프로필 상세 (view-only)
+
+    [변경 사항 — 2026-06-24]
+    매너점수/참여횟수 박스 아래에 "받은 리뷰" 섹션 추가:
+      - 섹션 제목 TextView
+      - RecyclerView (rv_received_reviews, nestedScrollingEnabled=false)
+      - 빈 상태 안내 TextView (tv_no_reviews)
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -56,30 +62,24 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- ──── 프로필 헤더 (오렌지 그라데이션) ──── -->
+            <!-- ──── 그라데이션 헤더 (아바타 + 닉네임 + 상태 + 매너/참여) ──── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@drawable/profile_header_background"
-                android:padding="24dp"
-                android:gravity="center">
+                android:gravity="center"
+                android:paddingTop="32dp"
+                android:paddingBottom="28dp"
+                android:background="@drawable/profile_header_background">
 
-                <!-- 아바타 -->
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp">
-
-                    <ImageView
-                        android:id="@+id/iv_profile_avatar"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:background="@drawable/profile_avatar_background"
-                        android:elevation="4dp"
-                        android:padding="3dp" />
-
-                </FrameLayout>
+                <!-- 프로필 아바타 -->
+                <ImageView
+                    android:id="@+id/iv_profile_avatar"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:background="@drawable/profile_avatar_background"
+                    android:elevation="4dp"
+                    android:padding="3dp"/>
 
                 <!-- 닉네임 -->
                 <TextView
@@ -87,11 +87,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="닉네임"
+                    android:textSize="20sp"
                     android:textColor="@color/white"
-                    android:textSize="22sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="4dp"
-                    android:letterSpacing="-0.02" />
+                    android:layout_marginBottom="6dp" />
 
                 <!-- 상태 메시지 -->
                 <TextView
@@ -175,6 +174,43 @@
                 </LinearLayout>
 
             </LinearLayout>
+
+            <!-- ──────────────────────────────────── -->
+            <!-- 받은 리뷰 섹션                         -->
+            <!-- ──────────────────────────────────── -->
+
+            <!-- 섹션 제목 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="받은 리뷰"
+                android:textColor="@color/text_100"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="20dp"
+                android:paddingBottom="10dp" />
+
+            <!-- 리뷰 목록 RecyclerView -->
+            <!-- nestedScrollingEnabled=false: 부모 ScrollView 가 스크롤 처리하도록 함 -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_received_reviews"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <!-- 빈 상태 안내 (리뷰가 없을 때만 표시) -->
+            <TextView
+                android:id="@+id/tv_no_reviews"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="아직 받은 리뷰가 없습니다"
+                android:textColor="@color/text_200"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:paddingVertical="20dp"
+                android:visibility="gone" />
 
             <!-- 하단 여백 -->
             <View

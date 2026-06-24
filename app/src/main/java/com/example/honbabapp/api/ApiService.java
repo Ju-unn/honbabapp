@@ -52,6 +52,7 @@ import com.example.honbabapp.api.data.request.RegisterRequest;
 import com.example.honbabapp.api.data.request.SendVerificationRequest;
 import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
+import com.example.honbabapp.api.data.review.ReceivedReviewsData;
 import com.example.honbabapp.api.data.review.ReviewSubmitData;
 import com.example.honbabapp.api.data.review.ReviewTargetsData;
 
@@ -511,6 +512,24 @@ public interface ApiService {
      */
     @POST("api/review/submit.php")
     Call<ApiResponse<ReviewSubmitData>> submitReview(@Body ReviewSubmitRequest body);
+
+    /**
+     * 받은 후기 목록 조회 (익명)
+     *
+     * ChatRoomParticipantDetailActivity 에서 참여자 프로필 진입 시 호출.
+     * 응답에는 reviewer 정보가 없으며 rating / content / created_at 만 포함된다.
+     *
+     * @param userId 조회 대상 user_id
+     * @return ApiResponse<ReceivedReviewsData> — data.reviews 리스트
+     */
+    @GET("api/review/received.php")
+    Call<ApiResponse<ReceivedReviewsData>> getReceivedReviews(@Query("user_id") int userId);
+
+
+
+
+
+
 
 
 

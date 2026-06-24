@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    받은 후기 단건 아이템 레이아웃
+    ReceivedReviewAdapter 에서 사용.
+
+    구성:
+      [★★★★☆]  rating (RatingBar, 읽기 전용)
+      "후기 내용"  content (nullable → gone)
+      "2026-06-24" created_at (날짜 포맷은 어댑터에서 처리)
+-->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="20dp"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="1dp"
+    app:cardBackgroundColor="@color/bg_100">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <!-- 별점 + 날짜 (한 줄) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="6dp">
+
+            <!-- 읽기 전용 RatingBar -->
+            <RatingBar
+                android:id="@+id/rating_bar_received"
+                style="?android:attr/ratingBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:stepSize="1.0"
+                android:isIndicator="true"
+                android:progressTint="@color/primary_200"
+                android:progressBackgroundTint="@color/bg_300"
+                android:secondaryProgressTint="@color/primary_200" />
+
+            <!-- 날짜 (오른쪽 정렬) -->
+            <TextView
+                android:id="@+id/tv_review_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:textSize="11sp"
+                android:textColor="@color/text_200" />
+
+        </LinearLayout>
+
+        <!-- 후기 내용 (없으면 gone) -->
+        <TextView
+            android:id="@+id/tv_review_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="@color/text_100"
+            android:lineSpacingMultiplier="1.4"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
