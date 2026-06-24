@@ -166,25 +166,25 @@
 
             </FrameLayout>
 
-            <!-- 네이버 로그인 -->
-            <FrameLayout
-                android:id="@+id/btn_naver_login"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/social_button_naver_background"
-                android:layout_marginEnd="15dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackgroundBorderless">
+<!--            &lt;!&ndash; 네이버 로그인 &ndash;&gt;-->
+<!--            <FrameLayout-->
+<!--                android:id="@+id/btn_naver_login"-->
+<!--                android:layout_width="48dp"-->
+<!--                android:layout_height="48dp"-->
+<!--                android:background="@drawable/social_button_naver_background"-->
+<!--                android:layout_marginEnd="15dp"-->
+<!--                android:clickable="true"-->
+<!--                android:focusable="true"-->
+<!--                android:foreground="?android:attr/selectableItemBackgroundBorderless">-->
 
-                <ImageView
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_naver"
-                    android:contentDescription="네이버 로그인" />
+<!--                <ImageView-->
+<!--                    android:layout_width="35dp"-->
+<!--                    android:layout_height="35dp"-->
+<!--                    android:layout_gravity="center"-->
+<!--                    android:src="@drawable/ic_naver"-->
+<!--                    android:contentDescription="네이버 로그인" />-->
 
-            </FrameLayout>
+<!--            </FrameLayout>-->
 
             <!-- 구글 로그인 -->
             <FrameLayout

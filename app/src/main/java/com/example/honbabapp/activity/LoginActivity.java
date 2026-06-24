@@ -7,16 +7,39 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.credentials.Credential;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialException;
 
+import com.example.honbabapp.BuildConfig;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.login.LoginData;
+import com.example.honbabapp.api.data.login.SocialLoginData;
 import com.example.honbabapp.api.data.request.LoginRequest;
+import com.example.honbabapp.api.data.request.SocialLoginRequest;
 import com.example.honbabapp.api.data.request.fcm.RegisterFcmTokenRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
+import com.example.honbabapp.api.data.response.user.OnboardingStatusResponse;
+import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.ActivityLoginBinding;
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.kakao.sdk.auth.model.OAuthToken;
+import com.kakao.sdk.common.model.ClientError;
+import com.kakao.sdk.common.model.ClientErrorCause;
+import com.kakao.sdk.user.UserApiClient;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function2;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -36,6 +59,8 @@ public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     private ActivityLoginBinding binding;
     private ApiService apiService;
+
+    private CredentialManager credentialManager;
     private SharedPreferences sharedPreferences;
 
     // SharedPreferences 설정
@@ -45,6 +70,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String KEY_SIGUNGU = "user_sigungu";
     private static final String KEY_DONG    = "user_dong";
     private static final String KEY_FCM_TOKEN = "fcm_token";
+    private static final String KEY_JWT_TOKEN = "jwt_token";
 
 
 
@@ -53,6 +79,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        apiService = RetrofitClient.getClient().create(ApiService.class);
+
         if (checkAutoLogin()) {
             return;
         }
@@ -71,6 +99,7 @@ public class LoginActivity extends AppCompatActivity {
     private void initializeComponents() {
         apiService = RetrofitClient.getClient().create(ApiService.class);
         sharedPreferences = getSharedPreferences(PREF_NAME , MODE_PRIVATE);
+        credentialManager = CredentialManager.create(this);
 
         Log.d(TAG, "LoginActivity 초기화 완료");
     }
@@ -84,13 +113,66 @@ public class LoginActivity extends AppCompatActivity {
         int userId = sharedPreferences.getInt(KEY_USER_ID, -1);
 
         if (isLoggedIn && userId != -1) {
-            Log.d(TAG, "자동 로그인: user_id=" + userId);
-            goToMainActivity();
+            Log.d(TAG, "자동 로그인 시도: user_id=" + userId + " (온보딩 완료 여부 확인 중)");
+            verifyOnboardingThenProceed(userId);
             return true;
         }
 
         Log.d(TAG, "자동 로그인 정보 없음 — 로그인 화면 표시");
         return false;
+    }
+
+    private void verifyOnboardingThenProceed(int userId) {
+        apiService.checkOnboardingStatus(userId).enqueue(new Callback<ApiResponse<OnboardingStatusResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<OnboardingStatusResponse>> call, Response<ApiResponse<OnboardingStatusResponse>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    OnboardingStatusResponse status = response.body().getData();
+
+                    if (status.isNeeds_onboarding()) {
+                        Log.w(TAG, "온보딩 미완료 계정 - OnboardingActivity로 이동");
+                        goToOnboardingActivityFromAutoLogin(status.getMissing());
+                    } else {
+                        goToMainActivity();
+                    }
+                } else {
+                    // 프로필 조회 실패(탈퇴/존재하지 않는 계정 등) - 안전하게 로그인 화면 유지
+                    Log.e(TAG, "자동 로그인 온보딩 상태 조회 실패 - 로그인 화면 표시");
+                    showLoginScreen();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<OnboardingStatusResponse>> call, Throwable t) {
+                // 네트워크 오류 - 일단 메인으로 보냄 (오프라인 상태에서도 앱 사용 가능하도록)
+                Log.e(TAG, "자동 로그인 온보딩 상태 조회 네트워크 오류: " + t.getMessage(), t);
+                goToMainActivity();
+            }
+        });
+    }
+
+    /**
+     * 자동 로그인 과정에서 온보딩 미완료가 확인된 경우 사용.
+     * 서버가 정확히 어떤 필드가 비어있는지 알려주므로, 그대로 전달한다.
+     */
+    private void goToOnboardingActivityFromAutoLogin(OnboardingStatusResponse.MissingFields missing) {
+        Intent intent = new Intent(LoginActivity.this, OnboardingActivity.class);
+        intent.putExtra("needs_nickname", missing.isNickname());
+        intent.putExtra("needs_phone", missing.isPhone_number());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    /**
+     * 자동 로그인이 실패로 판명된 경우, 로그인 화면 UI를 정상적으로 그린다.
+     * (checkAutoLogin이 onCreate 최상단에서 호출되어 binding이 아직 없으므로 직접 구성)
+     */
+    private void showLoginScreen() {
+        binding = ActivityLoginBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        initializeComponents();
+        setupListeners();
     }
 
     /**
@@ -103,19 +185,234 @@ public class LoginActivity extends AppCompatActivity {
         // 회원가입 링크
         binding.tvSingupLink.setOnClickListener(v -> goToRegisterActivity());
 
-        // TODO: 소셜 로그인 버튼들 (추후 구현)
-        binding.btnKakaoLogin.setOnClickListener(v ->
-                Toast.makeText(this, "카카오 로그인 준비 중입니다", Toast.LENGTH_SHORT).show()
-        );
+        binding.btnKakaoLogin.setOnClickListener(v -> performKakaoLogin());
 
-        binding.btnNaverLogin.setOnClickListener(v ->
-                Toast.makeText(this, "네이버 로그인 준비 중입니다", Toast.LENGTH_SHORT).show()
-        );
+        binding.btnGoogleLogin.setOnClickListener(v -> performGoogleLogin());
+    }
 
-        binding.btnGoogleLogin.setOnClickListener(v ->
-                Toast.makeText(this, "구글 로그인 준비 중입니다", Toast.LENGTH_SHORT).show()
+    /**
+     * 구글 로그인 수행 (Credential Manager 방식)
+     * 시스템이 제공하는 계정 선택 UI를 띄우고, 선택된 계정의 id_token을 받아 서버로 전송
+     */
+    private void performGoogleLogin() {
+        GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                .build();
+
+        GetCredentialRequest request = new GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build();
+
+        Executor executor = Executors.newSingleThreadExecutor();
+
+        credentialManager.getCredentialAsync(
+                this,
+                request,
+                new android.os.CancellationSignal(),
+                executor,
+                new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                    @Override
+                    public void onResult(GetCredentialResponse result) {
+                        handleGoogleCredentialResult(result);
+                    }
+
+                    @Override
+                    public void onError(GetCredentialException e) {
+                        Log.e(TAG, "구글 로그인 실패", e);
+                        runOnUiThread(() ->
+                                Toast.makeText(LoginActivity.this, "구글 로그인에 실패했습니다", Toast.LENGTH_SHORT).show()
+                        );
+                    }
+                }
         );
     }
+
+    /**
+     * Credential Manager 결과에서 구글 id_token 추출
+     * 백그라운드 스레드(executor)에서 호출되므로, UI 작업은 runOnUiThread로 감싸야 함
+     */
+    private void handleGoogleCredentialResult(GetCredentialResponse result) {
+        Credential credential = result.getCredential();
+
+        if (credential instanceof androidx.credentials.CustomCredential) {
+            androidx.credentials.CustomCredential customCredential = (androidx.credentials.CustomCredential) credential;
+
+            if (GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(customCredential.getType())) {
+                try {
+                    GoogleIdTokenCredential googleIdTokenCredential =
+                            GoogleIdTokenCredential.createFrom(customCredential.getData());
+
+                    String idToken = googleIdTokenCredential.getIdToken();
+                    Log.d(TAG, "구글 로그인 성공, id_token 획득");
+
+                    sendSocialLoginToServer("google", null, idToken);
+
+                } catch (Exception e) {
+                    Log.e(TAG, "구글 id_token 파싱 실패", e);
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "구글 로그인에 실패했습니다", Toast.LENGTH_SHORT).show()
+                    );
+                }
+            } else {
+                Log.e(TAG, "예상치 못한 credential 타입: " + customCredential.getType());
+            }
+        } else {
+            Log.e(TAG, "예상치 못한 credential 타입");
+        }
+    }
+
+
+    /**
+     * 카카오 로그인 수행
+     * 카카오톡 앱이 설치되어 있으면 앱으로 시도, 실패(취소 제외)하면 카카오계정(웹) 로그인으로 폴백
+     */
+    private void performKakaoLogin() {
+        // 카카오계정으로 로그인 공통 콜백
+        // 카카오톡으로 로그인할 수 없거나 실패했을 때 사용됨
+        Function2<OAuthToken, Throwable, Unit> accountCallback = (token, error) -> {
+            if (error != null) {
+                Log.e(TAG, "카카오계정으로 로그인 실패", error);
+                Toast.makeText(this, "카카오 로그인에 실패했습니다", Toast.LENGTH_SHORT).show();
+                return Unit.INSTANCE;
+            }
+
+            if (token != null) {
+                Log.d(TAG, "카카오계정으로 로그인 성공, access_token 획득");
+                sendSocialLoginToServer("kakao", token.getAccessToken(), null);
+            }
+
+            return Unit.INSTANCE;
+        };
+
+        if (UserApiClient.getInstance().isKakaoTalkLoginAvailable(this)) {
+            UserApiClient.getInstance().loginWithKakaoTalk(this, (token, error) -> {
+                if (error != null) {
+                    Log.e(TAG, "카카오톡으로 로그인 실패", error);
+
+                    // 사용자가 의도적으로 취소한 경우(예: 뒤로 가기)는
+                    // 카카오계정 로그인으로 폴백하지 않고 그대로 취소 처리
+                    if (error instanceof ClientError
+                            && ((ClientError) error).getReason() == ClientErrorCause.Cancelled) {
+                        return Unit.INSTANCE;
+                    }
+
+                    // 카카오톡에 연결된 카카오계정이 없는 경우 등 - 카카오계정으로 로그인 시도
+                    UserApiClient.getInstance().loginWithKakaoAccount(this, accountCallback);
+                    return Unit.INSTANCE;
+                }
+
+                if (token != null) {
+                    Log.d(TAG, "카카오톡으로 로그인 성공, access_token 획득");
+                    sendSocialLoginToServer("kakao", token.getAccessToken(), null);
+                }
+
+                return Unit.INSTANCE;
+            });
+        } else {
+            UserApiClient.getInstance().loginWithKakaoAccount(this, accountCallback);
+        }
+    }
+
+    /**
+     * 소셜 로그인 토큰을 우리 서버로 전송 (카카오/구글 공통)
+     *
+     * @param provider "kakao" 또는 "google"
+     * @param accessToken 카카오 access_token (구글이면 null)
+     * @param idToken 구글 id_token (카카오면 null)
+     */
+    private void sendSocialLoginToServer(String provider, String accessToken, String idToken) {
+        SocialLoginRequest request = new SocialLoginRequest(provider, accessToken, idToken);
+
+        apiService.socialLogin(request).enqueue(new Callback<ApiResponse<SocialLoginData>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<SocialLoginData>> call, Response<ApiResponse<SocialLoginData>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<SocialLoginData> apiResponse = response.body();
+
+                    if (apiResponse.isSuccess()) {
+                        handleSocialLoginSuccess(apiResponse.getData());
+                    } else {
+                        Toast.makeText(LoginActivity.this,
+                                apiResponse.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "소셜 로그인 실패: " + apiResponse.getMessage());
+                    }
+                } else {
+                    Toast.makeText(LoginActivity.this,
+                            "소셜 로그인에 실패했습니다. 다시 시도해주세요.",
+                            Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "HTTP 오류: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<SocialLoginData>> call, Throwable t) {
+                Toast.makeText(LoginActivity.this,
+                        "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.",
+                        Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "네트워크 오류: " + t.getMessage(), t);
+            }
+        });
+    }
+
+    /**
+     * 소셜 로그인 성공 처리
+     * - JWT 토큰 저장
+     * - needs_onboarding에 따라 온보딩 화면 또는 메인 화면으로 분기
+     */
+    private void handleSocialLoginSuccess(SocialLoginData socialLoginData) {
+        SocialLoginData.SocialUserData user = socialLoginData.getUser();
+
+        Log.d(TAG, "소셜 로그인 성공");
+        Log.d(TAG, "user_id: " + user.getUser_id());
+        Log.d(TAG, "needs_onboarding: " + socialLoginData.isNeeds_onboarding());
+
+        // SharedPreferences에 로그인 정보 + JWT 토큰 저장
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(KEY_IS_LOGGED_IN, true);
+        editor.putInt(KEY_USER_ID, user.getUser_id());
+        editor.putString(KEY_JWT_TOKEN, user.getToken());
+
+        // user_location 파싱해서 저장 (있을 경우만 - 온보딩 전이면 null일 수 있음)
+        String userLocation = user.getUser_location();
+        if (userLocation != null && !userLocation.isEmpty()) {
+            String[] parsed = parseLocation(userLocation);
+            editor.putString(KEY_SIGUNGU, parsed[0]);
+            editor.putString(KEY_DONG, parsed[1]);
+        }
+
+        editor.apply();
+
+        Log.d(TAG, "SharedPreferences 저장 완료 (JWT 토큰 포함): user_id=" + user.getUser_id());
+
+        // FCM 디바이스 토큰 발급 후 서버에 등록
+        registerFcmToken(user.getUser_id());
+
+        if (socialLoginData.isNeeds_onboarding()) {
+            // 추가 정보(닉네임/위치 등)가 필요 - 온보딩 화면으로 이동
+            Toast.makeText(this, "추가 정보를 입력해주세요", Toast.LENGTH_SHORT).show();
+            goToOnboardingActivity(user);
+        } else {
+            // 모든 정보가 있는 기존 회원 - 바로 메인으로
+            String nickname = user.getUser_nickname() != null ? user.getUser_nickname() : "회원";
+            Toast.makeText(this, nickname + "님 환영합니다!", Toast.LENGTH_SHORT).show();
+            goToMainActivity();
+        }
+    }
+
+    /**
+     * 온보딩(추가정보 입력) Activity로 이동
+     */
+    private void goToOnboardingActivity(SocialLoginData.SocialUserData user) {
+        Intent intent = new Intent(LoginActivity.this, OnboardingActivity.class);
+        intent.putExtra("needs_nickname", user.getUser_nickname() == null || user.getUser_nickname().isEmpty());
+        intent.putExtra("needs_phone", user.getUser_phone_number() == null || user.getUser_phone_number().isEmpty());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
 
     /**
      * 로그인 수행

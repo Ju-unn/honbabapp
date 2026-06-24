@@ -1,10 +1,12 @@
 package com.example.honbabapp.api;
 
 import com.example.honbabapp.api.data.chat.ChatRoomData;
+import com.example.honbabapp.api.data.login.SocialLoginData;
 import com.example.honbabapp.api.data.meeting.QrCodeData;
 import com.example.honbabapp.api.data.meeting.QrScanResultData;
 import com.example.honbabapp.api.data.meeting.QrStatusData;
 import com.example.honbabapp.api.data.request.LogoutRequest;
+import com.example.honbabapp.api.data.request.SocialLoginRequest;
 import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
 import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
 import com.example.honbabapp.api.data.request.chat.KickMemberRequest;
@@ -19,6 +21,7 @@ import com.example.honbabapp.api.data.request.meeting.UpdateMeetingRequest;
 import com.example.honbabapp.api.data.request.review.ReviewSubmitRequest;
 import com.example.honbabapp.api.data.request.user.ChangePasswordRequest;
 import com.example.honbabapp.api.data.request.user.CheckCurrentPasswordRequest;
+import com.example.honbabapp.api.data.request.user.CompleteSocialProfileRequest;
 import com.example.honbabapp.api.data.request.user.DeleteAccountRequest;
 import com.example.honbabapp.api.data.request.user.UpdateLocationRequest;
 import com.example.honbabapp.api.data.request.user.UpdateProfileRequest;
@@ -28,6 +31,7 @@ import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
 import com.example.honbabapp.api.data.response.chat.KickMemberResponse;
 import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
+import com.example.honbabapp.api.data.response.user.OnboardingStatusResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
 import com.example.honbabapp.api.data.response.meeting.ApproveResponse;
@@ -74,6 +78,21 @@ public interface ApiService {
      */
     @POST("api/auth/login.php")
     Call<ApiResponse<LoginData>> login(@Body LoginRequest loginRequest);
+
+    /**
+     * 소셜 로그인 (카카오/구글)
+     * @param request provider, access_token(카카오) 또는 id_token(구글)
+     * @return ApiResponse<SocialLoginData> - user, needs_onboarding
+     */
+    @POST("api/auth/social_login.php")
+    Call<ApiResponse<SocialLoginData>> socialLogin(@Body SocialLoginRequest request);
+
+    /**
+     * 소셜 로그인 온보딩 완료 (추가정보 저장)
+     * JWT 토큰은 RetrofitClient의 AuthInterceptor가 자동으로 헤더에 첨부
+     */
+    @POST("api/auth/complete_social_profile.php")
+    Call<ApiResponse<Object>> completeSocialProfile(@Body CompleteSocialProfileRequest request);
 
 
     /**
@@ -275,6 +294,13 @@ public interface ApiService {
      */
     @GET("api/user/profile.php")
     Call<ApiResponse<UserProfileResponse>> getUserProfile(@Query("user_id") int userId);
+
+    /**
+     * 온보딩(추가정보 입력) 완료 여부 확인
+     * 자동 로그인 시, 닉네임/위치/성별/생일/전화번호 중 비어있는 게 있는지 체크
+     */
+    @GET("api/user/check_onboarding_status.php")
+    Call<ApiResponse<OnboardingStatusResponse>> checkOnboardingStatus(@Query("user_id") int userId);
 
     /**
      * 2. 프로필 수정 (닉네임, 상태메시지, 프로필이미지 선택적)

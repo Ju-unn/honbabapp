@@ -24,6 +24,7 @@
         android:required="false" />
 
     <application
+        android:name=".HonbabApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -76,6 +77,28 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="general" />
 
+        <meta-data
+            android:name="com.naver.maps.map.NCP_KEY_ID"
+            android:value="${NAVER_MAPS_CLIENT_ID}" />
+
+
+        <!-- 카카오 로그인 인증 처리용 Activity -->
+        <activity
+            android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="oauth"
+                    android:scheme="kakao${KAKAO_NATIVE_APP_KEY}" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activity.OnboardingActivity"
+            android:exported="false" />
+
         <activity
             android:name=".activity.chat.QrScannerActivity"
             android:screenOrientation="portrait"
@@ -95,9 +118,6 @@
             android:name=".activity.meeting.MeetingEditActivity"
             android:exported="false" />
 
-        <meta-data
-            android:name="com.naver.maps.map.NCP_KEY_ID"
-            android:value="${NAVER_MAPS_CLIENT_ID}" />
 
         <activity
             android:name=".activity.meeting.PlaceSearchActivity"

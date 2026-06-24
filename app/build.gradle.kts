@@ -46,8 +46,24 @@ android {
             "\"${properties.getProperty("NAVER_MAPS_CLIENT_SECRET", "")}\""
         )
 
+        buildConfigField(
+            "String",
+            "KAKAO_NATIVE_APP_KEY",
+            "\"${properties.getProperty("KAKAO_NATIVE_APP_KEY", "")}\""
+        )
+
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"${properties.getProperty("GOOGLE_WEB_CLIENT_ID", "")}\""
+        )
+
+
         manifestPlaceholders["NAVER_MAPS_CLIENT_ID"] =
             properties.getProperty("NAVER_MAPS_CLIENT_ID", "")
+
+        manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] =
+            properties.getProperty("KAKAO_NATIVE_APP_KEY", "")
     }
 
     buildTypes {
@@ -99,4 +115,13 @@ dependencies {
 
     implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
     implementation("com.google.firebase:firebase-messaging:25.0.1")
+
+
+    // 카카오 로그인
+    implementation("com.kakao.sdk:v2-user:2.24.0")
+
+    // 구글 로그인 (Credential Manager 방식)
+    implementation("androidx.credentials:credentials:1.6.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 }
