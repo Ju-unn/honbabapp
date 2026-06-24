@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -43,11 +44,13 @@ import retrofit2.Response;
  *
  * 카카오/구글이 제공하지 않은 정보(위치, 성별, 생일)와
  * 중복으로 비어있는 정보(닉네임, 전화번호)만 조건부로 입력받는다.
+ *
  */
 public class OnboardingActivity extends AppCompatActivity {
 
     private static final String TAG = "OnboardingActivity";
     private static final String PREF_NAME = "honbabapp_prefs";
+    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_SIGUNGU = "user_sigungu";
     private static final String KEY_DONG = "user_dong";
 
@@ -76,6 +79,9 @@ public class OnboardingActivity extends AppCompatActivity {
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
         sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+
+        // 온보딩 도중 앱이 강제종료되어도 checkAutoLogin()이 로그인됨으로 판단하지 않도록 방어.
+        sharedPreferences.edit().putBoolean(KEY_IS_LOGGED_IN, false).apply();
 
         needsNickname = getIntent().getBooleanExtra("needs_nickname", false);
         needsPhone = getIntent().getBooleanExtra("needs_phone", false);
@@ -166,7 +172,7 @@ public class OnboardingActivity extends AppCompatActivity {
     }
 
     /**
-     * 전화번호 입력 섹션 - 필요할 때만 표시
+     * 010-1234-5678 형태로 자동 하이폰이 삽입되도록 한다.
      */
     private void setupPhoneSection() {
         if (!needsPhone) {
@@ -176,6 +182,10 @@ public class OnboardingActivity extends AppCompatActivity {
 
         binding.layoutPhone.setVisibility(View.VISIBLE);
 
+        //자동 하이폰 포맷터
+        binding.etPhoneNumber.addTextChangedListener(new PhoneNumberFormattingTextWatcher());
+
+        // isPhoneChecked 리셋 (텍스트가 변경되면 재확인 필요)
         binding.etPhoneNumber.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -339,16 +349,18 @@ public class OnboardingActivity extends AppCompatActivity {
                 nickname, phone, selectedLocation, selectedGender, selectedBirthday
         );
 
-        // 인터셉터가 자동으로 JWT 토큰을 헤더에 첨부함 (Step 6-5)
+        // 인터셉터가 자동으로 JWT 토큰을 헤더에 첨부함
         apiService.completeSocialProfile(request).enqueue(new Callback<ApiResponse<Object>>() {
             @Override
             public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    // 위치 정보 SharedPreferences에도 저장 (HomeFragment 등에서 사용)
+                    // 위치 정보 및 로그인 완료 플래그를 한 번의 edit()으로 저장
                     String[] parts = selectedLocation.split(" ");
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString(KEY_SIGUNGU, parts.length > 0 ? parts[0] : "전체");
                     editor.putString(KEY_DONG, parts.length > 1 ? parts[1] : parts[0]);
+                    //온보딩 모든 입력 성공 시 비로소 is_logged_in = true
+                    editor.putBoolean(KEY_IS_LOGGED_IN, true);
                     editor.apply();
 
                     Toast.makeText(OnboardingActivity.this, "환영합니다!", Toast.LENGTH_SHORT).show();
