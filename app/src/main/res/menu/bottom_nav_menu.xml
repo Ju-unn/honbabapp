@@ -1,24 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <item
-        android:id="@+id/nav_home"
-        android:icon="@drawable/ic_home"
-        android:title="@string/home" />
-
-    <item
-        android:id="@+id/nav_map"
-        android:icon="@drawable/ic_map"
-        android:title="@string/map" />
-
-    <item
-        android:id="@+id/nav_chat"
-        android:icon="@drawable/ic_chat"
-        android:title="@string/chat" />
-
-    <item
-        android:id="@+id/nav_profile"
-        android:icon="@drawable/ic_user"
-        android:title="@string/profile" />
-
+    <item android:id="@+id/nav_home" android:icon="@drawable/ic_home" android:title="@string/home"/>
+    <item android:id="@+id/nav_map" android:icon="@drawable/ic_map" android:title="@string/map"/>
+    <item android:id="@+id/nav_campaign" android:icon="@drawable/ic_campaign" android:title="@string/campaign"/>
+    <item android:id="@+id/nav_chat" android:icon="@drawable/ic_chat" android:title="@string/chat"/>
+    <item android:id="@+id/nav_profile" android:icon="@drawable/ic_user" android:title="@string/profile"/>
 </menu>

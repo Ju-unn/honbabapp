@@ -2,10 +2,10 @@
     <string name="app_name">혼밥모여</string>
 
     <string name="home">홈</string>
+    <string name="campaign">체험단</string>
     <string name="map">지도</string>
     <string name="chat">채팅</string>
     <string name="profile">프로필</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

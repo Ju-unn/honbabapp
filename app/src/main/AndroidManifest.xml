@@ -95,6 +95,12 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activity.campaign.CampaignWritingActivity"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity android:name=".activity.campaign.CampaignDetailActivity"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity
             android:name=".activity.OnboardingActivity"
             android:exported="false" />

@@ -1,0 +1,77 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- 왼쪽 사람 얼굴 -->
+    <path
+        android:strokeWidth="1"
+        android:pathData="M7.5,9.5m-3.5,0a3.5,3.5 0,1 1,7 0a3.5,3.5 0,1 1,-7 0"
+        android:fillColor="#00000000"
+        android:strokeColor="#222222"/>
+
+    <!-- 왼쪽 사람 왼쪽 눈 -->
+    <path
+        android:pathData="M6.5,8.8m-0.4,0a0.4,0.4 0,1 1,0.8 0a0.4,0.4 0,1 1,-0.8 0"
+        android:fillColor="#222222"
+        android:strokeColor="#00000000"/>
+
+    <!-- 왼쪽 사람 오른쪽 눈 -->
+    <path
+        android:pathData="M8.5,8.8m-0.4,0a0.4,0.4 0,1 1,0.8 0a0.4,0.4 0,1 1,-0.8 0"
+        android:fillColor="#222222"
+        android:strokeColor="#00000000"/>
+
+    <!-- 왼쪽 사람 입 -->
+    <path
+        android:strokeWidth="0.6"
+        android:pathData="M6.5,11.0 Q7.5,11.8 8.5,11.0"
+        android:fillColor="#00000000"
+        android:strokeColor="#222222"
+        android:strokeLineCap="round"/>
+
+    <!-- 왼쪽 사람 몸통 (중심 x=7.5, 좌우 4.5씩) -->
+    <path
+        android:strokeWidth="1"
+        android:pathData="M3,21.5 C3,17 5,14.5 7.5,14.5 C10,14.5 12,17 12,21.5"
+        android:fillColor="#00000000"
+        android:strokeColor="#222222"
+        android:strokeLineCap="round"/>
+
+    <!-- 오른쪽 사람 얼굴 -->
+    <path
+        android:strokeWidth="1"
+        android:pathData="M16.5,9.5m-3.5,0a3.5,3.5 0,1 1,7 0a3.5,3.5 0,1 1,-7 0"
+        android:fillColor="#00000000"
+        android:strokeColor="#222222"/>
+
+    <!-- 오른쪽 사람 왼쪽 눈 -->
+    <path
+        android:pathData="M15.5,8.8m-0.4,0a0.4,0.4 0,1 1,0.8 0a0.4,0.4 0,1 1,-0.8 0"
+        android:fillColor="#222222"
+        android:strokeColor="#00000000"/>
+
+    <!-- 오른쪽 사람 오른쪽 눈 -->
+    <path
+        android:pathData="M17.5,8.8m-0.4,0a0.4,0.4 0,1 1,0.8 0a0.4,0.4 0,1 1,-0.8 0"
+        android:fillColor="#222222"
+        android:strokeColor="#00000000"/>
+
+    <!-- 오른쪽 사람 입 -->
+    <path
+        android:strokeWidth="0.6"
+        android:pathData="M15.5,11.0 Q16.5,11.8 17.5,11.0"
+        android:fillColor="#00000000"
+        android:strokeColor="#222222"
+        android:strokeLineCap="round"/>
+
+    <!-- 오른쪽 사람 몸통 (중심 x=16.5, 좌우 4.5씩) -->
+    <path
+        android:strokeWidth="1"
+        android:pathData="M12,21.5 C12,17 14,14.5 16.5,14.5 C19,14.5 21,17 21,21.5"
+        android:fillColor="#00000000"
+        android:strokeColor="#222222"
+        android:strokeLineCap="round"/>
+
+</vector>

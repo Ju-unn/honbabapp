@@ -203,7 +203,6 @@ public class MeetingDetailActivity extends AppCompatActivity {
         }
 
         // 10. MiniMap
-        // 10. MiniMap
         if (meeting.getLocation() != null) {
             try {
                 double lat = Double.parseDouble(meeting.getLocation().getMap_y());

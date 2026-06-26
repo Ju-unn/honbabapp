@@ -18,21 +18,17 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.honbabapp.R;
-import com.example.honbabapp.data.MockData;
-import com.example.honbabapp.data.meeting.Meeting;
-import com.example.honbabapp.data.user.User;
 import com.example.honbabapp.databinding.ActivityMainBinding;
 import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.ui.adapter.MainFragmentAdapter;
-import com.example.honbabapp.ui.fragment.HomeFragment;
 import com.example.honbabapp.ui.fragment.MapFragment;
 import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainActivity";
     private static final int REQUEST_CODE_NOTIFICATION_PERMISSION = 2001;
 
     private ActivityMainBinding binding;
@@ -50,178 +46,152 @@ public class MainActivity extends AppCompatActivity {
         handleIntent(getIntent());
         requestNotificationPermissionIfNeeded();
 
-        // SharedPreferences에서 userId 읽기
         SharedPreferences prefs =
                 getSharedPreferences("honbabapp_prefs", android.content.Context.MODE_PRIVATE);
         int userId = prefs.getInt("user_id", -1);
 
-        // 앱 시작하자마자 서버에 "나 접속했어요" 등록
-        // → 이제부터 내 모든 채팅방 메시지를 어느 화면에 있어도 수신
         SocketManager.getInstance().login(userId);
     }
 
     /**
      * Android 13(API 33) 이상에서 푸시 알림을 표시하려면
      * POST_NOTIFICATIONS 런타임 권한이 필요하다.
-     * 이미 허용되어 있으면 아무 동작도 하지 않는다.
      */
     private void requestNotificationPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return;
-        }
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
-                    REQUEST_CODE_NOTIFICATION_PERMISSION
-            );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        REQUEST_CODE_NOTIFICATION_PERMISSION
+                );
+            }
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == REQUEST_CODE_NOTIFICATION_PERMISSION) {
-            boolean granted = grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED;
-            Log.d("MainActivity", "POST_NOTIFICATIONS 권한 결과: " + granted);
-        }
-    }
-
-
-    @Override
-    protected void onNewIntent(@NonNull Intent intent) {
+    protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        // 새로운 intent 처리
         handleIntent(intent);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    /**
+     * Intent 처리 - 홈 새로고침, 지도 이동 등
+     * handleIntent() 의 findFragmentByTag 인덱스:
+     *   "f0" = HomeFragment, "f1" = MapFragment → 인덱스 불변이라 그대로 유지
+     */
+    private void handleIntent(Intent intent) {
+        if (intent == null) return;
+
+        if (intent.getBooleanExtra("refresh_home", false)) {
+            Fragment homeFragment = getSupportFragmentManager().findFragmentByTag("f0");
+            if (homeFragment != null) {
+                Toast.makeText(this, "모임 목록이 갱신되었습니다.", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        // 지도 탭으로 이동
+        if (intent.getBooleanExtra("move_to_map", false)) {
+            double latitude = intent.getDoubleExtra("map_lat", 37.5665);
+            double longitude = intent.getDoubleExtra("map_lng", 126.9780);
+
+            binding.viewPager.setCurrentItem(1, false); // 지도 탭 = index 1 (불변)
+            MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("f1");
+            if (mapFragment != null) {
+                mapFragment.moveToLocation(latitude, longitude);
+            }
+        }
     }
 
     /**
-     * Intent 처리 (모임 생성 후 새로고침)
+     * 지도 탭으로 이동 + 카테고리 필터 설정
+     * index 1로 고정 (계획서: 지도=1 유지로 navigationToMap() 영향 없음)
      */
-    private void handleIntent(Intent intent) {
-        if (intent != null && intent.getBooleanExtra("refresh_home", false)) {
-            // HomeFragment로 이동
-            binding.viewPager.setCurrentItem(0, false);
-
-            // HomeFragment 찾기
-            Fragment fragment = getSupportFragmentManager()
-                    .findFragmentByTag("f" + 0);  // ViewPager2의 Fragment Tag
-
-            //  HomeFragment 새로고침
-            if (fragment instanceof HomeFragment) {
-                ((HomeFragment) fragment).refreshMeetingList();
-            }
-
-            // Toast 표시
-            int newMeetingId = intent.getIntExtra("new_meeting_id", -1);
-            if (newMeetingId != -1) {
-                Toast.makeText(this, "모임이 생성되었습니다!", Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        // Mini 지도 클릭시 이동
-        if (intent.getBooleanExtra("move_to_map", false)) {
-            double lat = intent.getDoubleExtra("map_lat", 37.5665);
-            double lng = intent.getDoubleExtra("map_lng", 126.9780);
-
-            binding.viewPager.setCurrentItem(1, false); // 지도 탭 전환
-            MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("f1");
-            if (mapFragment != null) {
-                mapFragment.moveToLocation(lat, lng);
-            }
-        }
-    }
-
-    /// mapPage로 이동
     public void navigationToMap(String category) {
-        binding.viewPager.setCurrentItem(1 , false);
-        //fragmentList에서 MapFragment를 가져오기 (객체)
-        //객체 선언 하고 해당 객체를 fragmentList안에있는 MapFragment 받아오기
+        binding.viewPager.setCurrentItem(1, false);
         MapFragment mapFragment = (MapFragment) adapter.fragmentList.get(1);
         mapFragment.setFilter(category);
     }
 
     public void navigationToMapHot() {
-        binding.viewPager.setCurrentItem(1 , false);
+        binding.viewPager.setCurrentItem(1, false);
         MapFragment mapFragment = (MapFragment) adapter.fragmentList.get(1);
         mapFragment.setFilterHot();
     }
 
-
-    /// homePage로 이동
     public void navigationToHome() {
         binding.viewPager.setCurrentItem(0);
     }
 
-
-    private void initViewPager(){
+    private void initViewPager() {
         adapter = new MainFragmentAdapter(this);
         binding.viewPager.setAdapter(adapter);
         binding.viewPager.setUserInputEnabled(false);
-
     }
 
-    private void initNavigation(){
+    /**
+     * 바텀 네비게이션 탭 ↔ ViewPager2 인덱스 매핑
+     *
+     * 0 - nav_home    → HomeFragment
+     * 1 - nav_map     → MapFragment
+     * 2 - nav_campaign → CampaignFragment
+     * 3 - nav_chat    → ChatFragment
+     * 4 - nav_profile → ProfileFragment
+     */
+    private void initNavigation() {
         binding.bottomNavigationBar.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int position = 0;
+                int targetPosition = 0;
                 int itemId = item.getItemId();
 
                 if (itemId == R.id.nav_home) {
-                    position = 0;
-                }
-                else if (itemId == R.id.nav_map) {
-                    position = 1;
-                }
-                else if (itemId == R.id.nav_chat) {
-                    position = 2;
-                }
-                else if (itemId == R.id.nav_profile) {
-                    position = 3;
+                    targetPosition = 0;
+                } else if (itemId == R.id.nav_map) {
+                    targetPosition = 1;
+                } else if (itemId == R.id.nav_campaign) {
+                    targetPosition = 2;
+                } else if (itemId == R.id.nav_chat) {
+                    targetPosition = 3;
+                } else if (itemId == R.id.nav_profile) {
+                    targetPosition = 4;
                 }
 
-                binding.viewPager.setCurrentItem(position);
-
-                Log.i("MainActivity" , "onNavigationItemSelected position = " + position);
+                binding.viewPager.setCurrentItem(targetPosition);
+                Log.i(TAG, "onNavigationItemSelected targetPosition = " + targetPosition);
                 return true;
             }
         });
 
-        //viewPager의 표시되는 fragment가 변경되었을 때 호출되는코드
-        //setCurrentItem으로 변경되면 bottomNavigationBar의 아이템이 선택된 상태로 보여지도록 변경하는 코드가 포함되어있음
         binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                int item = 0;
+                int selectedItemId = R.id.nav_home;
 
                 switch (position) {
-                    case 0 : item = R.id.nav_home;
+                    case 0:
+                        selectedItemId = R.id.nav_home;
                         break;
-                    case 1 : item = R.id.nav_map;
+                    case 1:
+                        selectedItemId = R.id.nav_map;
                         break;
-                    case 2 : item = R.id.nav_chat;
+                    case 2:
+                        selectedItemId = R.id.nav_campaign;
                         break;
-                    case 3 : item = R.id.nav_profile;
+                    case 3:
+                        selectedItemId = R.id.nav_chat;
+                        break;
+                    case 4:
+                        selectedItemId = R.id.nav_profile;
+                        break;
                 }
 
-                binding.bottomNavigationBar.setSelectedItemId(item);
-                Log.i("MainActivity" , "onPageSelected position = " + position);
-
+                binding.bottomNavigationBar.setSelectedItemId(selectedItemId);
+                Log.i(TAG, "onPageSelected position = " + position);
             }
         });
     }
-
 }

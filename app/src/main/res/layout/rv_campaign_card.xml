@@ -1,0 +1,203 @@
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/bg_100"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+        <!--  상단 뱃지 + 제목  -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <!--  체험단 뱃지  -->
+            <TextView
+                android:id="@+id/tv_campaign_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/button_primary_background"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="체험단"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+            <!--  카테고리 뱃지  -->
+            <TextView
+                android:id="@+id/tv_campaign_category"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/category_button_background"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="한식"
+                android:textColor="@color/primary_100"
+                android:textSize="10sp" />
+            <!--  마감임박 뱃지 (조건부 표시)  -->
+            <TextView
+                android:id="@+id/tv_deadline_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/badge_deadline_background"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="곧 마감"
+                android:textColor="@color/error_red"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </LinearLayout>
+        <!--  가게 이름 (모임 제목)  -->
+        <TextView
+            android:id="@+id/tv_campaign_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="서울 강남 맛집 체험단 모집"
+            android:textColor="@color/text_100"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+        <!--  제공 내역 (핵심 정보)  -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="5dp"
+                android:src="@drawable/ic_food" />
+
+            <TextView
+                android:id="@+id/tv_campaign_provided"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="2인 세트 무료 제공"
+                android:textColor="@color/primary_100"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+        <!--  홍보 채널  -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="5dp"
+                android:src="@drawable/ic_campaign" />
+
+            <TextView
+                android:id="@+id/tv_campaign_channels"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="블로그 · 인스타그램"
+                android:textColor="@color/text_200"
+                android:textSize="12sp" />
+        </LinearLayout>
+        <!--  위치  -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="5dp"
+                android:src="@drawable/ic_location" />
+
+            <TextView
+                android:id="@+id/tv_campaign_location"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="서울 강남구 역삼동"
+                android:textColor="@color/text_200"
+                android:textSize="12sp" />
+        </LinearLayout>
+        <!--  구분선  -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/border_100" />
+        <!--  하단: 인원 / 날짜 / 모집마감  -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <!--  모집 인원  -->
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_person" />
+
+            <TextView
+                android:id="@+id/tv_campaign_participant_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:text="1/3명"
+                android:textColor="@color/text_200"
+                android:textSize="12sp" />
+            <!--  방문 날짜  -->
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_calendar" />
+
+            <TextView
+                android:id="@+id/tv_campaign_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="2025.08.15"
+                android:textColor="@color/text_200"
+                android:textSize="12sp" />
+            <!--  모집 마감일 (선택)  -->
+            <TextView
+                android:id="@+id/tv_campaign_deadline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="~07/31 마감"
+                android:textColor="@color/accent_100"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- 포크 -->
+    <path
+        android:fillColor="#222222"
+        android:pathData="
+            M5,2
+            C4.7,2 4.5,2.2 4.5,2.5
+            V7
+            C4.5,8.4 5.3,9.5 6.2,10
+            V22
+            C6.2,22.5 6.6,23 7.1,23
+            C7.6,23 8,22.5 8,22
+            V10
+            C8.9,9.5 9.7,8.4 9.7,7
+            V2.5
+            C9.7,2.2 9.5,2 9.2,2
+            C8.9,2 8.7,2.2 8.7,2.5
+            V6
+            H7.6
+            V2.5
+            C7.6,2.2 7.4,2 7.1,2
+            C6.8,2 6.6,2.2 6.6,2.5
+            V6
+            H5.5
+            V2.5
+            C5.5,2.2 5.3,2 5,2
+            Z" />
+
+    <!-- 수저 -->
+    <path
+        android:fillColor="#222222"
+        android:pathData="
+            M17.5,2
+            C15.6,2 14,3.8 14,6
+            C14,8.2 15.6,10 17.5,10
+            C19.4,10 21,8.2 21,6
+            C21,3.8 19.4,2 17.5,2
+            Z
+
+            M16.8,10
+            H18.2
+            V22
+            C18.2,22.6 17.9,23 17.5,23
+            C17.1,23 16.8,22.6 16.8,22
+            Z" />
+
+</vector>
