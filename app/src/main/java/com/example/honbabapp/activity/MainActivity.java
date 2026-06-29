@@ -21,6 +21,7 @@ import com.example.honbabapp.R;
 import com.example.honbabapp.databinding.ActivityMainBinding;
 import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.ui.adapter.MainFragmentAdapter;
+import com.example.honbabapp.ui.fragment.CampaignFragment;
 import com.example.honbabapp.ui.fragment.MapFragment;
 import com.google.android.material.navigation.NavigationBarView;
 
@@ -89,6 +90,16 @@ public class MainActivity extends AppCompatActivity {
             Fragment homeFragment = getSupportFragmentManager().findFragmentByTag("f0");
             if (homeFragment != null) {
                 Toast.makeText(this, "모임 목록이 갱신되었습니다.", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        // 체험단 탭으로 이동 + 목록 새로고침
+        if (intent.getBooleanExtra("refresh_campaign", false)) {
+            binding.viewPager.setCurrentItem(2, false); // CampaignFragment = index 2
+            CampaignFragment campaignFragment =
+                    (CampaignFragment) getSupportFragmentManager().findFragmentByTag("f2");
+            if (campaignFragment != null) {
+                campaignFragment.refreshCampaignList();
             }
         }
 

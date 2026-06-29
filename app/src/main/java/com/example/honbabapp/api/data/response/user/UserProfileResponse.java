@@ -1,6 +1,14 @@
 package com.example.honbabapp.api.data.response.user;
 
+/**
+ * 프로필 조회 응답 모델
+ *
+ * GET /api/user/profile.php
+ *
+ */
 public class UserProfileResponse {
+
+    // 기존 필드
     private int user_id;
     private String user_nickname;
     private String user_profile_image;
@@ -12,7 +20,12 @@ public class UserProfileResponse {
     private String user_gender;
     private int push_enabled;
 
-    // Getter들 - Activity에서 데이터 꺼낼 때 사용
+    // 체험단 전용 필드
+    private String user_instagram_id;
+    private String user_blog_id;
+
+    // ── 기존 Getter──────────────────────────────────────
+
     public int getUser_id() { return user_id; }
     public String getUser_nickname() { return user_nickname; }
     public String getUser_profile_image() { return user_profile_image; }
@@ -23,4 +36,26 @@ public class UserProfileResponse {
     public String getUser_birthday() { return user_birthday; }
     public String getUser_gender() { return user_gender; }
     public int getPush_enabled() { return push_enabled; }
+
+    // ── 체험단 전용 Getter ────────────────────────────────────────
+
+    public String getUser_instagram_id() { return user_instagram_id; }
+    public String getUser_blog_id() { return user_blog_id; }
+
+    // ── 편의 메서드 ───────────────────────────────────────────────
+
+    /** 인스타그램 ID 등록 여부 */
+    public boolean hasInstagramId() {
+        return user_instagram_id != null && !user_instagram_id.isEmpty();
+    }
+
+    /** 블로그 ID 등록 여부 */
+    public boolean hasBlogId() {
+        return user_blog_id != null && !user_blog_id.isEmpty();
+    }
+
+    /** SNS 계정 하나라도 등록 여부 — 체험단 신청 가능 조건 */
+    public boolean hasSnsId() {
+        return hasInstagramId() || hasBlogId();
+    }
 }

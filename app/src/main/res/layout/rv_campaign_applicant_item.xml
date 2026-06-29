@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/bg_100">
+
+    <!-- padding을 ConstraintLayout 전체가 아닌 각 요소별로 분리 적용 -->
+    <!-- 이유: 전체 padding 시 constraintTop_toTopOf="parent"인 btn_approve 상단 클리핑 발생 -->
+
+    <!-- ===== 프로필 아바타 ===== -->
+    <ImageView
+        android:id="@+id/iv_applicant_avatar"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_profile"
+        android:background="@android:color/transparent"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/layout_applicant_info" />
+
+    <!-- ===== 이름 / 매너 / 시간 ===== -->
+    <LinearLayout
+        android:id="@+id/layout_applicant_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="2dp"
+        app:layout_constraintTop_toTopOf="@id/iv_applicant_avatar"
+        app:layout_constraintBottom_toBottomOf="@id/iv_applicant_avatar"
+        app:layout_constraintStart_toEndOf="@id/iv_applicant_avatar"
+        app:layout_constraintEnd_toStartOf="@id/layout_action_buttons">
+
+        <TextView
+            android:id="@+id/tv_applicant_nickname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="닉네임"
+            android:textColor="@color/text_100"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_marginBottom="3dp" />
+
+        <TextView
+            android:id="@+id/tv_applicant_manner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="매너점수 36.5°C"
+            android:textColor="@color/text_200"
+            android:textSize="12sp"
+            android:layout_marginBottom="2dp" />
+
+        <TextView
+            android:id="@+id/tv_apply_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10분 전"
+            android:textColor="@color/text_200"
+            android:textSize="11sp" />
+
+    </LinearLayout>
+
+    <!-- ===== 승인 / 거절 버튼 (세로 배치 — 기존 rv_applicant_list 동일 구조) ===== -->
+    <LinearLayout
+        android:id="@+id/layout_action_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/iv_applicant_avatar">
+
+        <Button
+            android:id="@+id/btn_approve"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="승인"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_primary_background_green"
+            android:minWidth="0dp"
+            android:layout_marginBottom="5dp" />
+
+        <Button
+            android:id="@+id/btn_reject"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="거절"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_primary_background"
+            android:minWidth="0dp" />
+
+    </LinearLayout>
+
+    <!-- ===== SNS 뱃지 행 ===== -->
+    <LinearLayout
+        android:id="@+id/layout_sns_badges"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/iv_applicant_avatar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/layout_action_buttons">
+
+        <!-- 인스타그램 뱃지 -->
+        <LinearLayout
+            android:id="@+id/layout_instagram_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="24dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/chip_button_background"
+            android:paddingHorizontal="8dp"
+            android:layout_marginEnd="6dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📷 "
+                android:textSize="10sp" />
+
+            <TextView
+                android:id="@+id/tv_instagram_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_100"
+                android:textSize="11sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+        <!-- 블로그 뱃지 -->
+        <LinearLayout
+            android:id="@+id/layout_blog_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="24dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/chip_button_background"
+            android:paddingHorizontal="8dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📝 "
+                android:textSize="10sp" />
+
+            <TextView
+                android:id="@+id/tv_blog_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_100"
+                android:textSize="11sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+        <!-- SNS 미등록 안내 -->
+        <TextView
+            android:id="@+id/tv_no_sns"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SNS 미등록"
+            android:textColor="@color/text_200"
+            android:textSize="11sp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- ===== 채팅하기 + 상세보기 버튼 행 ===== -->
+    <LinearLayout
+        android:id="@+id/layout_bottom_buttons"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/layout_sns_badges"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- 채팅하기 -->
+        <Button
+            android:id="@+id/btn_chat"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="채팅하기"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:background="@drawable/button_primary_background"
+            android:layout_marginEnd="6dp"
+            app:backgroundTint="@null" />
+
+        <!-- 상세보기 -->
+        <Button
+            android:id="@+id/btn_view_detail"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="상세보기"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:background="@drawable/button_primary_background"
+            app:backgroundTint="@null" />
+
+    </LinearLayout>
+
+    <!-- ===== 하단 구분선 ===== -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/border_100"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintTop_toBottomOf="@id/layout_bottom_buttons"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

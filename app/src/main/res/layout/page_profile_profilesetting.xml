@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:background="@color/bg_200">
 
-<!--    상단 헤더-->
+    <!--    상단 헤더-->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -26,7 +26,7 @@
             android:background="@color/white"
             android:layout_marginEnd="12dp" />
 
-<!--        제목-->
+        <!--        제목-->
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -37,25 +37,24 @@
             android:textStyle="bold"
             android:gravity="center"
             android:letterSpacing="-0.05"
-            android:layout_marginEnd="56dp"/>
-
+            android:layout_marginEnd="56dp" />
 
     </LinearLayout>
-    
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:fillViewport="true"
         android:scrollbars="none">
-        
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="24dp">
 
-<!--            프로필 이미지 섹션-->
+            <!--            프로필 이미지 섹션-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -63,20 +62,19 @@
                 android:padding="24dp"
                 android:gravity="center">
 
-<!--                프로필 이미지-->
+                <!--                프로필 이미지-->
                 <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp">
-
 
                     <ImageView
                         android:id="@+id/iv_profile_avatar"
                         android:layout_width="90dp"
                         android:layout_height="90dp"
                         android:padding="3dp"
-                        android:background="@drawable/profile_avatar_background"
-                        />
+                        android:background="@drawable/profile_avatar_background" />
+
                     <!-- 카메라 아이콘 -->
                     <ImageButton
                         android:id="@+id/btn_change_avatar"
@@ -89,7 +87,7 @@
 
                 </FrameLayout>
 
-<!--                현재 닉네임-->
+                <!--                현재 닉네임-->
                 <TextView
                     android:id="@+id/tv_current_nickname"
                     android:layout_width="wrap_content"
@@ -99,11 +97,11 @@
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="4dp"
-                    android:letterSpacing="-0.02"/>
+                    android:letterSpacing="-0.02" />
 
             </LinearLayout>
 
-<!--            닉네임-->
+            <!--            닉네임-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -117,7 +115,7 @@
                     android:textColor="@color/text_200"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="8dp" />
 
                 <!-- EditText + 중복확인 버튼을 가로로 배치 -->
                 <LinearLayout
@@ -136,7 +134,7 @@
                         android:background="@drawable/edittext_background"
                         android:paddingHorizontal="16dp"
                         android:maxLength="10"
-                        android:inputType="text"/>
+                        android:inputType="text" />
 
                     <Button
                         android:id="@+id/btn_check_nickname"
@@ -148,7 +146,7 @@
                         android:background="@drawable/button_primary_background"
                         android:layout_marginStart="8dp"
                         android:paddingHorizontal="12dp"
-                        app:backgroundTint="@null"/>
+                        app:backgroundTint="@null" />
 
                 </LinearLayout>
 
@@ -159,7 +157,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="11sp"
                     android:layout_marginTop="4dp"
-                    android:visibility="gone"/>
+                    android:visibility="gone" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -171,12 +169,12 @@
 
             </LinearLayout>
 
-<!--            상태 메세지-->
+            <!--            상태 메세지-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginBottom="32dp">
+                android:layout_marginBottom="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -185,7 +183,7 @@
                     android:textColor="@color/text_200"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="8dp" />
 
                 <EditText
                     android:id="@+id/et_status_message"
@@ -198,7 +196,7 @@
                     android:paddingVertical="12dp"
                     android:gravity="top"
                     android:maxLength="50"
-                    android:inputType="textMultiLine"/>
+                    android:inputType="textMultiLine" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -209,6 +207,146 @@
                     android:layout_marginTop="4dp" />
 
             </LinearLayout>
+
+            <!-- ========== SNS 계정 섹션 (체험단 신청용) ========== -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_100"
+                android:layout_marginBottom="20dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="SNS 계정"
+                    android:textColor="@color/text_100"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="체험단 신청 시 사용"
+                    android:textColor="@color/primary_100"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="체험단 신청 시 호스트에게 공개됩니다. 입력하지 않으면 체험단 신청이 불가합니다."
+                android:textColor="@color/text_200"
+                android:textSize="12sp"
+                android:lineSpacingMultiplier="1.4"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 인스타그램 ID -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="인스타그램 ID"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/edittext_background"
+                    android:paddingHorizontal="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@"
+                        android:textColor="@color/text_200"
+                        android:textSize="15sp"
+                        android:layout_marginEnd="4dp" />
+
+                    <EditText
+                        android:id="@+id/et_instagram_id"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:hint="인스타그램 아이디"
+                        android:textColorHint="@color/text_200"
+                        android:textColor="@color/text_100"
+                        android:textSize="15sp"
+                        android:background="@null"
+                        android:maxLength="50"
+                        android:inputType="text"
+                        android:imeOptions="actionNext" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=" '@' 없이 아이디만 입력하세요"
+                    android:textColor="@color/text_200"
+                    android:textSize="11sp"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <!-- 블로그 ID -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="32dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="블로그 ID"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <EditText
+                    android:id="@+id/et_blog_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:hint="네이버 블로그 ID"
+                    android:textColorHint="@color/text_200"
+                    android:textColor="@color/text_100"
+                    android:textSize="15sp"
+                    android:background="@drawable/edittext_background"
+                    android:paddingHorizontal="16dp"
+                    android:maxLength="50"
+                    android:inputType="text"
+                    android:imeOptions="actionDone" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="네이버 블로그 URL에서 아이디 부분만 입력하세요"
+                    android:textColor="@color/text_200"
+                    android:textSize="11sp"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+            <!-- ========== SNS 계정 섹션 끝 ========== -->
 
         </LinearLayout>
 
@@ -231,36 +369,8 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:background="@drawable/button_primary_background"
-            android:elevation="2dp"
-            />
+            android:elevation="2dp" />
 
     </LinearLayout>
-    
-
 
 </LinearLayout>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -190,6 +190,7 @@ public interface ApiService {
      * @param limit 페이지당 개수 (기본값: 10)
      * @return ApiResponse<MeetingListData> - meetings 배열, total_count, page, total_pages
      */
+
     @GET("api/meeting/list.php")
     Call<ApiResponse<MeetingListResponse>> getMeetingList(
             @Query("sigungu") String sigungu,
@@ -214,7 +215,8 @@ public interface ApiService {
      * Retrofit에서 Double(박스타입) 파라미터가 null이면
      * 쿼리스트링에서 자동으로 생략됨 → 하위 호환 유지
      */
-    // MapFragment용 (신규)
+
+    // MapFragment용
     @GET("api/meeting/list.php")
     Call<ApiResponse<MeetingListResponse>> getMeetingList(
             @Query("sigungu") String sigungu,
@@ -226,7 +228,26 @@ public interface ApiService {
             @Query("lng") Double lng,
             @Query("radius") Double radius,
             @Query("order_by") String orderBy,
-             @Query("min_price") Integer minPrice,
+            @Query("min_price") Integer minPrice,
+            @Query("max_price") Integer maxPrice
+    );
+
+    // ── CampaignFragment용 ──────────────
+
+    /**
+     * 체험단 목록 조회 (CampaignFragment 전용)
+     * meeting_type="체험단" 고정
+     */
+    @GET("api/meeting/list.php")
+    Call<ApiResponse<MeetingListResponse>> getCampaignList(
+            @Query("meeting_type") String meetingType,
+            @Query("status") String status,
+            @Query("page") int page,
+            @Query("limit") int limit,
+            @Query("order_by") String orderBy,
+            @Query("channels") String channels,
+            @Query("categories") String categories,
+            @Query("min_price") Integer minPrice,
             @Query("max_price") Integer maxPrice
     );
 
