@@ -465,12 +465,12 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                 isHost = (meeting.getHost().getUser_id() == myUserId);
             }
             hoursUntil = calculateHoursUntilMeeting(meeting.getMeeting_date());
-            // 본인 제외한 다른 멤버 수
+            // 본인 제외한 다른 멤버
             otherMembers = meeting.getMeeting_current_participants() - 1;
             if (otherMembers < 0) otherMembers = 0;
         }
 
-        String message = buildLeaveDialogMessage(isHost, hoursUntil, otherMembers);
+        String message = buildLeaveDialogMessage(roomType, isHost, hoursUntil, otherMembers);
 
         new AlertDialog.Builder(this)
                 .setTitle("채팅방 나가기")
@@ -480,24 +480,23 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                 .show();
     }
 
-    /**
-     * 다이얼로그 문구 매트릭스 (정책 7종)
-     *
-     *   is_host=true  + D-3 이전 + 참여자≥1 : "방장이 위임됩니다. 정말 나가시겠어요?"
-     *   is_host=true  + D-3 이전 + 참여자 0 : "모임이 삭제됩니다. 그래도 괜찮나요?"
-     *   is_host=true  + D-2              : "방장이 위임되고 매너점수 -0.3이 차감됩니다."
-     *   is_host=true  + D-1 이내          : "방장이 위임되고 매너점수 -1.0이 차감됩니다."
-     *   is_host=false + D-3 이전          : "채팅방을 나가면 모임을 나가게 됩니다. ..."
-     *   is_host=false + D-2              : "매너점수 -0.3이 차감됩니다. ..."
-     *   is_host=false + D-1 이내          : "매너점수 -1.0이 차감됩니다. ..."
-     */
-    private String buildLeaveDialogMessage(boolean isHost, int hoursUntil, int otherMembers) {
+    private String buildLeaveDialogMessage(String roomType, boolean isHost,
+                                           int hoursUntil, int otherMembers) {
+        // direct 방 → 모임/패널티 무관, 메시지 삭제 안내만
+        if ("direct".equals(roomType)) {
+            return "채팅방을 나가면 메시지 내용이 삭제됩니다.";
+        }
+
+        // group 방 — 이미 종료된 모임 (hoursUntil < 0)
+        if (hoursUntil < 0) {
+            return "채팅방을 나가면 메시지 내용이 삭제됩니다.";
+        }
+
+        // group 방 — 진행 예정 모임
         if (isHost) {
-            // 호스트 혼자인 경우 → 모임 삭제, 매너점수 차감 없음 (날짜 무관)
             if (otherMembers == 0) {
                 return "채팅방 참여자가 혼자일때 나가면 모임이 삭제됩니다. 그래도 괜찮나요?";
             }
-            // ─── 아래는 "다른 멤버가 있는" 경우 ───
             if (hoursUntil >= 48) {
                 return "방장이 위임됩니다. 정말 나가시겠어요?";
             }

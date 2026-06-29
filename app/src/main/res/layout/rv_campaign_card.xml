@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -18,36 +19,14 @@
         android:orientation="vertical">
 
         <!-- ===== 상단 이미지 영역 ===== -->
-        <FrameLayout
+        <!-- tv_deadline_badge 제거 — Issue #3 -->
+        <ImageView
+            android:id="@+id/iv_campaign_image"
             android:layout_width="match_parent"
-            android:layout_height="120dp">
-
-            <!-- 모임 이미지 -->
-            <ImageView
-                android:id="@+id/iv_campaign_image"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/bg_300"
-                android:scaleType="centerCrop"
-                android:src="@drawable/placeholder_meeting_image" />
-
-            <!-- 마감임박 뱃지 (이미지 위 오른쪽 끝 — 조건부 표시) -->
-            <TextView
-                android:id="@+id/tv_deadline_badge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="8dp"
-                android:background="@drawable/badge_deadline_background"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="3dp"
-                android:text="곧 마감"
-                android:textColor="@color/error_red"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
-
-        </FrameLayout>
+            android:layout_height="120dp"
+            android:background="@color/bg_300"
+            android:scaleType="centerCrop"
+            android:src="@drawable/placeholder_meeting_image" />
 
         <!-- ===== 본문 영역 ===== -->
         <LinearLayout
@@ -119,7 +98,7 @@
 
             </LinearLayout>
 
-            <!-- 홍보 채널 -->
+            <!-- 홍보 플랫폼 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -146,7 +125,7 @@
 
             </LinearLayout>
 
-            <!-- 위치 + 방문 날짜 -->
+            <!-- 위치만 표시 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -168,21 +147,6 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:text="강남구 역삼동"
-                    android:textColor="@color/text_200"
-                    android:textSize="11sp" />
-
-                <ImageView
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="4dp"
-                    android:src="@drawable/ic_calendar" />
-
-                <TextView
-                    android:id="@+id/tv_campaign_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2025.08.15"
                     android:textColor="@color/text_200"
                     android:textSize="11sp" />
 
@@ -243,7 +207,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:text="+2명 더 필요"
+                    android:text="+2명 더 모집중"
                     android:textColor="@color/primary_200"
                     android:textSize="10sp"
                     android:textStyle="bold" />

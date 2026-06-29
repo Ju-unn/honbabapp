@@ -6,9 +6,6 @@
     android:layout_height="wrap_content"
     android:background="@color/bg_100">
 
-    <!-- padding을 ConstraintLayout 전체가 아닌 각 요소별로 분리 적용 -->
-    <!-- 이유: 전체 padding 시 constraintTop_toTopOf="parent"인 btn_approve 상단 클리핑 발생 -->
-
     <!-- ===== 프로필 아바타 ===== -->
     <ImageView
         android:id="@+id/iv_applicant_avatar"
@@ -68,7 +65,6 @@
 
     </LinearLayout>
 
-    <!-- ===== 승인 / 거절 버튼 (세로 배치 — 기존 rv_applicant_list 동일 구조) ===== -->
     <LinearLayout
         android:id="@+id/layout_action_buttons"
         android:layout_width="wrap_content"
@@ -105,7 +101,6 @@
 
     </LinearLayout>
 
-    <!-- ===== SNS 뱃지 행 ===== -->
     <LinearLayout
         android:id="@+id/layout_sns_badges"
         android:layout_width="0dp"
@@ -118,7 +113,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/layout_action_buttons">
 
-        <!-- 인스타그램 뱃지 -->
         <LinearLayout
             android:id="@+id/layout_instagram_badge"
             android:layout_width="wrap_content"
@@ -130,11 +124,6 @@
             android:layout_marginEnd="6dp"
             android:visibility="gone">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📷 "
-                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/tv_instagram_id"
@@ -158,11 +147,6 @@
             android:paddingHorizontal="8dp"
             android:visibility="gone">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📝 "
-                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/tv_blog_id"

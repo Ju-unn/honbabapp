@@ -36,6 +36,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * 프로필 설정 Activity
+ */
 public class ProfileProfileSettingActivity extends AppCompatActivity {
 
     private static final String TAG = "ProfileProfileSetting";
@@ -51,7 +54,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
     private static final String NICKNAME_PATTERN = "^[가-힣a-zA-Z0-9]+$";
 
     // ─────────────────────────────────────────────────────────────
-    // 갤러리 런처 (기존 그대로)
+    // 갤러리 런처
     // ─────────────────────────────────────────────────────────────
 
     private final ActivityResultLauncher<Intent> galleryLauncher =
@@ -119,7 +122,6 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
 
                             UserProfileResponse profile = response.body().getData();
 
-                            // ── 기존 필드 prefill──────────────
                             originalNickname = profile.getUser_nickname();
                             binding.etNickname.setText(profile.getUser_nickname());
                             binding.tvCurrentNickname.setText(profile.getUser_nickname());
@@ -136,16 +138,16 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                                     .placeholder(R.drawable.ic_user)
                                     .into(binding.ivProfileAvatar);
 
-                            // ── SNS ID prefill  ────────────────────
+                            // SNS ID prefill
                             String instagramId = profile.getUser_instagram_id();
-                            if (instagramId != null && !instagramId.isEmpty()) {
-                                binding.etInstagramId.setText(instagramId);
-                            }
+                            binding.etInstagramId.setText(
+                                    instagramId != null ? instagramId : ""
+                            );
 
                             String blogId = profile.getUser_blog_id();
-                            if (blogId != null && !blogId.isEmpty()) {
-                                binding.etBlogId.setText(blogId);
-                            }
+                            binding.etBlogId.setText(
+                                    blogId != null ? blogId : ""
+                            );
                         }
                     }
 
@@ -175,7 +177,6 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
             return;
         }
 
-        // SNS ID 길이 검증
         if (instagramId.length() > 50) {
             Toast.makeText(this, "인스타그램 ID는 50자 이하로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
@@ -193,9 +194,8 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
             request.setUser_profile_image(selectedImageUrl);
         }
 
-        // SNS ID — 빈 문자열도 전송
-        request.setUser_instagram_id(instagramId.isEmpty() ? null : instagramId);
-        request.setUser_blog_id(blogId.isEmpty() ? null : blogId);
+        request.setUser_instagram_id(instagramId);
+        request.setUser_blog_id(blogId);
 
         binding.btnEditProfile.setEnabled(false);
 

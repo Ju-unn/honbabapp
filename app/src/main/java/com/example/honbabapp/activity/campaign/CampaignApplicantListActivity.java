@@ -23,7 +23,6 @@ import com.example.honbabapp.databinding.PageCampaignApplicantListBinding;
 import com.example.honbabapp.ui.adapter.CampaignApplicantAdapter;
 import com.example.honbabapp.ui.dialog.CampaignApplicantDetailBottomSheet;
 
-
 import java.util.List;
 
 import retrofit2.Call;
@@ -33,11 +32,10 @@ import retrofit2.Response;
 /**
  * 체험단 신청자 목록 Activity (호스트 전용)
  *
- * MeetingApplicantListActivity 패턴 기반 + 체험단 전용 확장:
- * - 필터 탭: 대기 / 승인
- * - 신청자 카드에 SNS 뱃지 표시 (CampaignApplicantAdapter)
- * - 채팅하기: 1:1 채팅방 생성 후 이동 (그룹채팅 생성 안 함 — approve.php 스킵)
- * - 상세보기: CampaignApplicantDetailBottomSheet
+ * Issue #6A 수정:
+ * - page_campaign_applicant_list.xml 버튼에 android:textColor="@color/tab_text_color_selector" 적용
+ * - updateTabStyle() 에서 setTextColor() 호출 완전 제거
+ * - setSelected(true/false) 만 호출 → XML selector 가 자동으로 색상 처리
  */
 public class CampaignApplicantListActivity extends AppCompatActivity {
 
@@ -53,7 +51,6 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     private int campaignId;
     private int hostId;
 
-    // 현재 선택된 탭 — "대기" | "승인"
     private String currentStatusFilter = "대기";
 
     // ─────────────────────────────────────────────────────────────
@@ -96,7 +93,6 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     // ─────────────────────────────────────────────────────────────
 
     private void setupFilterTabs() {
-        // 초기 상태: 대기 탭 활성
         updateTabStyle("대기");
 
         binding.btnFilterWaiting.setOnClickListener(v -> {
@@ -117,24 +113,17 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     }
 
     /**
-     * 필터 버튼 활성/비활성 스타일
-     * XML에 인디케이터 뷰가 없으므로 텍스트 색상으로만 구분
+     * Issue #6A: setSelected() 만 호출 — 텍스트 색상은 XML selector 가 자동 처리
+     * page_campaign_applicant_list.xml 의 btn_filter_waiting / btn_filter_approved 에
+     * android:textColor="@color/tab_text_color_selector" 적용 필요
      */
     private void updateTabStyle(String activeStatus) {
-        boolean isWaiting = "대기".equals(activeStatus);
-
-        binding.btnFilterWaiting.setTextColor(getColor(
-                isWaiting ? com.example.honbabapp.R.color.primary_100
-                        : com.example.honbabapp.R.color.text_200
-        ));
-        binding.btnFilterApproved.setTextColor(getColor(
-                isWaiting ? com.example.honbabapp.R.color.text_200
-                        : com.example.honbabapp.R.color.primary_100
-        ));
+        binding.btnFilterWaiting.setSelected("대기".equals(activeStatus));
+        binding.btnFilterApproved.setSelected("승인".equals(activeStatus));
     }
 
     // ─────────────────────────────────────────────────────────────
-    // RecyclerView — CampaignApplicantAdapter (4개 콜백)
+    // RecyclerView
     // ─────────────────────────────────────────────────────────────
 
     private void setupRecyclerView() {
@@ -148,7 +137,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 신청자 목록 API 호출 — MeetingApplicantListActivity 동일 패턴
+    // 신청자 목록 API 호출
     // ─────────────────────────────────────────────────────────────
 
     private void loadApplicants(String status) {
@@ -165,7 +154,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                                     response.body().getData().getApplicants();
 
                             Log.i(TAG, status + " 신청자 로드: " + applicants.size() + "명");
-                            updateUI(applicants);
+                            updateApplicantList(applicants);
 
                         } else {
                             Log.e(TAG, "API 실패: " + response.code());
@@ -184,8 +173,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                 });
     }
 
-    private void updateUI(
-            List<ApplicantsResponse.Applicant> applicants) {
+    private void updateApplicantList(List<ApplicantsResponse.Applicant> applicants) {
         if (applicants.isEmpty()) {
             binding.rvCampaignApplicants.setVisibility(View.GONE);
             binding.layoutEmptyState.setVisibility(View.VISIBLE);
@@ -199,7 +187,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 승인 버튼 클릭 — approveMeeting("approve")
+    // 승인 / 거절
     // ─────────────────────────────────────────────────────────────
 
     private void onApproveClick(ApplicantsResponse.Applicant applicant) {
@@ -210,10 +198,6 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                 .setNegativeButton("취소", null)
                 .show();
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // 거절 버튼 클릭 — approveMeeting("reject")
-    // ─────────────────────────────────────────────────────────────
 
     private void onRejectClick(ApplicantsResponse.Applicant applicant) {
         new AlertDialog.Builder(this)
@@ -234,21 +218,12 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<ApiResponse<ApproveResponse>> call,
                                            Response<ApiResponse<ApproveResponse>> response) {
-                        if (response.isSuccessful()
-                                && response.body() != null
+                        if (response.isSuccessful() && response.body() != null
                                 && response.body().isSuccess()) {
-
-                            String resultMessage = "approve".equals(action)
-                                    ? applicant.getUser_nickname() + "님을 승인했습니다."
-                                    : applicant.getUser_nickname() + "님을 거절했습니다.";
-
+                            String message = "approve".equals(action) ? "승인되었습니다." : "거절되었습니다.";
                             Toast.makeText(CampaignApplicantListActivity.this,
-                                    resultMessage, Toast.LENGTH_SHORT).show();
-
-                            // 목록 새로고침
+                                    message, Toast.LENGTH_SHORT).show();
                             loadApplicants(currentStatusFilter);
-                            setResult(RESULT_OK);
-
                         } else {
                             String message = response.body() != null
                                     ? response.body().getMessage() : "처리에 실패했습니다.";
@@ -268,16 +243,12 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 채팅하기 — 1:1 채팅방 생성 후 ChatRoomActivity 이동
-    // 체험단은 그룹채팅 없이 1:1만 (approve.php 자동생성 스킵)
+    // 채팅하기
     // ─────────────────────────────────────────────────────────────
 
     private void onChatClick(ApplicantsResponse.Applicant applicant) {
-        // 1:1 생성자: (owner_id, targetUserId, room_name)
         CreateRoomRequest request = new CreateRoomRequest(
-                hostId,
-                applicant.getUser_id(),
-                applicant.getUser_nickname()
+                hostId, applicant.getUser_id(), applicant.getUser_nickname()
         );
 
         apiService.createRoom(request)
@@ -285,13 +256,10 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<ApiResponse<CreateRoomResponse>> call,
                                            Response<ApiResponse<CreateRoomResponse>> response) {
-                        if (response.isSuccessful()
-                                && response.body() != null
+                        if (response.isSuccessful() && response.body() != null
                                 && response.body().isSuccess()) {
 
                             CreateRoomResponse data = response.body().getData();
-                            Log.i(TAG, "채팅방 생성/조회 완료: room_id=" + data.getRoom_id());
-
                             Intent intent = new Intent(
                                     CampaignApplicantListActivity.this, ChatRoomActivity.class
                             );
@@ -320,22 +288,11 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 상세보기 — CampaignApplicantDetailBottomSheet (조회 전용)
+    // 상세보기
     // ─────────────────────────────────────────────────────────────
 
     private void onDetailClick(ApplicantsResponse.Applicant applicant) {
-        CampaignApplicantDetailBottomSheet bottomSheet =
-                new CampaignApplicantDetailBottomSheet(applicant);
-        bottomSheet.show(getSupportFragmentManager(), "campaignApplicantDetail");
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // 생명주기
-    // ─────────────────────────────────────────────────────────────
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        binding = null;
+        new CampaignApplicantDetailBottomSheet(applicant)
+                .show(getSupportFragmentManager(), "applicant_detail");
     }
 }

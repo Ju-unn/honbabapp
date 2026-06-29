@@ -7,6 +7,7 @@ import com.example.honbabapp.api.data.meeting.QrScanResultData;
 import com.example.honbabapp.api.data.meeting.QrStatusData;
 import com.example.honbabapp.api.data.request.LogoutRequest;
 import com.example.honbabapp.api.data.request.SocialLoginRequest;
+import com.example.honbabapp.api.data.request.campaign.CampaignUpdateRequest;
 import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
 import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
 import com.example.honbabapp.api.data.request.chat.KickMemberRequest;
@@ -308,6 +309,13 @@ public interface ApiService {
 
     @POST("api/meeting/update.php")
     Call<ApiResponse<Void>> updateMeeting(@Body UpdateMeetingRequest request);
+
+    /**
+     * 체험단 수정
+     * POST /api/campaign/update.php
+     */
+    @POST("api/campaign/campaign_update.php")
+    Call<ApiResponse<Void>> updateCampaign(@Body CampaignUpdateRequest request);
 
     // ==================== User API (Profile)====================
 

@@ -18,20 +18,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * 체험단 신청자 목록 어댑터
- *
- * 기존 ApplicantListAdapter와 분리 이유:
- * - SNS ID 뱃지 (인스타/블로그) 노출
- * - 1:1 채팅하기 버튼
- * - 상세보기 버튼 → CampaignApplicantDetailBottomSheet 연결
- *
- * 콜백 인터페이스 (Activity에서 주입):
- * - OnApproveClickListener  : 승인 버튼
- * - OnRejectClickListener   : 거절 버튼
- * - OnChatClickListener     : 1:1 채팅 버튼
- * - OnDetailClickListener   : 상세보기 버튼
- */
 public class CampaignApplicantAdapter
         extends RecyclerView.Adapter<CampaignApplicantAdapter.ViewHolder> {
 
@@ -73,9 +59,9 @@ public class CampaignApplicantAdapter
             OnDetailClickListener detailClickListener
     ) {
         this.approveClickListener = approveClickListener;
-        this.rejectClickListener = rejectClickListener;
-        this.chatClickListener = chatClickListener;
-        this.detailClickListener = detailClickListener;
+        this.rejectClickListener  = rejectClickListener;
+        this.chatClickListener    = chatClickListener;
+        this.detailClickListener  = detailClickListener;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -101,7 +87,6 @@ public class CampaignApplicantAdapter
         return applicantList.size();
     }
 
-    /** 외부에서 데이터 갱신 */
     public void updateApplicants(List<ApplicantsResponse.Applicant> newApplicants) {
         if (newApplicants == null) return;
         applicantList.clear();
@@ -131,13 +116,10 @@ public class CampaignApplicantAdapter
         // ── 기본 정보 ──────────────────────────────────────────
         private void bindBasicInfo(ApplicantsResponse.Applicant applicant) {
             binding.tvApplicantNickname.setText(applicant.getUser_nickname());
-
             binding.tvApplicantManner.setText(
                     "매너점수 " + String.format("%.1f°C", applicant.getUser_manner_score())
             );
-
             binding.tvApplyTime.setText(formatApplyTime(applicant.getApplied_at()));
-
             Glide.with(binding.getRoot().getContext())
                     .load(applicant.getUser_profile_image())
                     .placeholder(R.drawable.ic_profile)
@@ -145,10 +127,10 @@ public class CampaignApplicantAdapter
                     .into(binding.ivApplicantAvatar);
         }
 
-        // ── SNS ID 뱃지 — 1단계 ApplicantsResponse.Applicant 필드 연동 ──
+        // ── SNS ID 뱃지 ────────────────────────────────────────
         private void bindSnsIdBadges(ApplicantsResponse.Applicant applicant) {
-            String instagramId  = applicant.getUser_instagram_id();
-            String blogId       = applicant.getUser_blog_id();
+            String instagramId   = applicant.getUser_instagram_id();
+            String blogId        = applicant.getUser_blog_id();
             boolean hasInstagram = instagramId != null && !instagramId.isEmpty();
             boolean hasBlog      = blogId != null && !blogId.isEmpty();
 
@@ -163,21 +145,41 @@ public class CampaignApplicantAdapter
             );
         }
 
-        // ── 버튼 (승인 / 거절 / 채팅 / 상세보기) ───────────────
+        /**
+         * 수정: participation_status 분기
+         *
+         * "승인" 상태 (승인 탭):
+         *   - layout_action_buttons (승인/거절 버튼) → GONE
+         *   - layout_bottom_buttons (채팅/상세보기)  → VISIBLE
+         *
+         * "대기" 상태 (대기 탭):
+         *   - layout_action_buttons (승인/거절 버튼) → VISIBLE
+         *   - layout_bottom_buttons (채팅/상세보기)  → VISIBLE
+         */
         private void bindButtons(ApplicantsResponse.Applicant applicant) {
-            binding.btnApprove.setOnClickListener(view -> {
-                if (approveClickListener != null) approveClickListener.onApproveClick(applicant);
-            });
+            String status = applicant.getParticipation_status();
+            boolean isApproved = "승인".equals(status);
 
-            binding.btnReject.setOnClickListener(view -> {
-                if (rejectClickListener != null) rejectClickListener.onRejectClick(applicant);
-            });
+            // 승인/거절 버튼 — 승인된 신청자에게는 표시하지 않음
+            binding.layoutActionButtons.setVisibility(isApproved ? View.GONE : View.VISIBLE);
 
+            if (!isApproved) {
+                binding.btnApprove.setOnClickListener(view -> {
+                    if (approveClickListener != null) {
+                        approveClickListener.onApproveClick(applicant);
+                    }
+                });
+                binding.btnReject.setOnClickListener(view -> {
+                    if (rejectClickListener != null) {
+                        rejectClickListener.onRejectClick(applicant);
+                    }
+                });
+            }
+
+            // 채팅/상세보기는 상태 무관 항상 표시
             binding.btnChat.setOnClickListener(view -> {
                 if (chatClickListener != null) chatClickListener.onChatClick(applicant);
             });
-
-            // 상세보기 → Activity에서 BottomSheet 표시
             binding.btnViewDetail.setOnClickListener(view -> {
                 if (detailClickListener != null) detailClickListener.onDetailClick(applicant);
             });
@@ -188,11 +190,6 @@ public class CampaignApplicantAdapter
     // 유틸
     // ─────────────────────────────────────────────────────────────
 
-    /**
-     * 신청 시간 포맷
-     * "2025-12-28 10:30:00" → "10분 전"
-     * ApplicantListAdapter.formatApplyTime() 동일 패턴
-     */
     private String formatApplyTime(String appliedAt) {
         if (appliedAt == null || appliedAt.isEmpty()) return "";
         try {
@@ -201,7 +198,7 @@ public class CampaignApplicantAdapter
             Date applyDate = dateFormat.parse(appliedAt);
             if (applyDate == null) return appliedAt;
             long diffMilliseconds = System.currentTimeMillis() - applyDate.getTime();
-            long diffMinutes = diffMilliseconds / 60000;
+            long diffMinutes      = diffMilliseconds / 60000;
             if (diffMinutes < 60) return diffMinutes + "분 전";
             long diffHours = diffMinutes / 60;
             if (diffHours < 24) return diffHours + "시간 전";

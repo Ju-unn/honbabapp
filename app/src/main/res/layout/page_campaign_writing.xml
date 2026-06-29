@@ -384,68 +384,8 @@
                     android:textColorHint="@color/text_200"
                     android:textSize="15sp" />
             </LinearLayout>
-            <!--  ========== 7. 방문 날짜 ==========  -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="방문 날짜"
-                    android:textColor="@color/text_200"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/et_campaign_visit_date"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:background="@drawable/edittext_background"
-                    android:clickable="true"
-                    android:drawableEnd="@drawable/ic_calendar"
-                    android:drawablePadding="12dp"
-                    android:focusable="false"
-                    android:hint="방문 날짜를 선택해주세요"
-                    android:paddingHorizontal="16dp"
-                    android:textColor="@color/text_100"
-                    android:textColorHint="@color/text_200"
-                    android:textSize="15sp" />
-            </LinearLayout>
-            <!--  ========== 8. 방문 시간 ==========  -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="방문 희망 시간"
-                    android:textColor="@color/text_200"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/et_campaign_visit_time"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:background="@drawable/edittext_background"
-                    android:clickable="true"
-                    android:drawableEnd="@drawable/ic_clock"
-                    android:drawablePadding="12dp"
-                    android:focusable="false"
-                    android:hint="방문 시간을 선택해주세요 (예: 19:00)"
-                    android:paddingHorizontal="16dp"
-                    android:textColor="@color/text_100"
-                    android:textColorHint="@color/text_200"
-                    android:textSize="15sp" />
-            </LinearLayout>
+            <!-- 7. 방문 날짜 — 삭제 (채팅으로 조율) -->
+            <!-- 8. 방문 희망 시간 — 삭제 (채팅으로 조율) -->
             <!--  ========== 9. 모집 인원 ==========  -->
             <LinearLayout
                 android:layout_width="match_parent"

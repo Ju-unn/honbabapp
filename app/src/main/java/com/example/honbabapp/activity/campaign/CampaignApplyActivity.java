@@ -17,6 +17,7 @@ import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.request.meeting.JoinMeetingRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
+import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageCampaignApplyBinding;
 
 import retrofit2.Call;
@@ -26,14 +27,9 @@ import retrofit2.Response;
 /**
  * 체험단 신청 폼 Activity
  *
- * CampaignDetailActivity → (SNS 체크 통과) → 이 화면
- *
- * 흐름:
- * 1. Intent에서 campaignId, instagramId, blogId 수신
- * 2. tv_instagram_id / tv_blog_id prefill (읽기 전용 표시)
- * 3. tv_instagram_edit_hint / tv_blog_edit_hint 클릭 → ProfileProfileSettingActivity(focus_sns)
- * 4. et_applicant_intro 입력 → tv_intro_char_count 카운터
- * 5. btn_submit_apply → joinMeeting(applicant_intro) → RESULT_OK → 상세 새로고침
+ * 수정 내역:
+ * - Issue #5: onResume() 추가 — ProfileProfileSettingActivity 복귀 시 SNS ID 최신화
+ *   startActivity()만 호출하고 결과를 받지 않아 돌아와도 갱신이 안 되던 문제 해결
  */
 public class CampaignApplyActivity extends AppCompatActivity {
 
@@ -80,6 +76,16 @@ public class CampaignApplyActivity extends AppCompatActivity {
         setupUI(instagramId, blogId);
     }
 
+    /**
+     * Issue #5: ProfileProfileSettingActivity 에서 돌아올 때 최신 SNS ID 반영
+     * startActivity()만 호출하고 결과를 받지 않으므로 onResume에서 직접 재조회
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshSnsIds();
+    }
+
     // ─────────────────────────────────────────────────────────────
     // UI 초기화
     // ─────────────────────────────────────────────────────────────
@@ -102,19 +108,55 @@ public class CampaignApplyActivity extends AppCompatActivity {
     }
 
     // ─────────────────────────────────────────────────────────────
+    // Issue #5: 프로필 재조회 → SNS ID 갱신
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * API로 최신 프로필 조회 후 SNS ID 업데이트
+     * onResume 마다 호출되므로 실패해도 앱이 멈추지 않도록 조용히 처리
+     */
+    private void refreshSnsIds() {
+        if (currentUserId == -1) return;
+
+        apiService.getUserProfile(currentUserId).enqueue(new Callback<ApiResponse<UserProfileResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<UserProfileResponse>> call,
+                                   Response<ApiResponse<UserProfileResponse>> response) {
+                if (response.isSuccessful()
+                        && response.body() != null
+                        && response.body().isSuccess()
+                        && response.body().getData() != null) {
+
+                    UserProfileResponse profile = response.body().getData();
+                    bindSnsIdDisplay(profile.getUser_instagram_id(), profile.getUser_blog_id());
+                    Log.i(TAG, "SNS ID 갱신 완료");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<UserProfileResponse>> call, Throwable throwable) {
+                // 재조회 실패는 조용히 무시 — 기존 표시값 유지
+                Log.w(TAG, "SNS ID 재조회 실패 (무시): " + throwable.getMessage());
+            }
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // SNS ID prefill — tv_instagram_id / tv_blog_id
     // ─────────────────────────────────────────────────────────────
 
     private void bindSnsIdDisplay(String instagramId, String blogId) {
         if (instagramId != null && !instagramId.isEmpty()) {
             binding.tvInstagramId.setText("@" + instagramId);
+        } else {
+            binding.tvInstagramId.setText("");
         }
-        // 없으면 XML 기본 힌트 텍스트 ("인스타그램 ID를 등록해주세요") 유지
 
         if (blogId != null && !blogId.isEmpty()) {
             binding.tvBlogId.setText(blogId);
+        } else {
+            binding.tvBlogId.setText("");
         }
-        // 없으면 XML 기본 힌트 텍스트 ("블로그 ID를 등록해주세요") 유지
     }
 
     private void navigateToSnsProfileSetting() {
@@ -128,82 +170,64 @@ public class CampaignApplyActivity extends AppCompatActivity {
     // ─────────────────────────────────────────────────────────────
 
     private void setupIntroCharCounter() {
-        // XML 기본값 "0 / 500" 유지, 입력 시 업데이트
         binding.etApplicantIntro.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void afterTextChanged(Editable s) {}
+            @Override public void beforeTextChanged(CharSequence sequence, int start, int count, int after) {}
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-                binding.tvIntroCharCount.setText(charSequence.length() + " / " + MAX_INTRO_LENGTH);
+            public void onTextChanged(CharSequence sequence, int start, int before, int count) {
+                int currentLength = sequence.length();
+                binding.tvIntroCharCount.setText(currentLength + " / " + MAX_INTRO_LENGTH);
             }
+
+            @Override public void afterTextChanged(Editable editable) {}
         });
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 신청 API 호출 — btn_submit_apply
-    // JoinMeetingRequest(campaignId, userId, applicantIntro) 사용
+    // 신청하기
     // ─────────────────────────────────────────────────────────────
 
     private void submitApply() {
-        String applicantIntro = binding.etApplicantIntro.getText().toString().trim();
-
-        if (applicantIntro.isEmpty()) {
+        String intro = binding.etApplicantIntro.getText().toString().trim();
+        if (intro.isEmpty()) {
             Toast.makeText(this, "자기소개를 입력해주세요", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (applicantIntro.length() < 10) {
-            Toast.makeText(this, "자기소개를 10자 이상 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         binding.btnSubmitApply.setEnabled(false);
         binding.btnSubmitApply.setText("신청 중...");
 
-        JoinMeetingRequest request = new JoinMeetingRequest(campaignId, currentUserId, applicantIntro);
+        JoinMeetingRequest request = new JoinMeetingRequest(campaignId, currentUserId, intro);
 
-        apiService.joinMeeting(request)
-                .enqueue(new Callback<ApiResponse<ParticipantResponse>>() {
-                    @Override
-                    public void onResponse(Call<ApiResponse<ParticipantResponse>> call,
-                                           Response<ApiResponse<ParticipantResponse>> response) {
-                        if (response.isSuccessful()
-                                && response.body() != null
-                                && response.body().isSuccess()) {
+        apiService.joinMeeting(request).enqueue(new Callback<ApiResponse<ParticipantResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<ParticipantResponse>> call,
+                                   Response<ApiResponse<ParticipantResponse>> response) {
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().isSuccess()) {
+                    Toast.makeText(CampaignApplyActivity.this,
+                            "체험단 신청이 완료되었습니다!", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
+                    finish();
+                } else {
+                    String message = response.body() != null
+                            ? response.body().getMessage() : "신청에 실패했습니다.";
+                    Toast.makeText(CampaignApplyActivity.this,
+                            message, Toast.LENGTH_SHORT).show();
+                    binding.btnSubmitApply.setEnabled(true);
+                    binding.btnSubmitApply.setText("신청하기");
+                }
+            }
 
-                            Log.i(TAG, "체험단 신청 성공: campaignId=" + campaignId);
-                            Toast.makeText(CampaignApplyActivity.this,
-                                    "체험단 신청이 완료되었습니다!\n호스트의 승인을 기다려주세요.",
-                                    Toast.LENGTH_LONG).show();
-
-                            // CampaignDetailActivity.applyLauncher → RESULT_OK → 상세 새로고침
-                            setResult(RESULT_OK);
-                            finish();
-
-                        } else {
-                            String message = response.body() != null
-                                    ? response.body().getMessage() : "신청에 실패했습니다.";
-                            Log.e(TAG, "신청 실패: " + message);
-                            Toast.makeText(CampaignApplyActivity.this,
-                                    message, Toast.LENGTH_SHORT).show();
-                            resetSubmitButton();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ApiResponse<ParticipantResponse>> call,
-                                          Throwable throwable) {
-                        Log.e(TAG, "네트워크 오류: " + throwable.getMessage());
-                        Toast.makeText(CampaignApplyActivity.this,
-                                "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
-                        resetSubmitButton();
-                    }
-                });
-    }
-
-    private void resetSubmitButton() {
-        binding.btnSubmitApply.setEnabled(true);
-        binding.btnSubmitApply.setText("신청하기");
+            @Override
+            public void onFailure(Call<ApiResponse<ParticipantResponse>> call, Throwable throwable) {
+                Log.e(TAG, "신청 네트워크 오류: " + throwable.getMessage());
+                Toast.makeText(CampaignApplyActivity.this,
+                        "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                binding.btnSubmitApply.setEnabled(true);
+                binding.btnSubmitApply.setText("신청하기");
+            }
+        });
     }
 
     @Override

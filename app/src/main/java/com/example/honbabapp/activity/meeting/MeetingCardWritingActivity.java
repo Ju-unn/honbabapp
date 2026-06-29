@@ -5,6 +5,8 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.RadioButton;
@@ -47,6 +49,11 @@ import retrofit2.Response;
 
 /**
  * 일반 모임 생성 Activity
+ *
+ * 수정 내역:
+ * - Issue #2: TimePicker 오늘 선택 시 현재 시각 이후만 허용
+ * - Issue #4: uploadImageThenCreate() — S3 업로드 로직 실제 구현 (기존 stub 교체)
+ * - Issue #8: isTitleAutoFilled 플래그로 가게 변경 시 제목 자동 업데이트
  */
 public class MeetingCardWritingActivity extends AppCompatActivity {
 
@@ -79,6 +86,13 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
     private String pendingImageValue = null;  // naver URL or content:// Uri 문자열
     private String pendingImageSource = null; // "naver" | "gallery"
 
+    // Issue #8: 제목 자동 입력 플래그
+    // true = 자동 입력된 상태 → 가게 변경 시 덮어쓰기 허용
+    // false = 사용자가 직접 수정한 상태 → 가게 변경 시 유지
+    private boolean isTitleAutoFilled = false;
+    // 자동 입력 중 TextWatcher 트리거 방지 플래그
+    private boolean isAutoFillingTitle = false;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,7 +118,29 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
         setupParticipantCounter();
         setupPriceRangeSlider();
         setupPlaceSelection();
+        setupTitleAutoFillWatcher(); // Issue #8
         binding.btnCreateMeeting.setOnClickListener(v -> validateAndCreateMeeting());
+    }
+
+    /**
+     * Issue #8: 사용자가 제목을 직접 수정하면 자동 입력 플래그 해제
+     * isAutoFillingTitle 가드로 프로그래밍 방식 setText() 는 무시
+     */
+    private void setupTitleAutoFillWatcher() {
+        binding.etMeetingTitle.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence sequence, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence sequence, int start, int before, int count) {
+                if (!isAutoFillingTitle) {
+                    isTitleAutoFilled = false;
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
     }
 
     /**
@@ -125,10 +161,10 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
                         selectedDong          = data.getStringExtra("dong") != null           ? data.getStringExtra("dong") : "";
                         selectedMapX          = data.getStringExtra("map_x") != null          ? data.getStringExtra("map_x") : "";
                         selectedMapY          = data.getStringExtra("map_y") != null          ? data.getStringExtra("map_y") : "";
-                        selectedPlaceCategory = data.getStringExtra("place_category") != null ? data.getStringExtra("place_category") : "";
+                        selectedPlaceCategory = data.getStringExtra("category") != null ? data.getStringExtra("category") : "";
                         selectedPhone         = data.getStringExtra("phone") != null          ? data.getStringExtra("phone") : "";
 
-                        String imageValue  = data.getStringExtra("image_value");
+                        String imageValue  = data.getStringExtra("selected_image_url");
                         String imageSource = data.getStringExtra("image_source");
 
                         if (imageValue != null && imageSource != null) {
@@ -143,8 +179,13 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
                                 selectedRoadAddress.isEmpty() ? selectedAddress : selectedRoadAddress
                         );
 
-                        if (binding.etMeetingTitle.getText().toString().trim().isEmpty()) {
+                        // Issue #8: 자동 입력 조건 — 비어있거나 이전에 자동 입력된 상태
+                        String currentTitle = binding.etMeetingTitle.getText().toString().trim();
+                        if (currentTitle.isEmpty() || isTitleAutoFilled) {
+                            isAutoFillingTitle = true;
                             binding.etMeetingTitle.setText(selectedPlaceName + "에서 같이 먹어요!!");
+                            isAutoFillingTitle = false;
+                            isTitleAutoFilled = true;
                         }
 
                         autoSelectCategory(selectedPlaceCategory);
@@ -187,12 +228,8 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
         selectedCategory = "한식";
     }
 
-    /**
-     * 가게 카테고리 문자열로 RadioButton 자동 선택
-     */
     private void autoSelectCategory(String placeCategory) {
         if (placeCategory == null || placeCategory.isEmpty()) return;
-
         String lower = placeCategory.toLowerCase();
         if (lower.contains("한식"))      binding.radioCategoryKorean.performClick();
         else if (lower.contains("중식")) binding.radioCategoryChinese.performClick();
@@ -203,16 +240,19 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
     }
 
     /**
-     * 날짜 선택 DatePicker
+     * 날짜 선택 DatePicker — minDate 는 MeetingCardWritingActivity 기존 코드에 이미 있음
      */
     private void setupDatePicker() {
         binding.etMeetingDate.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             DatePickerDialog dialog = new DatePickerDialog(this,
                     (view, year, month, day) -> {
-                        selectedDate = String.format("%04d-%02d-%02d", year, month + 1, day);
-                        String displayDate = String.format("%d월 %d일", month + 1, day);
+                        selectedDate = String.format(Locale.KOREA, "%04d-%02d-%02d", year, month + 1, day);
+                        String displayDate = String.format(Locale.KOREA, "%d월 %d일", month + 1, day);
                         binding.etMeetingDate.setText(displayDate);
+                        // 날짜 변경 시 시간 초기화 — 잘못된 과거 시간 방지
+                        selectedTime = "";
+                        binding.etMeetingTime.setText("");
                         Log.i(TAG, "선택된 날짜: " + selectedDate);
                     },
                     calendar.get(Calendar.YEAR),
@@ -224,77 +264,88 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
     }
 
     /**
-     * 시간 선택 TimePicker
+     * Issue #2: TimePicker — 오늘 선택 시 현재 시각 이후만 허용
+     * 과거 시간 선택 시 Toast 후 selectedTime 을 설정하지 않음
      */
     private void setupTimePicker() {
         binding.etMeetingTime.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
+            Calendar now = Calendar.getInstance();
             new TimePickerDialog(this,
                     (view, hour, minute) -> {
-                        selectedTime = String.format("%02d:%02d:00", hour, minute);
+                        // 오늘을 선택한 경우에만 시간 유효성 검증
+                        String todayString = String.format(Locale.KOREA,
+                                "%04d-%02d-%02d",
+                                now.get(Calendar.YEAR),
+                                now.get(Calendar.MONTH) + 1,
+                                now.get(Calendar.DAY_OF_MONTH));
+
+                        if (selectedDate.equals(todayString)) {
+                            int currentHour   = now.get(Calendar.HOUR_OF_DAY);
+                            int currentMinute = now.get(Calendar.MINUTE);
+                            boolean isPastTime = hour < currentHour
+                                    || (hour == currentHour && minute <= currentMinute);
+
+                            if (isPastTime) {
+                                Toast.makeText(this,
+                                        "현재 시간 이후를 선택해주세요",
+                                        Toast.LENGTH_SHORT).show();
+                                return; // selectedTime 설정 안 함
+                            }
+                        }
+
+                        selectedTime = String.format(Locale.KOREA, "%02d:%02d:00", hour, minute);
                         String ampm = hour >= 12 ? "오후" : "오전";
                         int displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-                        binding.etMeetingTime.setText(
-                                String.format("%s %d:%02d", ampm, displayHour, minute)
-                        );
-                        Log.i(TAG, "선택된 시간: " + selectedTime);
+                        String displayTime = String.format(Locale.KOREA,
+                                "%s %d:%02d", ampm, displayHour, minute);
+                        binding.etMeetingTime.setText(displayTime);
                     },
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE),
+                    now.get(Calendar.HOUR_OF_DAY),
+                    now.get(Calendar.MINUTE),
                     false
             ).show();
         });
     }
 
     /**
-     * 참여 인원 증감 버튼
+     * 참여자 카운터
      */
     private void setupParticipantCounter() {
-        updateParticipantCount();
+        binding.tvParticipantCount.setText(participantCount + "명");
 
         binding.btnDecreaseCount.setOnClickListener(v -> {
             if (participantCount > 2) {
                 participantCount--;
-                updateParticipantCount();
+                binding.tvParticipantCount.setText(participantCount + "명");
             }
         });
 
         binding.btnIncreaseCount.setOnClickListener(v -> {
             if (participantCount < 10) {
                 participantCount++;
-                updateParticipantCount();
+                binding.tvParticipantCount.setText(participantCount + "명");
             }
         });
-    }
-
-    private void updateParticipantCount() {
-        binding.tvParticipantCount.setText(participantCount + "명");
     }
 
     /**
-     * RangeSlider 설정
+     * 가격 슬라이더
      */
     private void setupPriceRangeSlider() {
-        updatePriceRangeDisplay(minPrice, maxPrice);
-
-        binding.rangeSliderPrice.addOnChangeListener(new RangeSlider.OnChangeListener() {
-            @Override
-            public void onValueChange(@NonNull RangeSlider slider, float value, boolean fromUser) {
-                List<Float> values = slider.getValues();
-                if (values.size() == 2) {
-                    minPrice = values.get(0).intValue();
-                    maxPrice = values.get(1).intValue();
-                    updatePriceRangeDisplay(minPrice, maxPrice);
-                }
-            }
-        });
-    }
-
-    private void updatePriceRangeDisplay(int min, int max) {
         NumberFormat formatter = NumberFormat.getInstance(Locale.KOREA);
+        int min = minPrice;
+        int max = maxPrice;
         binding.tvPriceRangeDisplay.setText(
                 formatter.format(min) + "원 ~ " + formatter.format(max) + "원"
         );
+        binding.rangeSliderPrice.addOnChangeListener((slider, value, fromUser) -> {
+            List<Float> values = slider.getValues();
+            minPrice = values.get(0).intValue();
+            maxPrice = values.get(1).intValue();
+            binding.tvPriceRangeDisplay.setText(
+                    formatter.format(minPrice) + "원 ~ " + formatter.format(maxPrice) + "원"
+            );
+        });
     }
 
     /**
@@ -354,14 +405,88 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
     }
 
     /**
-     * S3 업로드 → 완료 후 createMeeting 호출
+     * Issue #4: S3 업로드 실제 구현
+     * CampaignWritingActivity.uploadImageThenRegister() 와 동일 패턴
      */
     private void uploadImageThenCreate(String title, String description,
                                        String date, String time, String priceRange) {
         new Thread(() -> {
-            // 기존 S3 업로드 로직 그대로
-            runOnUiThread(() -> createMeeting(title, description, date, time, priceRange, null));
+            File temporaryFile = null;
+            try {
+                if ("gallery".equals(pendingImageSource)) {
+                    java.io.InputStream inputStream = getContentResolver()
+                            .openInputStream(android.net.Uri.parse(pendingImageValue));
+                    if (inputStream == null) { onUploadFailed(); return; }
+                    temporaryFile = File.createTempFile("meeting_gallery_", ".jpg", getCacheDir());
+                    try (FileOutputStream fileOutputStream = new FileOutputStream(temporaryFile)) {
+                        byte[] buffer = new byte[4096];
+                        int length;
+                        while ((length = inputStream.read(buffer)) != -1) {
+                            fileOutputStream.write(buffer, 0, length);
+                        }
+                    }
+                    inputStream.close();
+                } else {
+                    // 네이버 이미지 URL → OkHttp 다운로드
+                    OkHttpClient okHttpClient = new OkHttpClient();
+                    Request httpRequest = new Request.Builder().url(pendingImageValue).build();
+                    ResponseBody responseBody = okHttpClient.newCall(httpRequest).execute().body();
+                    if (responseBody == null) { onUploadFailed(); return; }
+                    temporaryFile = File.createTempFile("meeting_img_", ".jpg", getCacheDir());
+                    try (FileOutputStream fileOutputStream = new FileOutputStream(temporaryFile)) {
+                        fileOutputStream.write(responseBody.bytes());
+                    }
+                }
+
+                RequestBody requestBody = RequestBody.create(
+                        MediaType.parse("image/jpeg"), temporaryFile
+                );
+                MultipartBody.Part imagePart = MultipartBody.Part.createFormData(
+                        "meeting_image", temporaryFile.getName(), requestBody
+                );
+
+                final File finalTemporaryFile = temporaryFile;
+
+                apiService.uploadMeetingImage(imagePart)
+                        .enqueue(new Callback<ApiResponse<ImageUploadData>>() {
+                            @Override
+                            public void onResponse(Call<ApiResponse<ImageUploadData>> call,
+                                                   Response<ApiResponse<ImageUploadData>> response) {
+                                finalTemporaryFile.delete();
+                                if (response.isSuccessful()
+                                        && response.body() != null
+                                        && response.body().isSuccess()) {
+                                    String imageUrl = response.body().getData().getImage_url();
+                                    Log.i(TAG, "이미지 S3 업로드 완료: " + imageUrl);
+                                    createMeeting(title, description, date, time, priceRange, imageUrl);
+                                } else {
+                                    onUploadFailed();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ApiResponse<ImageUploadData>> call,
+                                                  Throwable throwable) {
+                                finalTemporaryFile.delete();
+                                Log.e(TAG, "이미지 업로드 네트워크 오류: " + throwable.getMessage());
+                                onUploadFailed();
+                            }
+                        });
+
+            } catch (IOException ioException) {
+                Log.e(TAG, "이미지 처리 오류: " + ioException.getMessage());
+                if (temporaryFile != null) temporaryFile.delete();
+                onUploadFailed();
+            }
         }).start();
+    }
+
+    private void onUploadFailed() {
+        runOnUiThread(() -> {
+            Toast.makeText(this, "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
+                    Toast.LENGTH_SHORT).show();
+            resetCreateButton();
+        });
     }
 
     /**

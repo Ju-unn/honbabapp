@@ -77,12 +77,18 @@
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <!-- 상태 필터 버튼 — minWidth로 글자 짤림 방지 -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
+            <!--
+                Issue #6A:
+                android:textColor 를 @color/tab_text_color_selector 로 변경
+                state_selected=true → primary_100 / 기본 → text_200
+                초기 selected 상태는 CampaignApplicantListActivity.setupFilterTabs() 에서
+                setSelected(true/false) 로 설정
+            -->
             <Button
                 android:id="@+id/btn_filter_waiting"
                 style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
@@ -91,7 +97,7 @@
                 android:minWidth="64dp"
                 android:text="대기"
                 android:textSize="13sp"
-                android:textColor="@color/primary_100"
+                android:textColor="@drawable/tab_text_color_selector"
                 android:background="@drawable/chip_button_background"
                 android:paddingHorizontal="16dp"
                 android:layout_marginEnd="8dp"
@@ -105,7 +111,7 @@
                 android:minWidth="64dp"
                 android:text="승인"
                 android:textSize="13sp"
-                android:textColor="@color/text_200"
+                android:textColor="@drawable/tab_text_color_selector"
                 android:background="@drawable/chip_button_background"
                 android:paddingHorizontal="16dp"
                 app:backgroundTint="@null" />

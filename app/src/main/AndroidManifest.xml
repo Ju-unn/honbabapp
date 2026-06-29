@@ -88,17 +88,22 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:host="oauth"
+
+                <data
+                    android:host="oauth"
                     android:scheme="kakao${KAKAO_NATIVE_APP_KEY}" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.campaign.CampaignWritingActivity"
+        <activity
+            android:name=".activity.campaign.CampaignWritingActivity"
             android:windowSoftInputMode="adjustResize" />
 
-        <activity android:name=".activity.campaign.CampaignDetailActivity"
+        <activity
+            android:name=".activity.campaign.CampaignDetailActivity"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
@@ -113,6 +118,10 @@
 
         <activity
             android:name=".activity.campaign.CampaignApplicantListActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activity.campaign.CampaignEditActivity"
             android:exported="false" />
 
 

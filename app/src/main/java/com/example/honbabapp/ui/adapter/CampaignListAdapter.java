@@ -27,8 +27,10 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 체험단 목록 어댑터
- * rv_meeting_card 스타일 기반
  *
+ * Issue #3 수정:
+ * - bindDeadlineBadge() 제거 — rv_campaign_card.xml 에서 tv_deadline_badge 뷰 삭제됨
+ * - bindLocationAndDate() 에서 tv_campaign_date 참조 제거 — 위치(tv_campaign_location)만 표시
  */
 public class CampaignListAdapter extends RecyclerView.Adapter<CampaignListAdapter.ViewHolder> {
 
@@ -81,13 +83,13 @@ public class CampaignListAdapter extends RecyclerView.Adapter<CampaignListAdapte
         public void bind(Meeting meeting) {
             bindClickEvent(meeting);
             bindImage(meeting);
-            bindDeadlineBadge(meeting);   // 이미지 위 마감임박 뱃지
-            bindTitle(meeting);           // 제목 + 체험단 뱃지 (같은 라인)
+            // bindDeadlineBadge 제거 — Issue #3: tv_deadline_badge 뷰 XML에서 삭제됨
+            bindTitle(meeting);
             bindCampaignProvided(meeting);
             bindCampaignChannels(meeting);
-            bindLocationAndDate(meeting);
+            bindLocation(meeting);        // 위치만 표시 (날짜 행 삭제됨)
             bindParticipantsRow(meeting);
-            bindDeadlineText(meeting);    // 하단 마감일 텍스트
+            bindDeadlineText(meeting);
         }
 
         // ── 클릭 → CampaignDetailActivity ────────────────────────
@@ -109,35 +111,9 @@ public class CampaignListAdapter extends RecyclerView.Adapter<CampaignListAdapte
                     .into(binding.ivCampaignImage);
         }
 
-        // ── 마감임박 뱃지 (이미지 우하단 오버레이) ──────────────
-        private void bindDeadlineBadge(Meeting meeting) {
-            String deadline = meeting.getCampaign_deadline();
-            if (deadline == null || deadline.isEmpty()) {
-                binding.tvDeadlineBadge.setVisibility(View.GONE);
-                return;
-            }
-            try {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
-                Date deadlineDate = dateFormat.parse(deadline);
-                if (deadlineDate != null) {
-                    long remainingDays = TimeUnit.MILLISECONDS.toDays(
-                            deadlineDate.getTime() - System.currentTimeMillis()
-                    );
-                    binding.tvDeadlineBadge.setVisibility(
-                            (remainingDays >= 0 && remainingDays <= 3) ? View.VISIBLE : View.GONE
-                    );
-                } else {
-                    binding.tvDeadlineBadge.setVisibility(View.GONE);
-                }
-            } catch (ParseException e) {
-                binding.tvDeadlineBadge.setVisibility(View.GONE);
-            }
-        }
-
         // ── 제목 (왼쪽) + 체험단 뱃지 (오른쪽) ──────────────────
         private void bindTitle(Meeting meeting) {
             binding.tvCampaignTitle.setText(meeting.getMeeting_title());
-            // tv_campaign_badge는 항상 "체험단" 고정 텍스트 — 별도 처리 불필요
         }
 
         // ── 제공 내역 (주황 굵게) ─────────────────────────────────
@@ -155,7 +131,6 @@ public class CampaignListAdapter extends RecyclerView.Adapter<CampaignListAdapte
         private void bindCampaignChannels(Meeting meeting) {
             String channels = meeting.getCampaign_channels();
             if (channels != null && !channels.isEmpty()) {
-                // "블로그,인스타그램" → "블로그 · 인스타그램"
                 binding.tvCampaignChannels.setText(channels.replace(",", " · "));
                 binding.tvCampaignChannels.setVisibility(View.VISIBLE);
             } else {
@@ -163,19 +138,18 @@ public class CampaignListAdapter extends RecyclerView.Adapter<CampaignListAdapte
             }
         }
 
-        // ── 위치 + 방문 날짜 ──────────────────────────────────────
-        private void bindLocationAndDate(Meeting meeting) {
+        /**
+         * Issue #3: 위치만 표시
+         * tv_campaign_date 뷰가 rv_campaign_card.xml 에서 삭제되었으므로
+         * 날짜 바인딩(binding.tvCampaignDate) 코드 제거
+         */
+        private void bindLocation(Meeting meeting) {
             if (meeting.getLocation() != null) {
                 String locationText = meeting.getLocation().getPlace_name();
                 if (locationText == null || locationText.isEmpty()) {
                     locationText = meeting.getLocation().getDong();
                 }
                 binding.tvCampaignLocation.setText(locationText);
-            }
-
-            String meetingDate = meeting.getMeeting_date();
-            if (meetingDate != null && meetingDate.length() >= 10) {
-                binding.tvCampaignDate.setText(meetingDate.substring(0, 10));
             }
         }
 
@@ -206,7 +180,7 @@ public class CampaignListAdapter extends RecyclerView.Adapter<CampaignListAdapte
 
             int needed = meeting.getMeeting_max_participants() - meeting.getMeeting_current_participants();
             binding.tvCampaignParticipantCount.setText(
-                    needed > 0 ? "+" + needed + "명 더 필요" : "정원 마감"
+                    needed > 0 ? "+" + needed + "명 더 모집중" : "정원 마감"
             );
         }
 

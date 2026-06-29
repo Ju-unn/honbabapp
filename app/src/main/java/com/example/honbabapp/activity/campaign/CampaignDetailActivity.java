@@ -42,6 +42,12 @@ import retrofit2.Response;
 
 /**
  * 체험단 상세 Activity
+ *
+ * Issue #3 수정:
+ * - showHostPopupMenu() — menu_meeting_detail.xml 의 action_edit_meeting ID 그대로 사용
+ *   이동 Activity 만 CampaignEditActivity 로 변경 (MeetingEditActivity 아님)
+ * - editCampaignLauncher 추가 — 수정 완료 후 상세 새로고침
+ * - action_delete_meeting → 기존 deleteCampaign() 연결 유지
  */
 public class CampaignDetailActivity extends AppCompatActivity {
 
@@ -60,29 +66,30 @@ public class CampaignDetailActivity extends AppCompatActivity {
     // ActivityResultLauncher
     // ─────────────────────────────────────────────────────────────
 
-    /**
-     * 체험단 신청자 목록 (호스트 전용) — 돌아오면 상세 새로고침
-     */
     private final ActivityResultLauncher<Intent> applicantListLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
                     result -> {
-                        if (result.getResultCode() == RESULT_OK) {
-                            loadCampaignDetail();
-                        }
+                        if (result.getResultCode() == RESULT_OK) loadCampaignDetail();
                     }
             );
 
-    /**
-     * CampaignApplyActivity — 신청 완료 후 상세 새로고침
-     */
     private final ActivityResultLauncher<Intent> applyLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
                     result -> {
-                        if (result.getResultCode() == RESULT_OK) {
-                            loadCampaignDetail();
-                        }
+                        if (result.getResultCode() == RESULT_OK) loadCampaignDetail();
+                    }
+            );
+
+    /**
+     * Issue #3: 체험단 수정 완료 후 상세 새로고침
+     */
+    private final ActivityResultLauncher<Intent> editCampaignLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK) loadCampaignDetail();
                     }
             );
 
@@ -111,7 +118,6 @@ public class CampaignDetailActivity extends AppCompatActivity {
         currentUserId = prefs.getInt("user_id", -1);
 
         binding.btnBack.setOnClickListener(v -> finish());
-
         loadCampaignDetail();
     }
 
@@ -120,31 +126,30 @@ public class CampaignDetailActivity extends AppCompatActivity {
     // ─────────────────────────────────────────────────────────────
 
     private void loadCampaignDetail() {
-        Call<ApiResponse<Meeting>> call = apiService.getMeetingDetail(campaignId, currentUserId);
+        apiService.getMeetingDetail(campaignId, currentUserId)
+                .enqueue(new Callback<ApiResponse<Meeting>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Meeting>> call,
+                                           Response<ApiResponse<Meeting>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess()) {
+                            campaign = response.body().getData();
+                            Log.i(TAG, "체험단 로드 성공: " + campaign.getMeeting_title());
+                            bindCampaignData();
+                            setupApplyButton();
+                        } else {
+                            Toast.makeText(CampaignDetailActivity.this,
+                                    "체험단 정보를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
 
-        call.enqueue(new Callback<ApiResponse<Meeting>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<Meeting>> call,
-                                   Response<ApiResponse<Meeting>> response) {
-                if (response.isSuccessful() && response.body() != null
-                        && response.body().isSuccess()) {
-                    campaign = response.body().getData();
-                    Log.i(TAG, "체험단 로드 성공: " + campaign.getMeeting_title());
-                    bindCampaignData();
-                    setupApplyButton();
-                } else {
-                    Toast.makeText(CampaignDetailActivity.this,
-                            "체험단 정보를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<Meeting>> call, Throwable throwable) {
-                Log.e(TAG, "네트워크 오류: " + throwable.getMessage());
-                Toast.makeText(CampaignDetailActivity.this,
-                        "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ApiResponse<Meeting>> call, Throwable throwable) {
+                        Log.e(TAG, "네트워크 오류: " + throwable.getMessage());
+                        Toast.makeText(CampaignDetailActivity.this,
+                                "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -176,8 +181,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
         }
         binding.tvPriceRange.setText(campaign.getMeeting_price_range());
 
-        if (campaign.getCampaign_channels() != null
-                && !campaign.getCampaign_channels().isEmpty()) {
+        if (campaign.getCampaign_channels() != null && !campaign.getCampaign_channels().isEmpty()) {
             binding.tvCampaignChannels.setText(
                     campaign.getCampaign_channels().replace(",", " · ")
             );
@@ -193,8 +197,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
             binding.tvCampaignRequirements.setText(campaign.getCampaign_requirements());
         }
 
-        if (campaign.getCampaign_deadline() != null
-                && !campaign.getCampaign_deadline().isEmpty()) {
+        if (campaign.getCampaign_deadline() != null && !campaign.getCampaign_deadline().isEmpty()) {
             binding.layoutRowDeadline.setVisibility(View.VISIBLE);
             String deadlineDisplay = campaign.getCampaign_deadline().length() >= 10
                     ? campaign.getCampaign_deadline().substring(0, 10) + " 마감"
@@ -235,7 +238,6 @@ public class CampaignDetailActivity extends AppCompatActivity {
             return;
         }
 
-        // ── 호스트: CampaignApplicantListActivity 이동 ──
         if (campaign.getHost() != null && campaign.getHost().getUser_id() == currentUserId) {
             binding.applyButtonContainer.setVisibility(View.VISIBLE);
             binding.btnApplyCampaign.setText("신청자 목록");
@@ -249,7 +251,6 @@ public class CampaignDetailActivity extends AppCompatActivity {
             return;
         }
 
-        // ── 참여자: 참여 상태에 따라 버튼 표시 ──────────────────
         String participationStatus = campaign.getMy_participation_status();
         if ("취소".equals(participationStatus)) participationStatus = null;
 
@@ -272,165 +273,37 @@ public class CampaignDetailActivity extends AppCompatActivity {
             binding.btnApplyCampaign.setText("모집 완료");
             binding.btnApplyCampaign.setEnabled(false);
         } else {
-            // ── 신청 버튼: SNS 체크 후 CampaignApplyActivity 이동 ──
             binding.btnApplyCampaign.setOnClickListener(v -> checkSnsAndNavigateToApply());
         }
     }
 
     // ─────────────────────────────────────────────────────────────
-    // SNS 체크 CampaignApplyActivity 이동
-    // "먼저 내 프로필 조회(getUserProfile)"
-    // SNS 없으면 ProfileProfileSettingActivity로 유도
+    // 호스트 팝업 메뉴
     // ─────────────────────────────────────────────────────────────
-
-    private void checkSnsAndNavigateToApply() {
-        binding.btnApplyCampaign.setEnabled(false);
-
-        apiService.getUserProfile(currentUserId)
-                .enqueue(new Callback<ApiResponse<UserProfileResponse>>() {
-                    @Override
-                    public void onResponse(Call<ApiResponse<UserProfileResponse>> call,
-                                           Response<ApiResponse<UserProfileResponse>> response) {
-                        binding.btnApplyCampaign.setEnabled(true);
-
-                        if (response.isSuccessful()
-                                && response.body() != null
-                                && response.body().isSuccess()) {
-
-                            UserProfileResponse profile = response.body().getData();
-
-                            if (!profile.hasSnsId()) {
-                                // SNS 없음 → 프로필 설정 유도
-                                showSnsRequiredDialog();
-                            } else {
-                                // SNS 있음 → 신청폼 이동 (SNS ID 전달)
-                                navigateToCampaignApply(profile);
-                            }
-                        } else {
-                            Toast.makeText(CampaignDetailActivity.this,
-                                    "프로필 조회에 실패했습니다.", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ApiResponse<UserProfileResponse>> call,
-                                          Throwable throwable) {
-                        binding.btnApplyCampaign.setEnabled(true);
-                        Log.e(TAG, "프로필 조회 오류: " + throwable.getMessage());
-                        Toast.makeText(CampaignDetailActivity.this,
-                                "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
 
     /**
-     * SNS ID 없을 때 안내 다이얼로그
+     * Issue #3: menu_meeting_detail.xml 그대로 사용
+     * action_edit_meeting → CampaignEditActivity 이동 (MeetingEditActivity 아님)
+     * action_delete_meeting → 기존 deleteCampaign() 유지
      */
-    private void showSnsRequiredDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("SNS 계정 필요")
-                .setMessage("체험단 신청을 위해서는 인스타그램 또는 블로그 ID가 필요합니다.\n"
-                        + "프로필 설정에서 먼저 등록해 주세요.")
-                .setPositiveButton("프로필 설정으로 이동", (dialog, which) -> {
-                    Intent intent = new Intent(this, ProfileProfileSettingActivity.class);
-                    intent.putExtra("focus_sns", true);
-                    startActivity(intent);
-                })
-                .setNegativeButton("취소", null)
-                .show();
-    }
-
-    /**
-     * SNS 있음 → CampaignApplyActivity 이동 (SNS ID 미리 전달)
-     */
-    private void navigateToCampaignApply(UserProfileResponse profile) {
-        Intent intent = new Intent(this, CampaignApplyActivity.class);
-        intent.putExtra(CampaignApplyActivity.EXTRA_CAMPAIGN_ID, campaignId);
-        intent.putExtra(CampaignApplyActivity.EXTRA_CAMPAIGN_TITLE, campaign.getMeeting_title());
-        intent.putExtra(CampaignApplyActivity.EXTRA_INSTAGRAM_ID, profile.getUser_instagram_id());
-        intent.putExtra(CampaignApplyActivity.EXTRA_BLOG_ID, profile.getUser_blog_id());
-        applyLauncher.launch(intent);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // 참여자 RecyclerView
-    // ─────────────────────────────────────────────────────────────
-
-    private void setupParticipantsRecyclerView() {
-        if (campaign.getParticipants() == null || campaign.getParticipants().isEmpty()) return;
-
-        String hostNickname = (campaign.getHost() != null)
-                ? campaign.getHost().getUser_nickname() : "";
-
-        participantAdapter = new ParticipantListAdapter(
-                campaign.getParticipants(), hostNickname
-        );
-        binding.rvParticipants.setAdapter(participantAdapter);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // 미니맵
-    // ─────────────────────────────────────────────────────────────
-
-    private void setupMiniMap() {
-        if (campaign.getLocation() == null) return;
-
-        // MeetingDetailActivity 동일 패턴:
-        // 좌표 파싱을 getMapAsync 밖 try 블록에서 먼저 수행
-        try {
-            double lat = Double.parseDouble(campaign.getLocation().getMap_y());
-            double lng = Double.parseDouble(campaign.getLocation().getMap_x());
-
-            binding.miniMap.getMapAsync(naverMap -> {
-                miniNaverMap = naverMap;
-
-                // 인터랙션 비활성화 — 개별 메서드 각각 호출 (setAllGesturesEnabled 사용 안 함)
-                UiSettings uiSettings = naverMap.getUiSettings();
-                uiSettings.setZoomControlEnabled(false);
-                uiSettings.setCompassEnabled(false);
-                uiSettings.setScaleBarEnabled(false);
-                uiSettings.setScrollGesturesEnabled(false);
-                uiSettings.setZoomGesturesEnabled(false);
-                uiSettings.setRotateGesturesEnabled(false);
-                uiSettings.setTiltGesturesEnabled(false);
-                uiSettings.setLogoClickEnabled(false);
-
-                // 마커 + 카메라
-                LatLng position = new LatLng(lat, lng);
-                Marker marker = new Marker();
-                marker.setPosition(position);
-                marker.setMap(naverMap);
-
-                naverMap.moveCamera(CameraUpdate.scrollAndZoomTo(position, 15));
-            });
-
-            // 클릭 리스너는 getMapAsync 밖에 설정 — MeetingDetailActivity 동일 패턴
-            binding.miniMap.setOnClickListener(v -> {
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra("move_to_map", true);
-                intent.putExtra("map_lat", lat);
-                intent.putExtra("map_lng", lng);
-                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-            });
-
-        } catch (NumberFormatException exception) {
-            Log.e(TAG, "좌표 파싱 오류: " + exception.getMessage());
-        }
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // 호스트 팝업 메뉴 / 삭제
-    // ─────────────────────────────────────────────────────────────
-
     private void showHostPopupMenu() {
         PopupMenu popup = new PopupMenu(this, binding.btnMoreOptions);
         popup.getMenuInflater().inflate(R.menu.menu_meeting_detail, popup.getMenu());
         popup.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_delete_meeting) {
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.action_edit_meeting) {
+                Intent intent = new Intent(this, CampaignEditActivity.class);
+                intent.putExtra(CampaignEditActivity.EXTRA_CAMPAIGN_ID, campaignId);
+                editCampaignLauncher.launch(intent);
+                return true;
+            }
+
+            if (itemId == R.id.action_delete_meeting) {
                 showDeleteConfirmDialog();
                 return true;
             }
+
             return false;
         });
         popup.show();
@@ -463,13 +336,13 @@ public class CampaignDetailActivity extends AppCompatActivity {
                 } else {
                     String message = response.body() != null
                             ? response.body().getMessage() : "삭제에 실패했습니다.";
-                    Toast.makeText(CampaignDetailActivity.this,
-                            message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CampaignDetailActivity.this, message, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable throwable) {
+                Log.e(TAG, "삭제 네트워크 오류: " + throwable.getMessage());
                 Toast.makeText(CampaignDetailActivity.this,
                         "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
@@ -477,81 +350,164 @@ public class CampaignDetailActivity extends AppCompatActivity {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 날짜 / 시간 포맷 (기존 그대로)
+    // SNS 체크 → CampaignApplyActivity 이동
+    // ─────────────────────────────────────────────────────────────
+
+    private void checkSnsAndNavigateToApply() {
+        binding.btnApplyCampaign.setEnabled(false);
+
+        apiService.getUserProfile(currentUserId)
+                .enqueue(new Callback<ApiResponse<UserProfileResponse>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<UserProfileResponse>> call,
+                                           Response<ApiResponse<UserProfileResponse>> response) {
+                        binding.btnApplyCampaign.setEnabled(true);
+
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess()) {
+                            UserProfileResponse profile = response.body().getData();
+                            if (!profile.hasSnsId()) {
+                                showSnsRequiredDialog();
+                            } else {
+                                navigateToCampaignApply(profile);
+                            }
+                        } else {
+                            Toast.makeText(CampaignDetailActivity.this,
+                                    "프로필 조회에 실패했습니다.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<UserProfileResponse>> call,
+                                          Throwable throwable) {
+                        binding.btnApplyCampaign.setEnabled(true);
+                        Log.e(TAG, "프로필 조회 오류: " + throwable.getMessage());
+                        Toast.makeText(CampaignDetailActivity.this,
+                                "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void showSnsRequiredDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("SNS 계정 필요")
+                .setMessage("체험단 신청을 위해서는 인스타그램 또는 블로그 ID가 필요합니다.\n"
+                        + "프로필 설정에서 먼저 등록해 주세요.")
+                .setPositiveButton("프로필 설정으로 이동", (dialog, which) -> {
+                    Intent intent = new Intent(this, ProfileProfileSettingActivity.class);
+                    intent.putExtra("focus_sns", true);
+                    startActivity(intent);
+                })
+                .setNegativeButton("취소", null)
+                .show();
+    }
+
+    private void navigateToCampaignApply(UserProfileResponse profile) {
+        Intent intent = new Intent(this, CampaignApplyActivity.class);
+        intent.putExtra(CampaignApplyActivity.EXTRA_CAMPAIGN_ID, campaignId);
+        intent.putExtra(CampaignApplyActivity.EXTRA_CAMPAIGN_TITLE, campaign.getMeeting_title());
+        intent.putExtra(CampaignApplyActivity.EXTRA_INSTAGRAM_ID, profile.getUser_instagram_id());
+        intent.putExtra(CampaignApplyActivity.EXTRA_BLOG_ID, profile.getUser_blog_id());
+        applyLauncher.launch(intent);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 참여자 RecyclerView
+    // ─────────────────────────────────────────────────────────────
+
+    private void setupParticipantsRecyclerView() {
+        if (campaign.getParticipants() == null || campaign.getParticipants().isEmpty()) return;
+
+        String hostNickname = (campaign.getHost() != null)
+                ? campaign.getHost().getUser_nickname() : "";
+
+        participantAdapter = new ParticipantListAdapter(campaign.getParticipants(), hostNickname);
+        binding.rvParticipants.setAdapter(participantAdapter);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 미니맵
+    // ─────────────────────────────────────────────────────────────
+
+    private void setupMiniMap() {
+        if (campaign.getLocation() == null) return;
+        try {
+            double lat = Double.parseDouble(campaign.getLocation().getMap_y());
+            double lng = Double.parseDouble(campaign.getLocation().getMap_x());
+
+            binding.miniMap.getMapAsync(naverMap -> {
+                miniNaverMap = naverMap;
+                UiSettings uiSettings = naverMap.getUiSettings();
+                uiSettings.setZoomControlEnabled(false);
+                uiSettings.setCompassEnabled(false);
+                uiSettings.setScaleBarEnabled(false);
+                uiSettings.setScrollGesturesEnabled(false);
+                uiSettings.setZoomGesturesEnabled(false);
+                uiSettings.setRotateGesturesEnabled(false);
+                uiSettings.setTiltGesturesEnabled(false);
+                uiSettings.setLogoClickEnabled(false);
+
+                LatLng position = new LatLng(lat, lng);
+                Marker marker = new Marker();
+                marker.setPosition(position);
+                marker.setMap(naverMap);
+                naverMap.moveCamera(CameraUpdate.scrollAndZoomTo(position, 15));
+            });
+
+            binding.miniMap.setOnClickListener(v -> {
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("move_to_map", true);
+                intent.putExtra("map_lat", lat);
+                intent.putExtra("map_lng", lng);
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            });
+
+        } catch (NumberFormatException exception) {
+            Log.e(TAG, "좌표 파싱 오류: " + exception.getMessage());
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 날짜/시간 포맷 유틸
     // ─────────────────────────────────────────────────────────────
 
     private String formatDate(String datetime) {
+        if (datetime == null || datetime.length() < 10) return "";
         try {
-            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
-            SimpleDateFormat outputFormat = new SimpleDateFormat("M월 d일", Locale.KOREA);
+            SimpleDateFormat inputFormat  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+            SimpleDateFormat outputFormat = new SimpleDateFormat("M월 d일 (E)", Locale.KOREA);
             Date date = inputFormat.parse(datetime);
-            return date != null ? outputFormat.format(date) : datetime;
-        } catch (Exception exception) {
-            return datetime != null ? datetime : "";
+            return date != null ? outputFormat.format(date) : datetime.substring(0, 10);
+        } catch (Exception e) {
+            return datetime.substring(0, 10);
         }
     }
 
     private String formatTime(String datetime) {
+        if (datetime == null || datetime.length() < 16) return "";
         try {
-            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+            SimpleDateFormat inputFormat  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+            SimpleDateFormat outputFormat = new SimpleDateFormat("a h:mm", Locale.KOREA);
             Date date = inputFormat.parse(datetime);
-            if (date == null) return datetime;
-            SimpleDateFormat hourFormat = new SimpleDateFormat("HH", Locale.KOREA);
-            SimpleDateFormat minuteFormat = new SimpleDateFormat("mm", Locale.KOREA);
-            int hour = Integer.parseInt(hourFormat.format(date));
-            int minute = Integer.parseInt(minuteFormat.format(date));
-            String ampm = hour >= 12 ? "오후" : "오전";
-            int displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-            return String.format("%s %d:%02d", ampm, displayHour, minute);
-        } catch (Exception exception) {
-            return datetime != null ? datetime : "";
+            return date != null ? outputFormat.format(date) : datetime.substring(11, 16);
+        } catch (Exception e) {
+            return datetime.substring(11, 16);
         }
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 생명주기
+    // 생명주기 위임
     // ─────────────────────────────────────────────────────────────
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        binding.miniMap.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        binding.miniMap.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        binding.miniMap.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        binding.miniMap.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (binding != null) binding.miniMap.onDestroy();
-        binding = null;
-    }
-
-    @Override
-    protected void onSaveInstanceState(android.os.Bundle outState) {
+    @Override protected void onStart()   { super.onStart();   binding.miniMap.onStart(); }
+    @Override protected void onResume()  { super.onResume();  binding.miniMap.onResume(); }
+    @Override protected void onPause()   { super.onPause();   binding.miniMap.onPause(); }
+    @Override protected void onStop()    { super.onStop();    binding.miniMap.onStop(); }
+    @Override protected void onDestroy() { super.onDestroy(); binding.miniMap.onDestroy(); binding = null; }
+    @Override public void onLowMemory() { super.onLowMemory(); binding.miniMap.onLowMemory(); }
+    @Override public void onSaveInstanceState(@Nullable android.os.Bundle outState) {
         super.onSaveInstanceState(outState);
-        binding.miniMap.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        binding.miniMap.onLowMemory();
+        if (binding != null) binding.miniMap.onSaveInstanceState(outState);
     }
 }

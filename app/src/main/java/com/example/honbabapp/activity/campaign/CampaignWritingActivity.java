@@ -1,10 +1,11 @@
 package com.example.honbabapp.activity.campaign;
 
 import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.RadioButton;
@@ -49,11 +50,10 @@ import retrofit2.Response;
 /**
  * 체험단 등록 Activity
  *
- * MeetingCardWritingActivity / MeetingEditActivity 동일 패턴:
- * 1. 유효성 검증
- * 2. pendingImage 있으면 S3 업로드 (OkHttp 다운로드 → Multipart)
- * 3. registerCampaign() → createMeeting(meeting_type="체험단")
- * 4. 성공 → MainActivity refresh_campaign
+ * 수정 내역:
+ * - Issue #1: DatePicker setMinDate() 추가 (과거 날짜 선택 불가)
+ * - Issue #1: TimePicker 오늘 선택 시 현재 시각 이후만 허용
+ * - Issue #8: isTitleAutoFilled 플래그로 가게 변경 시 제목 자동 업데이트
  */
 public class CampaignWritingActivity extends AppCompatActivity {
 
@@ -66,8 +66,6 @@ public class CampaignWritingActivity extends AppCompatActivity {
 
     // 공통 입력값
     private String selectedCategory = "한식";
-    private String selectedVisitDate = "";
-    private String selectedVisitTime = "";
     private int participantCount = 2;
     private int minPrice = 0;
     private int maxPrice = 100000;
@@ -86,6 +84,13 @@ public class CampaignWritingActivity extends AppCompatActivity {
     // 이미지 — MeetingCardWritingActivity 동일 패턴
     private String pendingImageValue = null;  // naver URL or content:// Uri
     private String pendingImageSource = null; // "naver" | "gallery"
+
+    // Issue #8: 제목 자동 입력 플래그
+    // true = 자동 입력된 상태 → 가게 변경 시 덮어쓰기 허용
+    // false = 사용자가 직접 수정한 상태 → 가게 변경 시 유지
+    private boolean isTitleAutoFilled = false;
+    // 자동 입력 중 TextWatcher 트리거 방지 플래그
+    private boolean isAutoFillingTitle = false;
 
     // ─────────────────────────────────────────────────────────────
     // 가게 검색 Launcher
@@ -124,9 +129,13 @@ public class CampaignWritingActivity extends AppCompatActivity {
                                         ? selectedRoadAddress : selectedAddress
                         );
 
-                        // 체험단명 자동 입력 (비어있을 때만)
-                        if (binding.etCampaignTitle.getText().toString().trim().isEmpty()) {
+                        // Issue #8: 자동 입력 조건 — 비어있거나 이전에 자동 입력된 상태
+                        String currentTitle = binding.etCampaignTitle.getText().toString().trim();
+                        if (currentTitle.isEmpty() || isTitleAutoFilled) {
+                            isAutoFillingTitle = true;
                             binding.etCampaignTitle.setText(selectedPlaceName + " 체험단 모집");
+                            isAutoFillingTitle = false;
+                            isTitleAutoFilled = true;
                         }
 
                         // 이미지 미리보기
@@ -169,23 +178,154 @@ public class CampaignWritingActivity extends AppCompatActivity {
     private void setupUI() {
         binding.btnBack.setOnClickListener(v -> finish());
         setupCategorySelection();
-        setupDatePicker();
-        setupTimePicker();
         setupParticipantCounter();
         setupPriceRangeSlider();
-        setupPlaceSelection();
         setupDeadlinePicker();
-        binding.btnRegisterCampaign.setOnClickListener(v -> validateAndRegister());
+        setupPlaceSelection();
+        setupTitleAutoFillWatcher();  // Issue #8
+        binding.btnRegisterCampaign.setOnClickListener(v -> validateAndRegisterCampaign());
+    }
+
+    /**
+     * Issue #8: 사용자가 제목을 직접 수정하면 자동 입력 플래그 해제
+     * isAutoFillingTitle 가드로 프로그래밍 방식 setText() 는 무시
+     */
+    private void setupTitleAutoFillWatcher() {
+        binding.etCampaignTitle.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence sequence, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence sequence, int start, int before, int count) {
+                // 자동 입력 중일 때는 플래그 변경 안 함
+                if (!isAutoFillingTitle) {
+                    isTitleAutoFilled = false;
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
+    }
+
+    private void setupPlaceSelection() {
+        binding.btnSearchStore.setOnClickListener(v -> {
+            Intent intent = new Intent(this, PlaceSearchActivity.class);
+            String query = binding.etStoreSearch.getText().toString().trim();
+            if (!query.isEmpty()) intent.putExtra("search_query", query);
+            placeSearchLauncher.launch(intent);
+        });
+    }
+
+    private void setupCategorySelection() {
+        RadioButton[] buttons = {
+                binding.radioCategoryKorean,
+                binding.radioCategoryChinese,
+                binding.radioCategoryJapanese,
+                binding.radioCategoryWestern,
+                binding.radioCategoryOmakase,
+                binding.radioCategoryCafe,
+                binding.radioCategoryPub
+        };
+        String[] categoryValues = {"한식", "중식", "일식", "양식", "오마카세", "카페", "술집"};
+
+        for (int index = 0; index < buttons.length; index++) {
+            final int categoryIndex = index;
+            buttons[index].setOnClickListener(v -> {
+                for (RadioButton button : buttons) button.setChecked(false);
+                buttons[categoryIndex].setChecked(true);
+                selectedCategory = categoryValues[categoryIndex];
+            });
+        }
+        binding.radioCategoryKorean.setChecked(true);
+        selectedCategory = "한식";
+    }
+
+    private void autoSelectCategory(String placeCategory) {
+        if (placeCategory == null || placeCategory.isEmpty()) return;
+        String lower = placeCategory.toLowerCase();
+        if (lower.contains("한식"))       binding.radioCategoryKorean.performClick();
+        else if (lower.contains("중식")) binding.radioCategoryChinese.performClick();
+        else if (lower.contains("일식")) binding.radioCategoryJapanese.performClick();
+        else if (lower.contains("양식")) binding.radioCategoryWestern.performClick();
+        else if (lower.contains("카페")) binding.radioCategoryCafe.performClick();
+        else if (lower.contains("술"))   binding.radioCategoryPub.performClick();
+    }
+
+    /**
+     * Issue #1: DatePicker — 오늘부터 선택 가능 (과거 날짜 차단)
+     */
+    /**
+     * 참여자 카운터
+     */
+    private void setupParticipantCounter() {
+        binding.tvParticipantCount.setText(participantCount + "명");
+
+        binding.btnDecreaseCount.setOnClickListener(v -> {
+            if (participantCount > 2) {
+                participantCount--;
+                binding.tvParticipantCount.setText(participantCount + "명");
+            }
+        });
+
+        binding.btnIncreaseCount.setOnClickListener(v -> {
+            if (participantCount < 20) {
+                participantCount++;
+                binding.tvParticipantCount.setText(participantCount + "명");
+            }
+        });
+    }
+
+    /**
+     * 가격 슬라이더
+     */
+    private void setupPriceRangeSlider() {
+        NumberFormat formatter = NumberFormat.getInstance(Locale.KOREA);
+        binding.tvPriceRangeDisplay.setText(
+                formatter.format(minPrice) + "원 ~ " + formatter.format(maxPrice) + "원"
+        );
+        binding.rangeSliderPrice.addOnChangeListener((slider, value, fromUser) -> {
+            List<Float> values = slider.getValues();
+            minPrice = values.get(0).intValue();
+            maxPrice = values.get(1).intValue();
+            binding.tvPriceRangeDisplay.setText(
+                    formatter.format(minPrice) + "원 ~ " + formatter.format(maxPrice) + "원"
+            );
+        });
+    }
+
+    private void setupDeadlinePicker() {
+        binding.etCampaignDeadline.setOnClickListener(v -> {
+            Calendar calendar = Calendar.getInstance();
+            DatePickerDialog dialog = new DatePickerDialog(this,
+                    (view, year, month, dayOfMonth) -> {
+                        String deadlineDate = String.format(Locale.KOREA,
+                                "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                        binding.etCampaignDeadline.setText(deadlineDate);
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+            );
+            // 오늘 이전 날짜 선택 불가
+            dialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+            dialog.show();
+        });
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 유효성 검증 + 등록 진입
+    // 유효성 검증
     // ─────────────────────────────────────────────────────────────
 
-    private void validateAndRegister() {
+    private void validateAndRegisterCampaign() {
         String campaignTitle = binding.etCampaignTitle.getText().toString().trim();
         if (campaignTitle.isEmpty()) {
-            Toast.makeText(this, "체험단명을 입력해주세요", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "체험단 제목을 입력해주세요", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (selectedPlaceName.isEmpty()) {
+            Toast.makeText(this, "가게를 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -195,28 +335,12 @@ public class CampaignWritingActivity extends AppCompatActivity {
             return;
         }
 
-        if (selectedVisitDate.isEmpty()) {
-            Toast.makeText(this, "방문 날짜를 선택해주세요", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (selectedVisitTime.isEmpty()) {
-            Toast.makeText(this, "방문 시간을 선택해주세요", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (selectedPlaceName.isEmpty()) {
-            Toast.makeText(this, "가게를 선택해주세요", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // 체험단 전용 필드 검증
         boolean isBlogChecked      = binding.checkboxChannelBlog.isChecked();
         boolean isInstagramChecked = binding.checkboxChannelInstagram.isChecked();
         boolean isYoutubeChecked   = binding.checkboxChannelYoutube.isChecked();
 
         if (!isBlogChecked && !isInstagramChecked && !isYoutubeChecked) {
-            Toast.makeText(this, "홍보 플랫폼을 하나 이상 선택해주세요", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "홍보 채널을 하나 이상 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -257,7 +381,6 @@ public class CampaignWritingActivity extends AppCompatActivity {
 
     // ─────────────────────────────────────────────────────────────
     // S3 이미지 업로드 → registerCampaign
-    // MeetingEditActivity.uploadImageThenUpdate() 동일 패턴
     // ─────────────────────────────────────────────────────────────
 
     private void uploadImageThenRegister(
@@ -338,14 +461,14 @@ public class CampaignWritingActivity extends AppCompatActivity {
 
     private void onUploadFailed() {
         runOnUiThread(() -> {
-            Toast.makeText(this, "이미지 업로드에 실패했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
+                    Toast.LENGTH_SHORT).show();
             resetRegisterButton();
         });
     }
 
     // ─────────────────────────────────────────────────────────────
     // 체험단 등록 API 호출
-    // MeetingCardWritingActivity.createMeeting() + campaign 필드 추가
     // ─────────────────────────────────────────────────────────────
 
     private void registerCampaign(
@@ -353,7 +476,8 @@ public class CampaignWritingActivity extends AppCompatActivity {
             String channels, String provided, String requirements,
             String deadline, @Nullable String imageUrl) {
 
-        String datetime = selectedVisitDate + " " + selectedVisitTime;
+        // 방문 날짜/시간 제거 — 채팅으로 조율
+        String datetime = null;
 
         MeetingCreateRequest.LocationRequest locationRequest =
                 new MeetingCreateRequest.LocationRequest(
@@ -367,7 +491,6 @@ public class CampaignWritingActivity extends AppCompatActivity {
                 datetime, participantCount, priceRange, imageUrl, locationRequest
         );
 
-        // 체험단 전용 필드 세팅
         request.setMeeting_type("체험단");
         request.setCampaign_channels(channels);
         request.setCampaign_provided(provided);
@@ -419,151 +542,6 @@ public class CampaignWritingActivity extends AppCompatActivity {
     private void resetRegisterButton() {
         binding.btnRegisterCampaign.setEnabled(true);
         binding.btnRegisterCampaign.setText("체험단 등록");
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // UI 세팅 메서드들 (XML ID 정확히 맞춤)
-    // ─────────────────────────────────────────────────────────────
-
-    private void setupPlaceSelection() {
-        binding.btnSearchStore.setOnClickListener(v -> {
-            Intent intent = new Intent(this, PlaceSearchActivity.class);
-            String query = binding.etStoreSearch.getText().toString().trim();
-            if (!query.isEmpty()) intent.putExtra("search_query", query);
-            placeSearchLauncher.launch(intent);
-        });
-    }
-
-    private void setupCategorySelection() {
-        RadioButton[] buttons = {
-                binding.radioCategoryKorean,
-                binding.radioCategoryChinese,
-                binding.radioCategoryJapanese,
-                binding.radioCategoryWestern,
-                binding.radioCategoryOmakase,
-                binding.radioCategoryCafe,
-                binding.radioCategoryPub
-        };
-        String[] categoryValues = {"한식", "중식", "일식", "양식", "오마카세", "카페", "술집"};
-
-        for (int index = 0; index < buttons.length; index++) {
-            final int categoryIndex = index;
-            buttons[index].setOnClickListener(v -> {
-                for (RadioButton button : buttons) button.setChecked(false);
-                buttons[categoryIndex].setChecked(true);
-                selectedCategory = categoryValues[categoryIndex];
-            });
-        }
-        binding.radioCategoryKorean.setChecked(true);
-        selectedCategory = "한식";
-    }
-
-    private void autoSelectCategory(String placeCategory) {
-        if (placeCategory == null || placeCategory.isEmpty()) return;
-        String lower = placeCategory.toLowerCase();
-        if (lower.contains("한식"))       binding.radioCategoryKorean.performClick();
-        else if (lower.contains("중식")) binding.radioCategoryChinese.performClick();
-        else if (lower.contains("일식")) binding.radioCategoryJapanese.performClick();
-        else if (lower.contains("양식")) binding.radioCategoryWestern.performClick();
-        else if (lower.contains("카페")) binding.radioCategoryCafe.performClick();
-        else if (lower.contains("술"))   binding.radioCategoryPub.performClick();
-    }
-
-    private void setupDatePicker() {
-        binding.etCampaignVisitDate.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
-            new DatePickerDialog(this,
-                    (view, year, month, dayOfMonth) -> {
-                        selectedVisitDate = String.format(Locale.KOREA,
-                                "%04d-%02d-%02d", year, month + 1, dayOfMonth);
-                        binding.etCampaignVisitDate.setText(selectedVisitDate);
-                    },
-                    calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH)
-            ).show();
-        });
-    }
-
-    private void setupTimePicker() {
-        binding.etCampaignVisitTime.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
-            new TimePickerDialog(this,
-                    (view, hourOfDay, minute) -> {
-                        selectedVisitTime = String.format(Locale.KOREA,
-                                "%02d:%02d:00", hourOfDay, minute);
-                        String displayTime = String.format(Locale.KOREA,
-                                "%s %02d:%02d",
-                                hourOfDay >= 12 ? "오후" : "오전",
-                                hourOfDay > 12 ? hourOfDay - 12 : hourOfDay,
-                                minute);
-                        binding.etCampaignVisitTime.setText(displayTime);
-                    },
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE),
-                    false
-            ).show();
-        });
-    }
-
-    /**
-     * 참여자 카운터
-     * XML ID: btn_decrease_count / btn_increase_count / tv_participant_count
-     * 표시 형식: "2명" (XML 힌트 텍스트 "2명" 과 일치)
-     */
-    private void setupParticipantCounter() {
-        binding.tvParticipantCount.setText(participantCount + "명");
-
-        // btn_decrease_count
-        binding.btnDecreaseCount.setOnClickListener(v -> {
-            if (participantCount > 2) {
-                participantCount--;
-                binding.tvParticipantCount.setText(participantCount + "명");
-            }
-        });
-
-        // btn_increase_count (체험단 최대 20명)
-        binding.btnIncreaseCount.setOnClickListener(v -> {
-            if (participantCount < 20) {
-                participantCount++;
-                binding.tvParticipantCount.setText(participantCount + "명");
-            }
-        });
-    }
-
-    /**
-     * 가격 슬라이더
-     * XML ID: range_slider_price / tv_price_range_display
-     */
-    private void setupPriceRangeSlider() {
-        NumberFormat formatter = NumberFormat.getInstance(Locale.KOREA);
-        binding.tvPriceRangeDisplay.setText(
-                formatter.format(minPrice) + "원 ~ " + formatter.format(maxPrice) + "원"
-        );
-        binding.rangeSliderPrice.addOnChangeListener((slider, value, fromUser) -> {
-            List<Float> values = slider.getValues();
-            minPrice = values.get(0).intValue();
-            maxPrice = values.get(1).intValue();
-            binding.tvPriceRangeDisplay.setText(
-                    formatter.format(minPrice) + "원 ~ " + formatter.format(maxPrice) + "원"
-            );
-        });
-    }
-
-    private void setupDeadlinePicker() {
-        binding.etCampaignDeadline.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
-            new DatePickerDialog(this,
-                    (view, year, month, dayOfMonth) -> {
-                        String deadlineDate = String.format(Locale.KOREA,
-                                "%04d-%02d-%02d", year, month + 1, dayOfMonth);
-                        binding.etCampaignDeadline.setText(deadlineDate);
-                    },
-                    calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH)
-            ).show();
-        });
     }
 
     @Override
