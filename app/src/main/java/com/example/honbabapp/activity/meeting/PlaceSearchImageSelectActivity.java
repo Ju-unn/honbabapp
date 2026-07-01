@@ -30,15 +30,6 @@ import retrofit2.Response;
 /**
  * 가게 대표 이미지 선택 Activity
  *
- * PlaceSearchActivity 에서 장소 선택 후 진입
- * 네이버 이미지 검색 결과 5개를 2열 그리드로 표시
- * 사용자가 선택 or 갤러리에서 직접 선택 → RESULT_OK 로 반환
- *
- * Intent 수신 (from PlaceSearchActivity):
- *   place_name, address, road_address, sigungu, dong, map_x, map_y, category, phone
- *
- * Intent 반환 (to MeetingCardWritingActivity):
- *   위 place 정보 그대로 + selected_image_url (String, nullable)
  */
 public class PlaceSearchImageSelectActivity extends AppCompatActivity {
 
@@ -52,6 +43,7 @@ public class PlaceSearchImageSelectActivity extends AppCompatActivity {
     private String placeName;
     private String address;
     private String roadAddress;
+    private String sido;
     private String sigungu;
     private String dong;
     private String mapX;
@@ -102,6 +94,7 @@ public class PlaceSearchImageSelectActivity extends AppCompatActivity {
         placeName   = intent.getStringExtra("place_name");
         address     = intent.getStringExtra("address");
         roadAddress = intent.getStringExtra("road_address");
+        sido        = intent.getStringExtra("sido");
         sigungu     = intent.getStringExtra("sigungu");
         dong        = intent.getStringExtra("dong");
         mapX        = intent.getStringExtra("map_x");
@@ -109,7 +102,7 @@ public class PlaceSearchImageSelectActivity extends AppCompatActivity {
         category    = intent.getStringExtra("category");
         phone       = intent.getStringExtra("phone");
 
-        Log.i(TAG, "장소: " + placeName + " / 구: " + sigungu);
+        Log.i(TAG, "장소: " + placeName + " / 시도: " + sido + " / 구: " + sigungu);
     }
 
     private void setupUI() {
@@ -198,6 +191,7 @@ public class PlaceSearchImageSelectActivity extends AppCompatActivity {
         result.putExtra("place_name",   placeName);
         result.putExtra("address",      address);
         result.putExtra("road_address", roadAddress);
+        result.putExtra("sido",         sido);
         result.putExtra("sigungu",      sigungu);
         result.putExtra("dong",         dong);
         result.putExtra("map_x",        mapX);

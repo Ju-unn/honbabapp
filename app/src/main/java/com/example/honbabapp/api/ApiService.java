@@ -220,6 +220,7 @@ public interface ApiService {
     // MapFragment용
     @GET("api/meeting/list.php")
     Call<ApiResponse<MeetingListResponse>> getMeetingList(
+            @Query("meeting_type") String meetingType,
             @Query("sigungu") String sigungu,
             @Query("categories") String categories,
             @Query("status") String status,
@@ -230,7 +231,10 @@ public interface ApiService {
             @Query("radius") Double radius,
             @Query("order_by") String orderBy,
             @Query("min_price") Integer minPrice,
-            @Query("max_price") Integer maxPrice
+            @Query("max_price") Integer maxPrice,
+            @Query("channels") String channels,
+            @Query("date") String date,
+            @Query("time") String time
     );
 
     // ── CampaignFragment용 ──────────────
@@ -249,7 +253,9 @@ public interface ApiService {
             @Query("channels") String channels,
             @Query("categories") String categories,
             @Query("min_price") Integer minPrice,
-            @Query("max_price") Integer maxPrice
+            @Query("max_price") Integer maxPrice,
+            @Query("sido") String sido,
+            @Query("sigungu") String sigungu
     );
 
     /**

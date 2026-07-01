@@ -82,6 +82,13 @@ public class ProfileMyMeetingsActivity extends AppCompatActivity {
         loadMyMeetings();
     }
 
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadMyMeetings();
+    }
+
     private void loadMyMeetings() {
         int userId = getSharedPreferences(PREF_NAME, 0).getInt(KEY_USER_ID, -1);
         if (userId == -1) return;
@@ -101,10 +108,13 @@ public class ProfileMyMeetingsActivity extends AppCompatActivity {
                             Log.d(TAG, "과거호스트: " + pastHostMeetings.size());
                             Log.d(TAG, "과거참여: " + pastParticipantMeetings.size());
 
-                            // 첫 번째 탭 표시
-                            updateListByTab(0);
+                            // 현재 선택된 탭을 유지한 채로 갱신
+                            // (탭이 아직 선택되지 않은 최초 진입 시에는 0번 탭)
+                            int selectedTab = binding.tabLayout.getSelectedTabPosition();
+                            updateListByTab(selectedTab >= 0 ? selectedTab : 0);
                         }  else {
-                            Log.e(TAG, "API 실패: " + (response.body() != null ? response.body().getMessage() : "body null"));
+                            Log.e(TAG, "API 실패: " + (response.body() != null
+                                    ? response.body().getMessage() : "body null"));
                         }
                     }
 

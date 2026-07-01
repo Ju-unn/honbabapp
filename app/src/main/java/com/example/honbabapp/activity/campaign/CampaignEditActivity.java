@@ -45,16 +45,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * 체험단 수정 Activity (Issue #3 신규 생성)
- *
- * 흐름:
- * 1. Intent 에서 campaign_id 수신
- * 2. getMeetingDetail() 로 기존 체험단 데이터 로드 → 폼 프리필
- * 3. 수정 버튼 → 이미지 변경 있으면 S3 업로드 → updateCampaign() 호출
- * 4. 성공 시 setResult(RESULT_OK) + finish() → CampaignDetailActivity 새로고침
- *
- * XML: page_campaign_writing.xml (CampaignWritingActivity 와 동일 레이아웃 재사용)
- * API: POST api/campaign/update.php (CampaignUpdateRequest)
+ * 체험단 수정 Activity
  */
 public class CampaignEditActivity extends AppCompatActivity {
 
@@ -79,6 +70,7 @@ public class CampaignEditActivity extends AppCompatActivity {
     private String selectedPlaceName     = "";
     private String selectedAddress       = "";
     private String selectedRoadAddress   = "";
+    private String selectedSido          = "";
     private String selectedSigungu       = "";
     private String selectedDong          = "";
     private String selectedMapX          = "";
@@ -105,6 +97,7 @@ public class CampaignEditActivity extends AppCompatActivity {
                         selectedPlaceName     = data.getStringExtra("place_name");
                         selectedAddress       = data.getStringExtra("address");
                         selectedRoadAddress   = data.getStringExtra("road_address");
+                        selectedSido          = data.getStringExtra("sido");
                         selectedSigungu       = data.getStringExtra("sigungu");
                         selectedDong          = data.getStringExtra("dong");
                         selectedMapX          = data.getStringExtra("map_x");
@@ -213,6 +206,7 @@ public class CampaignEditActivity extends AppCompatActivity {
             selectedPlaceName     = nvl(location.getPlace_name());
             selectedAddress       = nvl(location.getAddress());
             selectedRoadAddress   = nvl(location.getRoad_address());
+            selectedSido          = nvl(location.getSido());
             selectedSigungu       = nvl(location.getSigungu());
             selectedDong          = nvl(location.getDong());
             selectedMapX          = nvl(location.getMap_x());
@@ -425,7 +419,7 @@ public class CampaignEditActivity extends AppCompatActivity {
         CampaignUpdateRequest.LocationRequest locationRequest =
                 new CampaignUpdateRequest.LocationRequest(
                         selectedPlaceName, selectedAddress, selectedRoadAddress,
-                        "", selectedSigungu, selectedDong,
+                        selectedSido, selectedSigungu, selectedDong,
                         selectedMapX, selectedMapY,
                         selectedPlaceCategory, selectedPhone
                 );

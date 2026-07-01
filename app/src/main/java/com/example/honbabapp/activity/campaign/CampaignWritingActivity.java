@@ -50,10 +50,6 @@ import retrofit2.Response;
 /**
  * 체험단 등록 Activity
  *
- * 수정 내역:
- * - Issue #1: DatePicker setMinDate() 추가 (과거 날짜 선택 불가)
- * - Issue #1: TimePicker 오늘 선택 시 현재 시각 이후만 허용
- * - Issue #8: isTitleAutoFilled 플래그로 가게 변경 시 제목 자동 업데이트
  */
 public class CampaignWritingActivity extends AppCompatActivity {
 
@@ -74,6 +70,7 @@ public class CampaignWritingActivity extends AppCompatActivity {
     private String selectedPlaceName = "";
     private String selectedAddress = "";
     private String selectedRoadAddress = "";
+    private String selectedSido = "";
     private String selectedSigungu = "";
     private String selectedDong = "";
     private String selectedMapX = "";
@@ -81,13 +78,10 @@ public class CampaignWritingActivity extends AppCompatActivity {
     private String selectedPlaceCategory = "";
     private String selectedPhone = "";
 
-    // 이미지 — MeetingCardWritingActivity 동일 패턴
+    // 이미지
     private String pendingImageValue = null;  // naver URL or content:// Uri
     private String pendingImageSource = null; // "naver" | "gallery"
 
-    // Issue #8: 제목 자동 입력 플래그
-    // true = 자동 입력된 상태 → 가게 변경 시 덮어쓰기 허용
-    // false = 사용자가 직접 수정한 상태 → 가게 변경 시 유지
     private boolean isTitleAutoFilled = false;
     // 자동 입력 중 TextWatcher 트리거 방지 플래그
     private boolean isAutoFillingTitle = false;
@@ -106,6 +100,7 @@ public class CampaignWritingActivity extends AppCompatActivity {
                         selectedPlaceName     = data.getStringExtra("place_name");
                         selectedAddress       = data.getStringExtra("address");
                         selectedRoadAddress   = data.getStringExtra("road_address");
+                        selectedSido          = data.getStringExtra("sido");
                         selectedSigungu       = data.getStringExtra("sigungu");
                         selectedDong          = data.getStringExtra("dong");
                         selectedMapX          = data.getStringExtra("map_x");
@@ -186,10 +181,7 @@ public class CampaignWritingActivity extends AppCompatActivity {
         binding.btnRegisterCampaign.setOnClickListener(v -> validateAndRegisterCampaign());
     }
 
-    /**
-     * Issue #8: 사용자가 제목을 직접 수정하면 자동 입력 플래그 해제
-     * isAutoFillingTitle 가드로 프로그래밍 방식 setText() 는 무시
-     */
+
     private void setupTitleAutoFillWatcher() {
         binding.etCampaignTitle.addTextChangedListener(new TextWatcher() {
             @Override
@@ -252,9 +244,6 @@ public class CampaignWritingActivity extends AppCompatActivity {
         else if (lower.contains("술"))   binding.radioCategoryPub.performClick();
     }
 
-    /**
-     * Issue #1: DatePicker — 오늘부터 선택 가능 (과거 날짜 차단)
-     */
     /**
      * 참여자 카운터
      */
@@ -482,7 +471,7 @@ public class CampaignWritingActivity extends AppCompatActivity {
         MeetingCreateRequest.LocationRequest locationRequest =
                 new MeetingCreateRequest.LocationRequest(
                         selectedPlaceName, selectedAddress, selectedRoadAddress,
-                        selectedSigungu, selectedDong, selectedMapX, selectedMapY,
+                        selectedSido, selectedSigungu, selectedDong, selectedMapX, selectedMapY,
                         selectedPlaceCategory, selectedPhone
                 );
 

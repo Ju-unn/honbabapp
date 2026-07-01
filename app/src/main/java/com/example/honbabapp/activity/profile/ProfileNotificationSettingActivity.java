@@ -20,18 +20,6 @@ import retrofit2.Response;
 
 /**
  * 알림 설정 화면
- *
- * "푸시 알림 받기" 스위치는 서버 users.push_enabled 컬럼과 1:1로 매핑된다.
- * 이 값이 0이면 서버(websocket/server.js의 sendPushToUsers)는 이 사용자에게
- * 어떤 FCM 푸시(채팅/모임/후기 등)도 보내지 않는다.
- *
- * 화면 진입 시 SharedPreferences 캐시 값을 먼저 보여준 뒤, profile.php를 호출해
- * 서버의 최신 push_enabled 값으로 다시 동기화한다 (다른 기기에서 변경한 경우 대응).
- *
- * 화면의 "모임 알림" / "채팅 알림" / "이벤트·공지 알림" 카드는 카테고리별
- * 세부 설정을 위한 자리이지만, 현재 백엔드(users 테이블)에는 카테고리별
- * 컬럼이 없어 아직 서버와 연동되지 않았다. 추후 카테고리별 컬럼이
- * 추가되면 동일한 패턴으로 연동할 수 있다.
  */
 public class ProfileNotificationSettingActivity extends AppCompatActivity {
 

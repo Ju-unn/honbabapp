@@ -13,9 +13,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.honbabapp.activity.campaign.CampaignDetailActivity;
 import com.example.honbabapp.activity.meeting.MeetingDetailActivity;
 import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.api.data.meeting.MeetingParticipant;
+import com.example.honbabapp.databinding.RvCampaignCardBinding;
 import com.example.honbabapp.databinding.RvMeetingCardBinding;
 
 import java.text.ParseException;
@@ -26,29 +28,54 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class MapAllMeetingListAdapter extends RecyclerView.Adapter<MapAllMeetingListAdapter.ViewHolder> {
+/**
+ * 지도 하단 목록 어댑터
+ *
+ */
+public class MapAllMeetingListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final String TAG = "MapAllMeetingAdapter";
+
+    private static final int VIEW_TYPE_MEETING = 0;   // 일반 모임 → rv_meeting_card.xml
+    private static final int VIEW_TYPE_CAMPAIGN = 1;  // 체험단   → rv_campaign_card.xml
+
     private List<Meeting> meetings = new ArrayList<>();
 
     public void updateMeetings(List<Meeting> newMeetings) {
-        this.meetings = newMeetings;
+        this.meetings = (newMeetings != null) ? newMeetings : new ArrayList<>();
         notifyDataSetChanged();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        Meeting meeting = meetings.get(position);
+        return meeting.isCampaign() ? VIEW_TYPE_CAMPAIGN : VIEW_TYPE_MEETING;
+    }
 
     @NonNull
     @Override
-    public MapAllMeetingListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        RvMeetingCardBinding binding = RvMeetingCardBinding.inflate(
-                LayoutInflater.from(parent.getContext()), parent, false
-        );
-        return new ViewHolder(binding);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_CAMPAIGN) {
+            RvCampaignCardBinding binding = RvCampaignCardBinding.inflate(
+                    LayoutInflater.from(parent.getContext()), parent, false
+            );
+            return new CampaignViewHolder(binding);
+        } else {
+            RvMeetingCardBinding binding = RvMeetingCardBinding.inflate(
+                    LayoutInflater.from(parent.getContext()), parent, false
+            );
+            return new MeetingViewHolder(binding);
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MapAllMeetingListAdapter.ViewHolder holder, int position) {
-        holder.bind(meetings.get(position));
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        Meeting meeting = meetings.get(position);
+        if (holder instanceof CampaignViewHolder) {
+            ((CampaignViewHolder) holder).bind(meeting);
+        } else if (holder instanceof MeetingViewHolder) {
+            ((MeetingViewHolder) holder).bind(meeting);
+        }
     }
 
     @Override
@@ -56,22 +83,18 @@ public class MapAllMeetingListAdapter extends RecyclerView.Adapter<MapAllMeeting
         return meetings.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    // ─────────────────────────────────────────────────────────────
+    // 일반 모임 ViewHolder — rv_meeting_card.xml 
+    // ─────────────────────────────────────────────────────────────
+    public class MeetingViewHolder extends RecyclerView.ViewHolder {
         private final RvMeetingCardBinding binding;
 
-        public ViewHolder(RvMeetingCardBinding binding) {
+        public MeetingViewHolder(RvMeetingCardBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
 
         public void bind(Meeting meeting) {
-
-            // location null 체크 — DB에 location이 없는 모임 방어
-            if (meeting.getLocation() != null) {
-                binding.tvMeetingLocation.setText(meeting.getLocation().getPlace_name() + "" + meeting.getLocation().getRoad_address());
-            } else {
-                binding.tvMeetingLocation.setText("");
-            }
 
             // 클릭 이벤트
             binding.getRoot().setOnClickListener(v -> {
@@ -217,31 +240,138 @@ public class MapAllMeetingListAdapter extends RecyclerView.Adapter<MapAllMeeting
             }
         }
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // 체험단 ViewHolder — rv_campaign_card.xml 
+    // ─────────────────────────────────────────────────────────────
+    public class CampaignViewHolder extends RecyclerView.ViewHolder {
+        private final RvCampaignCardBinding binding;
+
+        public CampaignViewHolder(RvCampaignCardBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
+        }
+
+        public void bind(Meeting meeting) {
+            bindClickEvent(meeting);
+            bindImage(meeting);
+            bindTitle(meeting);
+            bindCampaignProvided(meeting);
+            bindCampaignChannels(meeting);
+            bindLocation(meeting);
+            bindParticipantsRow(meeting);
+            bindDeadlineText(meeting);
+        }
+
+        // ── 클릭 → CampaignDetailActivity ────────────────────────
+        private void bindClickEvent(Meeting meeting) {
+            binding.getRoot().setOnClickListener(view -> {
+                Intent intent = new Intent(view.getContext(), CampaignDetailActivity.class);
+                intent.putExtra("meeting_id", meeting.getMeeting_id());
+                view.getContext().startActivity(intent);
+            });
+        }
+
+        // ── 상단 이미지 ───────────────────────────────────────────
+        private void bindImage(Meeting meeting) {
+            Glide.with(binding.getRoot().getContext())
+                    .load(meeting.getMeeting_image())
+                    .placeholder(R.drawable.placeholder_meeting_image)
+                    .error(R.drawable.placeholder_meeting_image)
+                    .centerCrop()
+                    .into(binding.ivCampaignImage);
+        }
+
+        // ── 제목 ──────────────────────────────────────────────────
+        private void bindTitle(Meeting meeting) {
+            binding.tvCampaignTitle.setText(meeting.getMeeting_title());
+        }
+
+        // ── 제공 내역 (주황 굵게) ─────────────────────────────────
+        private void bindCampaignProvided(Meeting meeting) {
+            String provided = meeting.getCampaign_provided();
+            if (provided != null && !provided.isEmpty()) {
+                binding.tvCampaignProvided.setText(provided);
+                binding.tvCampaignProvided.setVisibility(View.VISIBLE);
+            } else {
+                binding.tvCampaignProvided.setVisibility(View.GONE);
+            }
+        }
+
+        // ── 홍보 플랫폼 ─────────────────────────────────────────────
+        private void bindCampaignChannels(Meeting meeting) {
+            String channels = meeting.getCampaign_channels();
+            if (channels != null && !channels.isEmpty()) {
+                binding.tvCampaignChannels.setText(channels.replace(",", " · "));
+                binding.tvCampaignChannels.setVisibility(View.VISIBLE);
+            } else {
+                binding.tvCampaignChannels.setVisibility(View.GONE);
+            }
+        }
+
+        // ── 위치 표시 ─────────────────────────────────────────────
+        private void bindLocation(Meeting meeting) {
+            if (meeting.getLocation() != null) {
+                String locationText = meeting.getLocation().getPlace_name();
+                if (locationText == null || locationText.isEmpty()) {
+                    locationText = meeting.getLocation().getDong();
+                }
+                binding.tvCampaignLocation.setText(locationText);
+            }
+        }
+
+        // ── 하단 참여자 아바타 + 남은 인원 ───────────────────────
+        private void bindParticipantsRow(Meeting meeting) {
+            List<MeetingParticipant> participants = meeting.getParticipants();
+
+            ImageView[] avatars = {
+                    binding.ivAvatar1,
+                    binding.ivAvatar2,
+                    binding.ivAvatar3
+            };
+
+            int participantCount = (participants != null) ? participants.size() : 0;
+
+            for (int index = 0; index < avatars.length; index++) {
+                if (index < participantCount) {
+                    avatars[index].setVisibility(View.VISIBLE);
+                    Glide.with(binding.getRoot().getContext())
+                            .load(participants.get(index).getUser_profile_image())
+                            .placeholder(R.drawable.ic_profile)
+                            .circleCrop()
+                            .into(avatars[index]);
+                } else {
+                    avatars[index].setVisibility(View.GONE);
+                }
+            }
+
+            int needed = meeting.getMeeting_max_participants() - meeting.getMeeting_current_participants();
+            binding.tvCampaignParticipantCount.setText(
+                    needed > 0 ? "+" + needed + "명 더 모집중" : "정원 마감"
+            );
+        }
+
+        // ── 마감일 텍스트 (하단 오른쪽) ──────────────────────────
+        private void bindDeadlineText(Meeting meeting) {
+            String deadline = meeting.getCampaign_deadline();
+            if (deadline == null || deadline.isEmpty()) {
+                binding.tvCampaignDeadline.setVisibility(View.GONE);
+                return;
+            }
+            try {
+                SimpleDateFormat inputFormat  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+                SimpleDateFormat outputFormat = new SimpleDateFormat("MM/dd", Locale.KOREA);
+                Date deadlineDate = inputFormat.parse(deadline);
+                if (deadlineDate != null) {
+                    binding.tvCampaignDeadline.setText("~" + outputFormat.format(deadlineDate) + " 마감");
+                    binding.tvCampaignDeadline.setVisibility(View.VISIBLE);
+                } else {
+                    binding.tvCampaignDeadline.setVisibility(View.GONE);
+                }
+            } catch (ParseException e) {
+                Log.w(TAG, "마감일 파싱 실패: " + deadline);
+                binding.tvCampaignDeadline.setVisibility(View.GONE);
+            }
+        }
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

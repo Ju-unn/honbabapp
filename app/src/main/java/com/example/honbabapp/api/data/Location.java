@@ -1,10 +1,15 @@
 package com.example.honbabapp.api.data;
 
+/**
+ * 모임/체험단 응답에 포함되는 location 객체 모델
+ *
+ */
 public class Location {
     private int location_id;
     private String place_name;
     private String address;
     private String road_address;
+    private String sido;
     private String sigungu;
     private String dong;
     private String map_x;
@@ -51,6 +56,14 @@ public class Location {
 
     public void setRoad_address(String road_address) {
         this.road_address = road_address;
+    }
+
+    public String getSido() {
+        return sido;
+    }
+
+    public void setSido(String sido) {
+        this.sido = sido;
     }
 
     public String getSigungu() {

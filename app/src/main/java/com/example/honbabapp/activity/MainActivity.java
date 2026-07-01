@@ -22,6 +22,7 @@ import com.example.honbabapp.databinding.ActivityMainBinding;
 import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.ui.adapter.MainFragmentAdapter;
 import com.example.honbabapp.ui.fragment.CampaignFragment;
+import com.example.honbabapp.ui.fragment.HomeFragment;
 import com.example.honbabapp.ui.fragment.MapFragment;
 import com.google.android.material.navigation.NavigationBarView;
 
@@ -78,18 +79,13 @@ public class MainActivity extends AppCompatActivity {
         handleIntent(intent);
     }
 
-    /**
-     * Intent 처리 - 홈 새로고침, 지도 이동 등
-     * handleIntent() 의 findFragmentByTag 인덱스:
-     *   "f0" = HomeFragment, "f1" = MapFragment → 인덱스 불변이라 그대로 유지
-     */
     private void handleIntent(Intent intent) {
         if (intent == null) return;
 
         if (intent.getBooleanExtra("refresh_home", false)) {
             Fragment homeFragment = getSupportFragmentManager().findFragmentByTag("f0");
-            if (homeFragment != null) {
-                Toast.makeText(this, "모임 목록이 갱신되었습니다.", Toast.LENGTH_SHORT).show();
+            if (homeFragment instanceof HomeFragment) {
+                ((HomeFragment) homeFragment).refreshMeetingList();
             }
         }
 

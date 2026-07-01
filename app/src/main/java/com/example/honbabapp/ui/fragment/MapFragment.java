@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.honbabapp.activity.MainActivity;
 import com.example.honbabapp.activity.SearchViewActivity;
+import com.example.honbabapp.activity.campaign.CampaignDetailActivity;
 import com.example.honbabapp.activity.meeting.MeetingDetailActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
@@ -60,6 +61,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * 지도 Fragment
+ *
+ */
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private static final String TAG = "MapFragment";
@@ -103,9 +108,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     /// 상태관리 /////////////////////////////////////////////////////////////////////////////////
     private Set<String> currentFilterCategories = new HashSet<>();
+    private Set<String> currentFilterChannels = new HashSet<>();
     private int currentMinPrice = 0;
     private int currentMaxPrice = 100000;
     private String currentSortOption = "전체";
+
+    // 날짜/시간 필터 상태 (쿼리용 포맷: date=YYYY-MM-DD, time=HH:MM)
+    private String currentDate = null;
+    private String currentTime = null;
 
     /// 상태관리 /////////////////////////////////////////////////////////////////////////////////
 
@@ -158,6 +168,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         Log.i(TAG, "onViewCreated");
 
         initRecyclerView();
@@ -175,40 +186,51 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         // ── Clusterer 초기화 ──────────────────────────────
         clusterer = new Clusterer.Builder<MeetingKey>()
-                        // 클러스트 마커 (여러 개 묶인 상태) 스타일
-                        .clusterMarkerUpdater((info , marker) -> {
-                            marker.setIcon(OverlayImage.fromBitmap(makeClusterIcon(info.getSize())));
-                            marker.setCaptionText("");
-                            marker.setZIndex(1);
+                // 클러스트 마커 (여러 개 묶인 상태) 스타일
+                // 클러스터 안에 체험단이 하나라도 포함되면 체험단 색으로 표시
+                .clusterMarkerUpdater((info , marker) -> {
+                    final int clusterSize = info.getSize(); // 클러스터 안에 몇 개 묶였는지
 
-                            final int clusterSize = info.getSize(); // 클러스터 안에 몇 개 묶였는지
+                    // 클러스터 중심 좌표 기준으로 가장 가까운 모임들을 뽑아
+                    // 체험단이 하나라도 포함되어 있으면 체험단 색으로 표시
+                    LatLng clusterPos = marker.getPosition();
+                    List<Meeting> clusterMeetingsForColor = extractClusterMeetings(clusterPos, clusterSize);
+                    String clusterMeetingType = resolveClusterMeetingType(clusterMeetingsForColor);
 
-                            marker.setOnClickListener(o -> {
-                                LatLng clusterPos = marker.getPosition(); // 클러스터 중심 좌표
-                                List<Meeting> clusterMeetings = extractClusterMeetings(clusterPos, clusterSize);
+                    marker.setIcon(OverlayImage.fromBitmap(makeClusterIcon(clusterSize, clusterMeetingType)));
+                    marker.setCaptionText("");
+                    marker.setZIndex(1);
 
-                                MapClusterBottomSheetDialog dialog = new MapClusterBottomSheetDialog();
-                                dialog.meetings = clusterMeetings;
-                                dialog.show(getChildFragmentManager(), "clusterDialog");
-                                return true;
-                            });
-                        })
-                        // 개별 마커 스타일 + 클릭 이벤트
-                        .leafMarkerUpdater((info , marker) -> {
-                            Meeting meeting = ((MeetingKey) info.getKey()).getMeeting();
+                    marker.setOnClickListener(o -> {
+                        LatLng pos = marker.getPosition(); // 클러스터 중심 좌표
+                        List<Meeting> clusterMeetings = extractClusterMeetings(pos, clusterSize);
 
-                            // 기본 아이콘으로 초기화 (클러스터 아이콘이 남아있는 현상 방지)
-                            marker.setIcon(Marker.DEFAULT_ICON);
+                        MapClusterBottomSheetDialog dialog = new MapClusterBottomSheetDialog();
+                        dialog.meetings = clusterMeetings;
+                        dialog.show(getChildFragmentManager(), "clusterDialog");
+                        return true;
+                    });
+                })
+                // 개별 마커 스타일 + 클릭 이벤트
+                .leafMarkerUpdater((info , marker) -> {
+                    Meeting meeting = ((MeetingKey) info.getKey()).getMeeting();
 
-                            marker.setCaptionText(meeting.getMeeting_title());
-                            marker.setOnClickListener(o -> {
-                                Intent intent = new Intent(requireContext(), MeetingDetailActivity.class);
-                                intent.putExtra("meeting_id", meeting.getMeeting_id());
-                                startActivity(intent);
-                                return true;
-                            });
-                        })
-                        .build();
+                    // 체험단이면 전용 색상 핀, 일반이면 기본 아이콘
+                    if (meeting.isCampaign()) {
+                        marker.setIcon(OverlayImage.fromBitmap(makeLeafIcon(true)));
+                    } else {
+                        marker.setIcon(Marker.DEFAULT_ICON);
+                    }
+
+                    marker.setCaptionText(meeting.getMeeting_title());
+
+                    // 체험단/일반 모임에 따라 상세 화면을 분기해서 연다
+                    marker.setOnClickListener(o -> {
+                        openMeetingDetail(meeting);
+                        return true;
+                    });
+                })
+                .build();
         clusterer.setMap(naverMap);
 
         // Naver SDK에 위치 소스 연결
@@ -271,6 +293,38 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         // 현재 위치로 카메라 이동 후 첫 api 호출
         moveToCurrentLocation();
+    }
+
+    /**
+     * 모임 종류에 따라 상세 화면을 분기해서 연다.
+     * 체험단(meeting_type="체험단")이면 CampaignDetailActivity,
+     * 일반 모임이면 기존처럼 MeetingDetailActivity로 이동한다.
+     * (둘 다 동일하게 "meeting_id" extra 키를 사용)
+     */
+    private void openMeetingDetail(Meeting meeting) {
+        if (meeting.isCampaign()) {
+            Intent intent = new Intent(requireContext(), CampaignDetailActivity.class);
+            intent.putExtra("meeting_id", meeting.getMeeting_id());
+            startActivity(intent);
+        } else {
+            Intent intent = new Intent(requireContext(), MeetingDetailActivity.class);
+            intent.putExtra("meeting_id", meeting.getMeeting_id());
+            startActivity(intent);
+        }
+    }
+
+    /**
+     * 주어진 모임 목록 중 체험단이 하나라도 있으면 "체험단" 색으로,
+     * 전부 일반 모임이면 "일반" 색으로 클러스터 아이콘 타입을 결정한다.
+     * (혼합 클러스터는 체험단 색 우선 — 단순화 정책)
+     */
+    private String resolveClusterMeetingType(List<Meeting> meetingsInCluster) {
+        for (Meeting m : meetingsInCluster) {
+            if (m.isCampaign()) {
+                return "체험단";
+            }
+        }
+        return "일반";
     }
 
     /**
@@ -352,7 +406,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     // ──────────────────────────────────────────────
 
     /**
-     * 현재 좌표 + 카테고리로 모임 목록 API 호출
+     * 현재 좌표 + 필터로 일반 모임과 체험단을 한 번에 조회한다.
      */
 
     private void loadMeetingsOnMap () {
@@ -365,10 +419,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         Integer minPrice = (currentMinPrice > 0) ? currentMinPrice : null;
         Integer maxPrice = (currentMaxPrice < 100000) ? currentMaxPrice : null;
 
+        String channels = currentFilterChannels.isEmpty()
+                ? null
+                : String.join(",", currentFilterChannels);
+
         // 정렬 옵션 변환
         String orderBy = "거리순".equals(currentSortOption) ? "distance" : null ;
 
         Call<ApiResponse<MeetingListResponse>> call = apiService.getMeetingList(
+                "전체",
                 null,
                 categories,
                 "모집중",
@@ -379,17 +438,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 DEFAULT_RADIUS_KM,
                 orderBy,
                 minPrice,
-                maxPrice
+                maxPrice,
+                channels,
+                currentDate,
+                currentTime
         );
 
         call.enqueue(new Callback<ApiResponse<MeetingListResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<MeetingListResponse>> call, Response<ApiResponse<MeetingListResponse>> response) {
+                if (binding == null) return;
+
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
 
                     List<Meeting> rawMeetings = response.body().getData().getMeetings();
 
-                    // 만료된 미팅 클라이언트 필터링
+                    // 만료된 모임 클라이언트 필터링
                     List<Meeting> meetings = new ArrayList<>();
                     for (Meeting m : rawMeetings) {
                         if (!m.isExpired()) {
@@ -397,9 +461,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                         }
                     }
 
-                    Log.i(TAG, "모임 로드: " + meetings.size() + "개");
-
-
+                    Log.i(TAG, "모임(일반+체험단) 로드: " + meetings.size() + "개");
 
                     // 인기순
                     if ("인기순".equals(currentSortOption)) {
@@ -409,7 +471,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                     // 마커 업데이트
                     updateMarkersOnMap(meetings);
 
-                    // BottomSheet 리스트 업데이트
+                    // BottomSheet 리스트 업데이트 (체험단 뱃지는 어댑터의 bind()에서
+                    // meeting.getMeeting_type()으로 분기)
                     allMeetingListAdapter.updateMeetings(meetings);
                 } else {
                     Log.e(TAG, "API 실패: " + response.code());
@@ -418,6 +481,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
             @Override
             public void onFailure(Call<ApiResponse<MeetingListResponse>> call, Throwable t) {
+                if (binding == null) return;
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
                 Toast.makeText(getContext(), "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
@@ -453,15 +517,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     /**
      * 클러스터 마커 아이콘 생성
      * 숫자가 표시된 원형 배지
+     * meetingType이 "체험단"이면 구분 색상(#3B82F6), 아니면 기존 주황색(#FF6B35)
      */
-    private Bitmap makeClusterIcon(int count) {
+    private Bitmap makeClusterIcon(int count, String meetingType) {
         int sizePx = 96;
         Bitmap bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bmp);
 
-        // 1단계: 주황색 원 그리기
+        // 1단계: 원 그리기 (일반 = 주황, 체험단 = 파랑)
+        String fillColor = "체험단".equals(meetingType) ? "#3B82F6" : "#FF6B35";
         Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        circlePaint.setColor(Color.parseColor("#FF6B35"));
+        circlePaint.setColor(Color.parseColor(fillColor));
         canvas.drawCircle(sizePx / 2f, sizePx / 2f, sizePx / 2f, circlePaint);
 
         // 2단계: 흰색 테두리 그리기
@@ -483,6 +549,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         return bmp;
     }
 
+    /**
+     * 개별(leaf) 마커 전용 아이콘 생성 — 체험단 전용 핀
+     */
+    private Bitmap makeLeafIcon(boolean isCampaign) {
+        int sizePx = 64;
+        Bitmap bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
+
+        String fillColor = isCampaign ? "#3B82F6" : "#FF6B35";
+        Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        circlePaint.setColor(Color.parseColor(fillColor));
+        canvas.drawCircle(sizePx / 2f, sizePx / 2f, sizePx / 2.4f, circlePaint);
+
+        Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        borderPaint.setColor(Color.WHITE);
+        borderPaint.setStyle(Paint.Style.STROKE);
+        borderPaint.setStrokeWidth(4f);
+        canvas.drawCircle(sizePx / 2f, sizePx / 2f, (sizePx / 2.4f) - 2f, borderPaint);
+
+        return bmp;
+    }
+
     // ──────────────────────────────────────────────
     // 필터 Dialog
     // ──────────────────────────────────────────────
@@ -493,14 +581,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         // 이전 필터 상태
         dialog.initialSelectedCategories = new HashSet<>(currentFilterCategories);
+        dialog.initialSelectedChannels = new HashSet<>(currentFilterChannels);
         dialog.initialMinPrice = currentMinPrice;
         dialog.initialMaxPrice = currentMaxPrice;
+        dialog.initialDateQuery = currentDate;
+        dialog.initialTimeQuery = currentTime;
 
-
-        dialog.listener = ((categories, minPrice, maxPrice, date, time) -> {
+        dialog.listener = ((categories, channels, minPrice, maxPrice, date, time) -> {
             currentFilterCategories = new HashSet<>(categories);
+            currentFilterChannels = new HashSet<>(channels);
             currentMinPrice = minPrice;
             currentMaxPrice = maxPrice;
+            currentDate = date;
+            currentTime = time;
             loadMeetingsOnMap();
         });
         dialog.show(getChildFragmentManager(), "mapFilterDialog");
@@ -703,6 +796,3 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
 
 }
-
-
-

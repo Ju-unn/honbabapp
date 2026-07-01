@@ -1,15 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!--
-    리디자인 포인트:
-    1. chip_group_selected → 적용하기 버튼 바로 위로 이동 (직관적)
-    2. 휴지통 → chip_group 첫 번째 자리 왼쪽에 위치
-    3. 전체적 UI: 2024 Material You 감성 - 둥근 카드, 여백, 깔끔한 타이포그래피
-    4. 카테고리 버튼: FlexboxLayout 대신 WrapLayout 스타일로 자연스럽게 줄바꿈
-    5. 섹션 헤더: 이모지 + 볼드체로 생동감
-    6. 가격 섹션: 배지형 가격 표시
-    7. 날짜/시간: 카드 스타일 버튼
--->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -74,6 +64,90 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingBottom="8dp">
+
+            <!-- ── 구분선 ── -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/bg_200" />
+
+            <!-- ══════════════════════════════════
+                 홍보 플랫폼 선택 섹션
+            ══════════════════════════════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:text="홍보 플랫폼 선택"
+                    android:textColor="@color/text_100"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="-0.01" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_channel_blog"
+                        style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/chip_button_background"
+                        app:backgroundTint="@null"
+                        android:minHeight="0dp"
+                        android:minWidth="0dp"
+                        android:text="블로그"
+                        android:textAllCaps="false"
+                        android:textColor="@color/text_100"
+                        android:textSize="13sp" />
+
+                    <Button
+                        android:id="@+id/btn_channel_instagram"
+                        style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/chip_button_background"
+                        app:backgroundTint="@null"
+                        android:minHeight="0dp"
+                        android:minWidth="0dp"
+                        android:text="인스타그램"
+                        android:textAllCaps="false"
+                        android:textColor="@color/text_100"
+                        android:textSize="13sp" />
+
+                    <Button
+                        android:id="@+id/btn_channel_youtube"
+                        style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/chip_button_background"
+                        app:backgroundTint="@null"
+                        android:minHeight="0dp"
+                        android:minWidth="0dp"
+                        android:text="유튜브"
+                        android:textAllCaps="false"
+                        android:textColor="@color/text_100"
+                        android:textSize="13sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
 
             <!-- ══════════════════════════════════
                  음식 종류 섹션

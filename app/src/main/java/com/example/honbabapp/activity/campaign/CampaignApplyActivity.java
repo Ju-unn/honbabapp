@@ -26,10 +26,6 @@ import retrofit2.Response;
 
 /**
  * 체험단 신청 폼 Activity
- *
- * 수정 내역:
- * - Issue #5: onResume() 추가 — ProfileProfileSettingActivity 복귀 시 SNS ID 최신화
- *   startActivity()만 호출하고 결과를 받지 않아 돌아와도 갱신이 안 되던 문제 해결
  */
 public class CampaignApplyActivity extends AppCompatActivity {
 
@@ -76,10 +72,6 @@ public class CampaignApplyActivity extends AppCompatActivity {
         setupUI(instagramId, blogId);
     }
 
-    /**
-     * Issue #5: ProfileProfileSettingActivity 에서 돌아올 때 최신 SNS ID 반영
-     * startActivity()만 호출하고 결과를 받지 않으므로 onResume에서 직접 재조회
-     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -107,14 +99,6 @@ public class CampaignApplyActivity extends AppCompatActivity {
         binding.btnSubmitApply.setOnClickListener(v -> submitApply());
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Issue #5: 프로필 재조회 → SNS ID 갱신
-    // ─────────────────────────────────────────────────────────────
-
-    /**
-     * API로 최신 프로필 조회 후 SNS ID 업데이트
-     * onResume 마다 호출되므로 실패해도 앱이 멈추지 않도록 조용히 처리
-     */
     private void refreshSnsIds() {
         if (currentUserId == -1) return;
 

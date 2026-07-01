@@ -1,9 +1,12 @@
 package com.example.honbabapp.ui.fragment;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -29,6 +32,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * 프로필 탭 Fragment
+ */
 public class ProfileFragment extends Fragment {
 
     private static final String TAG = "ProfileFragment";
@@ -37,6 +43,17 @@ public class ProfileFragment extends Fragment {
 
     private static final String PREF_NAME = "honbabapp_prefs";
     private static final String KEY_USER_ID = "user_id";
+
+    // 프로필 수정 화면 결과 수신용 런처
+    private final ActivityResultLauncher<Intent> profileSettingLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            loadProfile(); // 프로필 변경 즉시 반영
+                        }
+                    }
+            );
 
     public ProfileFragment() {
         Log.i("ProfileFragment" , "생성");
@@ -160,12 +177,14 @@ public class ProfileFragment extends Fragment {
     }
 
     /// 프로필 수정 클릭 이벤트
+    /// ProfileProfileSettingActivity의 setResult(RESULT_OK)를 받아
+    /// 저장 직후 프로필 화면에 변경사항을 즉시 반영한다 (저장 후 갱신 버그 수정)
     public void menuProfileSettingOnClick(){
         binding.menuEditProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity() , ProfileProfileSettingActivity.class);
-                startActivity(intent);
+                profileSettingLauncher.launch(intent);
             }
         });
     }

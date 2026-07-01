@@ -32,10 +32,6 @@ import retrofit2.Response;
 /**
  * 체험단 신청자 목록 Activity (호스트 전용)
  *
- * Issue #6A 수정:
- * - page_campaign_applicant_list.xml 버튼에 android:textColor="@color/tab_text_color_selector" 적용
- * - updateTabStyle() 에서 setTextColor() 호출 완전 제거
- * - setSelected(true/false) 만 호출 → XML selector 가 자동으로 색상 처리
  */
 public class CampaignApplicantListActivity extends AppCompatActivity {
 
@@ -112,11 +108,6 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Issue #6A: setSelected() 만 호출 — 텍스트 색상은 XML selector 가 자동 처리
-     * page_campaign_applicant_list.xml 의 btn_filter_waiting / btn_filter_approved 에
-     * android:textColor="@color/tab_text_color_selector" 적용 필요
-     */
     private void updateTabStyle(String activeStatus) {
         binding.btnFilterWaiting.setSelected("대기".equals(activeStatus));
         binding.btnFilterApproved.setSelected("승인".equals(activeStatus));

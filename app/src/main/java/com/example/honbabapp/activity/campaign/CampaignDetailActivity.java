@@ -42,12 +42,6 @@ import retrofit2.Response;
 
 /**
  * 체험단 상세 Activity
- *
- * Issue #3 수정:
- * - showHostPopupMenu() — menu_meeting_detail.xml 의 action_edit_meeting ID 그대로 사용
- *   이동 Activity 만 CampaignEditActivity 로 변경 (MeetingEditActivity 아님)
- * - editCampaignLauncher 추가 — 수정 완료 후 상세 새로고침
- * - action_delete_meeting → 기존 deleteCampaign() 연결 유지
  */
 public class CampaignDetailActivity extends AppCompatActivity {
 
@@ -82,9 +76,6 @@ public class CampaignDetailActivity extends AppCompatActivity {
                     }
             );
 
-    /**
-     * Issue #3: 체험단 수정 완료 후 상세 새로고침
-     */
     private final ActivityResultLauncher<Intent> editCampaignLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
@@ -281,11 +272,6 @@ public class CampaignDetailActivity extends AppCompatActivity {
     // 호스트 팝업 메뉴
     // ─────────────────────────────────────────────────────────────
 
-    /**
-     * Issue #3: menu_meeting_detail.xml 그대로 사용
-     * action_edit_meeting → CampaignEditActivity 이동 (MeetingEditActivity 아님)
-     * action_delete_meeting → 기존 deleteCampaign() 유지
-     */
     private void showHostPopupMenu() {
         PopupMenu popup = new PopupMenu(this, binding.btnMoreOptions);
         popup.getMenuInflater().inflate(R.menu.menu_meeting_detail, popup.getMenu());

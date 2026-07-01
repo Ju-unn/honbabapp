@@ -26,6 +26,7 @@ import retrofit2.Response;
  * 장소 검색 Activity
  *
  * Naver Local Search API를 사용하여 장소 검색
+ *
  */
 
 public class PlaceSearchActivity extends AppCompatActivity {
@@ -86,6 +87,7 @@ public class PlaceSearchActivity extends AppCompatActivity {
             intent.putExtra("place_name", place.getCleanTitle());
             intent.putExtra("address", place.getAddress());
             intent.putExtra("road_address", place.getRoadAddress());
+            intent.putExtra("sido", place.getSido());
             intent.putExtra("sigungu", place.getSigungu());
             intent.putExtra("dong", place.getDong());
             intent.putExtra("map_x", place.getMapxDouble());
@@ -127,7 +129,7 @@ public class PlaceSearchActivity extends AppCompatActivity {
     }
 
     /**
-     * Naver Local Search API 호출D
+     * Naver Local Search API 호출
      */
     private void searchPlace(String query) {
         String clientId = BuildConfig.NAVER_CLIENT_ID;

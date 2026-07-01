@@ -145,17 +145,6 @@ public class CampaignApplicantAdapter
             );
         }
 
-        /**
-         * 수정: participation_status 분기
-         *
-         * "승인" 상태 (승인 탭):
-         *   - layout_action_buttons (승인/거절 버튼) → GONE
-         *   - layout_bottom_buttons (채팅/상세보기)  → VISIBLE
-         *
-         * "대기" 상태 (대기 탭):
-         *   - layout_action_buttons (승인/거절 버튼) → VISIBLE
-         *   - layout_bottom_buttons (채팅/상세보기)  → VISIBLE
-         */
         private void bindButtons(ApplicantsResponse.Applicant applicant) {
             String status = applicant.getParticipation_status();
             boolean isApproved = "승인".equals(status);

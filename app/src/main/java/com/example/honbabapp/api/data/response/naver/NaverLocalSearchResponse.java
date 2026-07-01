@@ -5,7 +5,6 @@ import java.util.List;
 /**
  * Naver Local Search API 응답 모델
  *
- * GET https://openapi.naver.com/v1/search/local.json?query=음식점
  */
 public class NaverLocalSearchResponse {
 
@@ -175,6 +174,20 @@ public class NaverLocalSearchResponse {
             } catch (NumberFormatException e) {
                 return "0.0";
             }
+        }
+
+        /**
+         * 시/도 추출 (address 또는 roadAddress에서)
+         */
+        public String getSido() {
+            String addr = roadAddress != null ? roadAddress : address;
+            if (addr == null) return "";
+
+            String[] parts = addr.split(" ");
+            if (parts.length >= 1) {
+                return parts[0];  // "서울특별시"
+            }
+            return "";
         }
 
         /**

@@ -38,6 +38,7 @@ import retrofit2.Response;
 
 /**
  * 프로필 설정 Activity
+ *
  */
 public class ProfileProfileSettingActivity extends AppCompatActivity {
 
@@ -210,6 +211,8 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                                 && response.body().isSuccess()) {
                             Toast.makeText(ProfileProfileSettingActivity.this,
                                     "프로필이 수정되었습니다", Toast.LENGTH_SHORT).show();
+
+                            setResult(RESULT_OK);
                             finish();
                         } else {
                             String message = response.body() != null

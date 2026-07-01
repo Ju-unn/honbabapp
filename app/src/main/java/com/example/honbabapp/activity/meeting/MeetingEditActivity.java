@@ -48,11 +48,6 @@ import retrofit2.Response;
 /**
  * 모임 수정 Activity
  *
- * 흐름:
- * 1. Intent에서 meeting_id 받기
- * 2. getMeetingDetail() → 기존 값으로 폼 프리필
- * 3. 저장 버튼 → 이미지 변경 있으면 S3 업로드 → updateMeeting() 호출
- * 4. 성공 시 setResult(RESULT_OK) + finish()
  */
 public class MeetingEditActivity extends AppCompatActivity {
 
@@ -76,6 +71,7 @@ public class MeetingEditActivity extends AppCompatActivity {
     private String selectedPlaceName = "";
     private String selectedAddress = "";
     private String selectedRoadAddress = "";
+    private String selectedSido = "";
     private String selectedSigungu = "";
     private String selectedDong = "";
     private String selectedMapX = "";
@@ -128,6 +124,7 @@ public class MeetingEditActivity extends AppCompatActivity {
                         selectedPlaceName     = data.getStringExtra("place_name");
                         selectedAddress       = data.getStringExtra("address");
                         selectedRoadAddress   = data.getStringExtra("road_address");
+                        selectedSido          = data.getStringExtra("sido");
                         selectedSigungu       = data.getStringExtra("sigungu");
                         selectedDong          = data.getStringExtra("dong");
                         selectedMapX          = data.getStringExtra("map_x");
@@ -299,6 +296,7 @@ public class MeetingEditActivity extends AppCompatActivity {
             selectedPlaceName     = meeting.getLocation().getPlace_name();
             selectedAddress       = meeting.getLocation().getAddress();
             selectedRoadAddress   = meeting.getLocation().getRoad_address();
+            selectedSido          = meeting.getLocation().getSido();
             selectedSigungu       = meeting.getLocation().getSigungu();
             selectedDong          = meeting.getLocation().getDong();
             selectedMapX          = meeting.getLocation().getMap_x();
@@ -596,7 +594,7 @@ public class MeetingEditActivity extends AppCompatActivity {
                         selectedPlaceName,
                         selectedAddress,
                         selectedRoadAddress,
-                        "",
+                        selectedSido,
                         selectedSigungu,
                         selectedDong,
                         selectedMapX,

@@ -3,11 +3,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@drawable/bottom_sheet_background">
+    android:layout_height="match_parent"
+    android:background="@drawable/bottom_sheet_background"
+    android:orientation="vertical">
 
-    <!-- 핸들바 -->
+    <!-- ── 핸들바 ── -->
     <View
         android:layout_width="40dp"
         android:layout_height="4dp"
@@ -16,7 +16,7 @@
         android:layout_marginBottom="8dp"
         android:background="@drawable/bottom_sheet_handle" />
 
-    <!-- 헤더 -->
+    <!-- ── 헤더 ── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -45,16 +45,107 @@
 
     </LinearLayout>
 
-    <!-- 구분선 -->
+    <!-- ── 구분선 ── -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/bg_200"
-        android:layout_marginHorizontal="20dp" />
+        android:background="@color/bg_200" />
 
+    <!-- ── 지역 선택 섹션 (스크롤 밖 — 항상 보임) ── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="지역"
+            android:textColor="@color/text_100"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:letterSpacing="-0.01" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- 시/도 컬럼 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
+                    android:text="시/도"
+                    android:textColor="@color/text_200"
+                    android:textSize="12sp" />
+
+                <Spinner
+                    android:id="@+id/spinner_sido"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:background="@drawable/chip_button_background"
+                    android:paddingHorizontal="12dp"
+                    android:spinnerMode="dropdown" />
+
+            </LinearLayout>
+
+            <!-- 구/군 컬럼 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
+                    android:text="구/군"
+                    android:textColor="@color/text_200"
+                    android:textSize="12sp" />
+
+                <Spinner
+                    android:id="@+id/spinner_sigungu"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:background="@drawable/chip_button_background"
+                    android:paddingHorizontal="12dp"
+                    android:spinnerMode="dropdown" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ── 구분선 ── -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/bg_200" />
+
+    <!--
+        스크롤 영역 — bottomsheet_map_filter.xml과 동일하게
+        layout_height="0dp" + layout_weight="1" 로 남은 공간을 채움
+        → 칩이 생겨도 적용하기 버튼이 아래로 밀리지 않음
+    -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:overScrollMode="never">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -88,9 +179,12 @@
                     android:layout_weight="1"
                     android:text="블로그"
                     android:textSize="13sp"
+                    android:textAllCaps="false"
                     android:textColor="@color/text_100"
                     android:background="@drawable/chip_button_background"
                     app:backgroundTint="@null"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
                     android:layout_marginEnd="6dp" />
 
                 <Button
@@ -101,9 +195,12 @@
                     android:layout_weight="1"
                     android:text="인스타"
                     android:textSize="13sp"
+                    android:textAllCaps="false"
                     android:textColor="@color/text_100"
                     android:background="@drawable/chip_button_background"
                     app:backgroundTint="@null"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
                     android:layout_marginHorizontal="3dp" />
 
                 <Button
@@ -114,9 +211,12 @@
                     android:layout_weight="1"
                     android:text="유튜브"
                     android:textSize="13sp"
+                    android:textAllCaps="false"
                     android:textColor="@color/text_100"
                     android:background="@drawable/chip_button_background"
                     app:backgroundTint="@null"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
                     android:layout_marginStart="6dp" />
 
             </LinearLayout>
@@ -146,9 +246,12 @@
                     android:layout_weight="1"
                     android:text="한식"
                     android:textSize="12sp"
+                    android:textAllCaps="false"
                     android:textColor="@color/text_100"
                     android:background="@drawable/chip_button_background"
                     app:backgroundTint="@null"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
                     android:layout_marginEnd="6dp" />
 
                 <Button
@@ -159,9 +262,12 @@
                     android:layout_weight="1"
                     android:text="중식"
                     android:textSize="12sp"
+                    android:textAllCaps="false"
                     android:textColor="@color/text_100"
                     android:background="@drawable/chip_button_background"
                     app:backgroundTint="@null"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
                     android:layout_marginHorizontal="3dp" />
 
                 <Button
@@ -172,9 +278,12 @@
                     android:layout_weight="1"
                     android:text="일식"
                     android:textSize="12sp"
+                    android:textAllCaps="false"
                     android:textColor="@color/text_100"
                     android:background="@drawable/chip_button_background"
                     app:backgroundTint="@null"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
                     android:layout_marginHorizontal="3dp" />
 
                 <Button
@@ -185,9 +294,12 @@
                     android:layout_weight="1"
                     android:text="양식"
                     android:textSize="12sp"
+                    android:textAllCaps="false"
                     android:textColor="@color/text_100"
                     android:background="@drawable/chip_button_background"
                     app:backgroundTint="@null"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
                     android:layout_marginStart="6dp" />
 
             </LinearLayout>
@@ -207,9 +319,12 @@
                     android:layout_weight="1"
                     android:text="오마카세"
                     android:textSize="12sp"
+                    android:textAllCaps="false"
                     android:textColor="@color/text_100"
                     android:background="@drawable/chip_button_background"
                     app:backgroundTint="@null"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
                     android:layout_marginEnd="6dp" />
 
                 <Button
@@ -220,9 +335,12 @@
                     android:layout_weight="1"
                     android:text="카페"
                     android:textSize="12sp"
+                    android:textAllCaps="false"
                     android:textColor="@color/text_100"
                     android:background="@drawable/chip_button_background"
                     app:backgroundTint="@null"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
                     android:layout_marginHorizontal="3dp" />
 
                 <Button
@@ -233,9 +351,12 @@
                     android:layout_weight="1"
                     android:text="술집"
                     android:textSize="12sp"
+                    android:textAllCaps="false"
                     android:textColor="@color/text_100"
                     android:background="@drawable/chip_button_background"
                     app:backgroundTint="@null"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
                     android:layout_marginHorizontal="3dp" />
 
                 <!-- 정렬용 빈 칸 -->
@@ -281,7 +402,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="8dp">
 
                 <TextView
                     android:layout_width="0dp"
@@ -304,13 +425,22 @@
 
     </androidx.core.widget.NestedScrollView>
 
+    <!--
+        하단 고정 영역 — bottomsheet_map_filter.xml과 동일한 구조
+        NestedScrollView 밖에 위치해 칩이 아무리 많아져도 버튼이 밀리지 않음
+    -->
+
     <!-- 구분선 -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/bg_200" />
 
-    <!-- 선택된 필터 칩 영역 -->
+    <!--
+        선택된 필터 칩 영역
+        - 초기엔 gone, 칩 1개 이상이면 visible
+        - 왼쪽에 휴지통(전체 초기화) 버튼
+    -->
     <LinearLayout
         android:id="@+id/layout_chip_area"
         android:layout_width="match_parent"
@@ -341,37 +471,21 @@
 
     </LinearLayout>
 
-    <!-- 하단 버튼 -->
-    <LinearLayout
+    <!-- 적용하기 버튼 — 하단 완전 고정 (bottomsheet_map_filter.xml과 동일) -->
+    <Button
+        android:id="@+id/btn_apply_filter"
+        style="@style/Widget.MaterialComponents.Button"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center">
-
-        <Button
-            android:id="@+id/btn_reset"
-            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:text="초기화"
-            android:textColor="@color/text_100"
-            android:background="@drawable/button_secondary_background"
-            app:backgroundTint="@null"
-            android:layout_marginEnd="8dp" />
-
-        <Button
-            android:id="@+id/btn_apply_filter"
-            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:text="결과 보기"
-            android:textColor="@color/white"
-            android:background="@drawable/button_primary_background"
-            app:backgroundTint="@null" />
-
-    </LinearLayout>
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="24dp"
+        app:backgroundTint="@color/primary_100"
+        android:text="적용하기"
+        android:textColor="@android:color/white"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:letterSpacing="-0.01"
+        app:cornerRadius="14dp" />
 
 </LinearLayout>

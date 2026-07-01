@@ -48,6 +48,10 @@ public class CampaignFragment extends Fragment {
     private int currentMinPrice = 0;
     private int currentMaxPrice = 100000;
 
+    // 지역 필터 상태 (시/도 → 구)
+    private String currentSido = null;
+    private String currentSigungu = null;
+
     // ─────────────────────────────────────────────────────────────
     // 생명주기
     // ─────────────────────────────────────────────────────────────
@@ -128,7 +132,9 @@ public class CampaignFragment extends Fragment {
                 channels,
                 categories,
                 minPrice,
-                maxPrice
+                maxPrice,
+                currentSido,
+                currentSigungu
         );
 
         call.enqueue(new Callback<ApiResponse<MeetingListResponse>>() {
@@ -210,7 +216,7 @@ public class CampaignFragment extends Fragment {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 필터 버튼 (기존 그대로 + loadCampaignList 연결)
+    // 필터 버튼 (기존 그대로 + loadCampaignList 연결 + 지역 필터 추가)
     // ─────────────────────────────────────────────────────────────
 
     private void initFilterButton() {
@@ -223,12 +229,16 @@ public class CampaignFragment extends Fragment {
         dialog.initialCategories = new HashSet<>(currentCategories);
         dialog.initialMinPrice   = currentMinPrice;
         dialog.initialMaxPrice   = currentMaxPrice;
+        dialog.initialSido       = currentSido;
+        dialog.initialSigungu    = currentSigungu;
 
-        dialog.listener = (channels, categories, minPrice, maxPrice) -> {
+        dialog.listener = (channels, categories, minPrice, maxPrice, sido, sigungu) -> {
             currentChannels    = new HashSet<>(channels);
             currentCategories  = new HashSet<>(categories);
             currentMinPrice    = minPrice;
             currentMaxPrice    = maxPrice;
+            currentSido        = sido;
+            currentSigungu     = sigungu;
             updateFilterButtonState();
             loadCampaignList(); // 필터 변경 시 재호출
         };
@@ -236,8 +246,20 @@ public class CampaignFragment extends Fragment {
         dialog.show(getChildFragmentManager(), "campaignFilterDialog");
     }
 
+    /**
+     * 필터 버튼 활성 상태 표시
+     * 채널/카테고리/가격/지역 중 하나라도 기본값과 다르면 필터 버튼을 selected 상태로 표시
+     */
     private void updateFilterButtonState() {
-        // 배경/색상 변경 없음 — MapFragment 동일 패턴
+        boolean hasActiveFilter =
+                !currentChannels.isEmpty()
+                        || !currentCategories.isEmpty()
+                        || currentMinPrice > 0
+                        || currentMaxPrice < 100000
+                        || currentSido != null
+                        || currentSigungu != null;
+
+        binding.btnFilter.setSelected(hasActiveFilter);
     }
 
     // ─────────────────────────────────────────────────────────────
