@@ -118,14 +118,18 @@ public class MainActivity extends AppCompatActivity {
      */
     public void navigationToMap(String category) {
         binding.viewPager.setCurrentItem(1, false);
-        MapFragment mapFragment = (MapFragment) adapter.fragmentList.get(1);
-        mapFragment.setFilter(category);
+        MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("f1");
+        if (mapFragment != null) {
+            mapFragment.setFilter(category);
+        }
     }
 
     public void navigationToMapHot() {
         binding.viewPager.setCurrentItem(1, false);
-        MapFragment mapFragment = (MapFragment) adapter.fragmentList.get(1);
-        mapFragment.setFilterHot();
+        MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("f1");
+        if (mapFragment != null) {
+            mapFragment.setFilterHot();
+        }
     }
 
     public void navigationToHome() {

@@ -150,7 +150,7 @@ public class CampaignApplicantAdapter
             boolean isApproved = "승인".equals(status);
 
             // 승인/거절 버튼 — 승인된 신청자에게는 표시하지 않음
-            binding.layoutActionButtons.setVisibility(isApproved ? View.GONE : View.VISIBLE);
+            binding.layoutActionButtons.setVisibility(isApproved ? View.INVISIBLE : View.VISIBLE);
 
             if (!isApproved) {
                 binding.btnApprove.setOnClickListener(view -> {

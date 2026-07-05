@@ -340,7 +340,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                             if (response.isSuccessful()
                                     && response.body() != null
                                     && response.body().isSuccess()) {
-                                selectedImageUrl = response.body().getData().getImage_url();
+                                selectedImageUrl = response.body().getData().getProfile_image_url();
                                 Log.i(TAG, "이미지 업로드 성공: " + selectedImageUrl);
                             }
                         }

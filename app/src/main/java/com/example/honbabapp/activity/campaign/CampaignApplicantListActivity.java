@@ -59,6 +59,8 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
         binding = PageCampaignApplicantListBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        setResult(RESULT_OK);
+
         apiService = RetrofitClient.getClient().create(ApiService.class);
 
         campaignId = getIntent().getIntExtra(EXTRA_CAMPAIGN_ID, -1);
