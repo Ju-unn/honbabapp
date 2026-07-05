@@ -46,20 +46,6 @@ import retrofit2.Response;
  * 4) "결제하기" 클릭 → PaymentWidget.requestPayment() 호출
  * 5) 결제 성공 콜백 → onTossPaymentSuccess() 단일 진입점 → confirmPayment() 호출
  * 6) 등록권 잔액 반영 완료 → 결과를 RESULT_OK로 돌려주고 종료
- *
- * 수정 내역 (상품 카드 선택 UI):
- * - radioTicket1/5/10이 MaterialCardView 안쪽에 중첩되어 있어 RadioGroup의
- *   직계 자식이 아니었다. RadioGroup은 직계 자식 RadioButton에만 상호 배타 처리와
- *   OnCheckedChangeListener 콜백을 자동으로 연결하기 때문에, 중첩된 구조에서는
- *   그 기능이 전혀 동작하지 않아 카드를 눌러도 반응이 없었다.
- * - RadioGroup 태그를 실질적 기능이 없는 LinearLayout으로 교체했다.
- * - MaterialCardView.setChecked()/app:checkable은 Material Components 1.2.0부터
- *   지원되는데 현재 프로젝트의 라이브러리 버전에서는 지원하지 않아 리소스 링킹
- *   오류가 발생했다. 그래서 카드 선택 표시는 setStrokeColor()만으로 처리한다.
- *   strokeWidth는 절대 런타임에 바꾸지 않는데, 두께를 바꾸면 스트로크가
- *   그려지는 영역 크기 자체가 바뀌면서 이전 두께로 그려졌던 픽셀이 완전히
- *   무효화되지 않고 잔상처럼 남는 문제가 있었기 때문이다. 색상만 바꾸면
- *   그려지는 영역 크기가 그대로라 이 문제가 생기지 않는다.
  */
 public class TicketPurchaseActivity extends AppCompatActivity {
 
