@@ -41,47 +41,6 @@
             android:padding="8dp"
             android:scaleType="centerInside" />
 
-        <!-- 검색 입력 필드 -->
-        <LinearLayout
-            android:id="@+id/search_input_layout"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@drawable/search_bar_background"
-            android:paddingHorizontal="12dp"
-            android:layout_marginHorizontal="8dp">
-
-            <EditText
-                android:id="@+id/et_search_map"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:hint="어떤 모임을 찾고 있나요?"
-                android:textColorHint="@color/text_200"
-                android:textSize="14sp"
-                android:textColor="@color/text_100"
-                android:background="@android:color/transparent"
-                android:focusable="false"
-                android:clickable="true"
-                android:inputType="text"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:imeOptions="actionSearch"
-                android:paddingStart="0dp"
-                android:paddingEnd="0dp" />
-
-            <ImageButton
-                android:id="@+id/btn_search"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@android:drawable/ic_menu_search"
-                android:background="?attr/selectableItemBackgroundBorderless" />
-
-        </LinearLayout>
-
-
 
     </LinearLayout>
 

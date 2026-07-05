@@ -172,7 +172,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         Log.i(TAG, "onViewCreated");
 
         initRecyclerView();
-        setupSearchBar();
         onBackButtonClick();
         initSortButton();
         setupBottomSheetCallback();
@@ -654,12 +653,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         binding.rvMeetingCard.setAdapter(allMeetingListAdapter);
     }
 
-    private void setupSearchBar() {
-        binding.etSearchMap.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity() , SearchViewActivity.class);
-            startActivity(intent);
-        });
-    }
 
     private void onBackButtonClick() {
         binding.btnBack.setOnClickListener(v -> {

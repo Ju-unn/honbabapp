@@ -21,16 +21,15 @@ import com.example.honbabapp.api.data.response.payment.ConfirmPaymentResponse;
 import com.example.honbabapp.api.data.response.payment.PreparePaymentResponse;
 import com.example.honbabapp.databinding.PageTicketPurchaseBinding;
 import com.google.android.material.card.MaterialCardView;
-
-import java.text.NumberFormat;
-import java.util.Locale;
-import java.util.UUID;
-
 import com.tosspayments.paymentsdk.PaymentWidget;
 import com.tosspayments.paymentsdk.model.PaymentCallback;
 import com.tosspayments.paymentsdk.model.PaymentWidgetStatusListener;
 import com.tosspayments.paymentsdk.model.TossPaymentResult;
 import com.tosspayments.paymentsdk.view.PaymentMethod;
+
+import java.text.NumberFormat;
+import java.util.Locale;
+import java.util.UUID;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,7 +37,6 @@ import retrofit2.Response;
 
 /**
  * 체험단 등록권 구매 Activity
- *
  * 흐름:
  * 1) 상품(1회/5회/10회) 선택 → "다음" 클릭
  * 2) preparePayment() 호출 → 서버가 계산한 order_id/amount/order_name 수신
@@ -53,8 +51,8 @@ public class TicketPurchaseActivity extends AppCompatActivity {
     private static final String PREFERENCES_NAME = "honbabapp_prefs";
     private static final String PREFERENCE_KEY_TOSS_CUSTOMER_KEY = "toss_customer_key";
 
-    private static final String PRODUCT_CODE_TICKET_1  = "TICKET_1";
-    private static final String PRODUCT_CODE_TICKET_5  = "TICKET_5";
+    private static final String PRODUCT_CODE_TICKET_1 = "TICKET_1";
+    private static final String PRODUCT_CODE_TICKET_5 = "TICKET_5";
     private static final String PRODUCT_CODE_TICKET_10 = "TICKET_10";
 
     private PageTicketPurchaseBinding binding;
@@ -78,9 +76,15 @@ public class TicketPurchaseActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = PageTicketPurchaseBinding.inflate(getLayoutInflater());
+        binding = PageTicketPurchaseBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
+
+        String tossClientKey = BuildConfig.TOSS_CLIENT_KEY;
+        String customerKey = getOrCreateTossCustomerKey();
+
+        paymentWidget = new PaymentWidget(this, tossClientKey, customerKey, null);
 
         setupUi();
     }
@@ -110,8 +114,8 @@ public class TicketPurchaseActivity extends AppCompatActivity {
     private void selectTicketProduct(String productCode) {
         selectedProductCode = productCode;
 
-        boolean isTicket1Selected  = PRODUCT_CODE_TICKET_1.equals(productCode);
-        boolean isTicket5Selected  = PRODUCT_CODE_TICKET_5.equals(productCode);
+        boolean isTicket1Selected = PRODUCT_CODE_TICKET_1.equals(productCode);
+        boolean isTicket5Selected = PRODUCT_CODE_TICKET_5.equals(productCode);
         boolean isTicket10Selected = PRODUCT_CODE_TICKET_10.equals(productCode);
 
         binding.radioTicket1.setChecked(isTicket1Selected);
@@ -193,14 +197,6 @@ public class TicketPurchaseActivity extends AppCompatActivity {
     private void showPaymentWidget() {
         binding.layoutPaymentSection.setVisibility(View.VISIBLE);
 
-        String tossClientKey = BuildConfig.TOSS_CLIENT_KEY;
-        String customerKey = getOrCreateTossCustomerKey();
-
-        // PaymentWidget 생성자의 4번째 인자(PaymentWidgetOptions)는 브랜드페이 전용
-        // 옵션이며, Kotlin 쪽 기본값이 null이다. 브랜드페이를 쓰지 않으므로 null을
-        // 그대로 넘긴다 (별도 Builder/옵션 객체를 만들 필요 없음).
-        paymentWidget = new PaymentWidget(this, tossClientKey, customerKey, null);
-
         PaymentWidgetStatusListener paymentWidgetStatusListener = new PaymentWidgetStatusListener() {
             @Override
             public void onLoad() {
@@ -209,10 +205,6 @@ public class TicketPurchaseActivity extends AppCompatActivity {
 
             @Override
             public void onFail(TossPaymentResult.Fail fail) {
-                // 구매자가 결제 정보(카드사 선택, 계좌번호 등)를 다 입력하지 않고
-                // 결제를 시도했을 때 위젯 쪽에서 호출하는 콜백이다.
-                // 위젯 UI에 자동으로 에러 안내가 뜨긴 하지만, 화면이 길면
-                // 구매자가 놓칠 수 있어 Toast로 한 번 더 안내한다.
                 Log.w(TAG, "결제 정보 입력 안내: " + fail.getErrorMessage());
                 Toast.makeText(TicketPurchaseActivity.this,
                         fail.getErrorMessage(), Toast.LENGTH_SHORT).show();
@@ -266,9 +258,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
                 }
             });
         } catch (IllegalAccessException illegalAccessException) {
-            // 결제위젯이 아직 렌더링되지 않은 상태에서 결제를 요청하면 SDK가 던지는 예외.
-            // showPaymentWidget()에서 renderPaymentMethods()를 먼저 호출해두기 때문에
-            // 정상 흐름에서는 발생하지 않지만, 방어적으로 처리해서 화면이 멈추지 않게 한다.
+
             Log.e(TAG, "결제위젯 미렌더링 상태에서 결제 요청됨: " + illegalAccessException.getMessage());
             Toast.makeText(this, "결제 화면을 다시 불러와주세요.", Toast.LENGTH_SHORT).show();
             binding.btnNext.setEnabled(true);
@@ -277,11 +267,6 @@ public class TicketPurchaseActivity extends AppCompatActivity {
 
     // ─────────────────────────────────────────────────────────────
     // 3단계: 결제 성공 → 승인 요청 (단일 진입점)
-    //
-    // 토스페이먼츠 SDK가 결제 결과를 전달하는 정확한 콜백 형태는
-    // SDK 버전에 따라 달라질 수 있다. 이 메서드 하나만 SDK 콜백에서
-    // 호출하도록 구조화해두면, SDK 쪽 변경이 생겨도 이 메서드
-    // 호출부만 수정하면 된다.
     // ─────────────────────────────────────────────────────────────
 
     private void onTossPaymentSuccess(String paymentKey, String orderId, int amount) {
