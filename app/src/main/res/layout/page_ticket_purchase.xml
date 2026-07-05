@@ -61,8 +61,12 @@
                 android:textColor="@color/text_100"
                 android:textSize="14sp" />
 
-            <RadioGroup
-                android:id="@+id/radioGroupTicketProducts"
+            <!-- 상품 선택 옵션 (기존 RadioGroup → LinearLayout으로 교체됨.
+                 RadioButton이 MaterialCardView 안쪽에 중첩되어 있어 RadioGroup의
+                 상호 배타 처리/콜백이 애초에 동작하지 않았기 때문. 클릭 처리는
+                 TicketPurchaseActivity.selectTicketProduct()에서 직접 담당한다. -->
+            <LinearLayout
+                android:id="@+id/layoutTicketProductOptions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -70,13 +74,17 @@
 
                 <!-- 1회 -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTicket1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="@null"
                     app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E0E0E0"
-                    app:strokeWidth="1dp">
+                    app:strokeColor="@color/border_100"
+                    app:strokeWidth="1.5dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -111,7 +119,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
+                            android:layout_marginEnd="15dp"
                             android:text="3,000원"
                             android:textColor="@color/text_100"
                             android:textSize="15sp"
@@ -121,19 +129,24 @@
                             android:id="@+id/radioTicket1"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:clickable="false" />
+                            android:clickable="false"
+                            android:focusable="false" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- 5회 -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTicket5"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="@null"
                     app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E0E0E0"
-                    app:strokeWidth="1dp">
+                    app:strokeColor="@color/border_100"
+                    app:strokeWidth="1.5dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -178,18 +191,23 @@
                             android:id="@+id/radioTicket5"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:clickable="false" />
+                            android:clickable="false"
+                            android:focusable="false" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- 10회 -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTicket10"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="@null"
                     app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E0E0E0"
-                    app:strokeWidth="1dp">
+                    app:strokeColor="@color/border_100"
+                    app:strokeWidth="1.5dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -234,10 +252,11 @@
                             android:id="@+id/radioTicket10"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:clickable="false" />
+                            android:clickable="false"
+                            android:focusable="false" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-            </RadioGroup>
+            </LinearLayout>
 
             <!-- ── 토스페이먼츠 결제위젯 영역 (초기 GONE, 상품 선택 후 노출) ── -->
             <LinearLayout

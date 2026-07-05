@@ -5,6 +5,7 @@ public class MyMeetingItem {
     private String meeting_title;
     private String meeting_date;
     private String meeting_category;
+    private String meeting_type;       // "일반" 또는 "체험단" (이슈 #3 추가)
     private String meeting_image;      // S3 URL or null
     private String meeting_status;
     private String user_role;          // "host" or "participant"
@@ -13,14 +14,51 @@ public class MyMeetingItem {
     private boolean is_past;           // true면 과거 모임
 
     // Getter들
-    public int getMeeting_id() { return meeting_id; }
-    public String getMeeting_title() { return meeting_title; }
-    public String getMeeting_date() { return meeting_date; }
-    public String getMeeting_category() { return meeting_category; }
-    public String getMeeting_image() { return meeting_image; }
-    public String getMeeting_status() { return meeting_status; }
-    public String getUser_role() { return user_role; }
-    public int getMeeting_current_participants() { return meeting_current_participants; }
-    public int getMeeting_max_participants() { return meeting_max_participants; }
-    public boolean isIs_past() { return is_past; }
+    public int getMeeting_id() {
+        return meeting_id;
+    }
+
+    public String getMeeting_title() {
+        return meeting_title;
+    }
+
+    public String getMeeting_date() {
+        return meeting_date;
+    }
+
+    public String getMeeting_category() {
+        return meeting_category;
+    }
+
+    public String getMeeting_type() {
+        return meeting_type;
+    }
+
+    public String getMeeting_image() {
+        return meeting_image;
+    }
+
+    public String getMeeting_status() {
+        return meeting_status;
+    }
+
+    public String getUser_role() {
+        return user_role;
+    }
+
+    public int getMeeting_current_participants() {
+        return meeting_current_participants;
+    }
+
+    public int getMeeting_max_participants() {
+        return meeting_max_participants;
+    }
+
+    public boolean isIs_past() {
+        return is_past;
+    }
+    
+    public boolean isCampaign() {
+        return "체험단".equals(meeting_type);
+    }
 }

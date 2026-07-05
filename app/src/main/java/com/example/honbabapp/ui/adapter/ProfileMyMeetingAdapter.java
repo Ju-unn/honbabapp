@@ -29,9 +29,8 @@ public class ProfileMyMeetingAdapter extends RecyclerView.Adapter<ProfileMyMeeti
     @NonNull
     @Override
     public ProfileMyMeetingAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        RvProfileMeetingItemBinding binding = RvProfileMeetingItemBinding.inflate(LayoutInflater.from(parent.getContext()) , parent , false);
+        RvProfileMeetingItemBinding binding = RvProfileMeetingItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new ViewHolder(binding);
-
     }
 
     @Override
@@ -56,8 +55,8 @@ public class ProfileMyMeetingAdapter extends RecyclerView.Adapter<ProfileMyMeeti
 
             // 클릭 이벤트
             binding.getRoot().setOnClickListener(v -> {
-                Intent intent = new Intent(v.getContext() , MeetingDetailActivity.class);
-                intent.putExtra("meeting_id" , item.getMeeting_id());
+                Intent intent = new Intent(v.getContext(), MeetingDetailActivity.class);
+                intent.putExtra("meeting_id", item.getMeeting_id());
                 v.getContext().startActivity(intent);
             });
 
@@ -69,7 +68,8 @@ public class ProfileMyMeetingAdapter extends RecyclerView.Adapter<ProfileMyMeeti
 
             // 날짜 앞 10자리만
             String date = item.getMeeting_date();
-            binding.tvMeetingDate.setText(date != null && date.length() >= 10 ? date.substring(0, 10) : date);
+            binding.tvMeetingDate.setText(date != null && date.length() >= 10 ?
+                    date.substring(0, 10) : date);
 
             // 인원
             binding.tvParticipants.setText(
@@ -91,6 +91,10 @@ public class ProfileMyMeetingAdapter extends RecyclerView.Adapter<ProfileMyMeeti
             boolean isHost = "host".equals(item.getUser_role());
             binding.tvRoleBadge.setText(isHost ? "호스트" : "참여자");
 
+            // 진행중/과거호스트/과거참여자 탭이 이 어댑터를 공유하므로,
+            // 탭 구분 없이 meeting_type == "체험단"이면 항상 표시한다.
+            binding.tvCampaignBadge.setVisibility(item.isCampaign() ? View.VISIBLE : View.GONE);
+
             // 모임 이미지
             String imageUrl = item.getMeeting_image();
             if (imageUrl != null && !imageUrl.isEmpty()) {
@@ -103,7 +107,5 @@ public class ProfileMyMeetingAdapter extends RecyclerView.Adapter<ProfileMyMeeti
                 binding.ivMeetingImage.setImageResource(R.drawable.placeholder_meeting_image);
             }
         }
-
-
     }
 }

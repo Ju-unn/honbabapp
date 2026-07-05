@@ -188,6 +188,15 @@ public interface ApiService {
     Call<ApiResponse<MeetingCreateResponse>> createMeeting(@Body MeetingCreateRequest request);
 
     /**
+     * 1-2. 체험단 생성
+     * @param request 체험단 정보 (제목, 설명, 카테고리, 인원, 가격, 장소, 홍보채널, 제공내역 등)
+     * @return ApiResponse<MeetingCreateResponse> - meeting_id, location_id, meeting_type
+     */
+    @POST("api/campaign/campaign_create.php")
+    Call<ApiResponse<MeetingCreateResponse>> createCampaign(@Body MeetingCreateRequest request);
+
+
+    /**
      * 2. 모임 목록 조회 (지역 필터링) - Homefragment
      * @param sigungu 시/군/구 (예: "관악구", "강남구")
      * @param category 카테고리 (예: "한식", "중식", "전체")

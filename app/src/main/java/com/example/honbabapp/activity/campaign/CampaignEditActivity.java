@@ -298,6 +298,14 @@ public class CampaignEditActivity extends AppCompatActivity {
             return;
         }
 
+        // 모집 마감일 필수 선택 검증 (등록 화면과 동일한 정책 적용)
+        String campaignDeadline = binding.etCampaignDeadline.getText().toString().trim();
+        if (campaignDeadline.isEmpty()) {
+            Toast.makeText(this, "모집 마감일을 선택해주세요", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 채널 문자열 조합
         StringBuilder channelsBuilder = new StringBuilder();
         if (isBlogChecked)      channelsBuilder.append("블로그,");
         if (isInstagramChecked) channelsBuilder.append("인스타그램,");
@@ -305,7 +313,6 @@ public class CampaignEditActivity extends AppCompatActivity {
         String campaignChannels = channelsBuilder.toString().replaceAll(",$", "");
 
         String campaignRequirements = binding.etCampaignRequirements.getText().toString().trim();
-        String campaignDeadline     = binding.etCampaignDeadline.getText().toString().trim();
 
         NumberFormat formatter = NumberFormat.getInstance(Locale.KOREA);
         String priceRange = formatter.format(minPrice) + "원 ~ " + formatter.format(maxPrice) + "원";
@@ -436,7 +443,7 @@ public class CampaignEditActivity extends AppCompatActivity {
                 channels,
                 provided,
                 requirements.isEmpty() ? null : requirements,
-                deadline.isEmpty()     ? null : deadline + " 00:00:00"
+                deadline + " 00:00:00"
         );
 
         apiService.updateCampaign(request).enqueue(new Callback<ApiResponse<Void>>() {

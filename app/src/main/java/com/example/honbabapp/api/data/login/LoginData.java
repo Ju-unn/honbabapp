@@ -17,9 +17,11 @@ package com.example.honbabapp.api.data.login;
  *     "user_location": "서울특별시 관악구 대학동",
  *     "user_phone_number": "01012345678",
  *     "user_manner_score": 3.0,
- *     "user_email_verified": true
+ *     "user_email_verified": true,
+ *     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *   }
  * }
+ *
  */
 
 public class LoginData {
@@ -33,6 +35,7 @@ public class LoginData {
     private String user_phone_number;
     private double user_manner_score;
     private boolean user_email_verified;
+    private String token;
 
     public int getUser_id() {
         return user_id;
@@ -112,5 +115,13 @@ public class LoginData {
 
     public void setUser_email_verified(boolean user_email_verified) {
         this.user_email_verified = user_email_verified;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

@@ -8,8 +8,10 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.honbabapp.BuildConfig;
+import com.example.honbabapp.R;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.request.payment.ConfirmPaymentRequest;
@@ -18,6 +20,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.payment.ConfirmPaymentResponse;
 import com.example.honbabapp.api.data.response.payment.PreparePaymentResponse;
 import com.example.honbabapp.databinding.PageTicketPurchaseBinding;
+import com.google.android.material.card.MaterialCardView;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -43,6 +46,20 @@ import retrofit2.Response;
  * 4) "결제하기" 클릭 → PaymentWidget.requestPayment() 호출
  * 5) 결제 성공 콜백 → onTossPaymentSuccess() 단일 진입점 → confirmPayment() 호출
  * 6) 등록권 잔액 반영 완료 → 결과를 RESULT_OK로 돌려주고 종료
+ *
+ * 수정 내역 (상품 카드 선택 UI):
+ * - radioTicket1/5/10이 MaterialCardView 안쪽에 중첩되어 있어 RadioGroup의
+ *   직계 자식이 아니었다. RadioGroup은 직계 자식 RadioButton에만 상호 배타 처리와
+ *   OnCheckedChangeListener 콜백을 자동으로 연결하기 때문에, 중첩된 구조에서는
+ *   그 기능이 전혀 동작하지 않아 카드를 눌러도 반응이 없었다.
+ * - RadioGroup 태그를 실질적 기능이 없는 LinearLayout으로 교체했다.
+ * - MaterialCardView.setChecked()/app:checkable은 Material Components 1.2.0부터
+ *   지원되는데 현재 프로젝트의 라이브러리 버전에서는 지원하지 않아 리소스 링킹
+ *   오류가 발생했다. 그래서 카드 선택 표시는 setStrokeColor()만으로 처리한다.
+ *   strokeWidth는 절대 런타임에 바꾸지 않는데, 두께를 바꾸면 스트로크가
+ *   그려지는 영역 크기 자체가 바뀌면서 이전 두께로 그려졌던 픽셀이 완전히
+ *   무효화되지 않고 잔상처럼 남는 문제가 있었기 때문이다. 색상만 바꾸면
+ *   그려지는 영역 크기가 그대로라 이 문제가 생기지 않는다.
  */
 public class TicketPurchaseActivity extends AppCompatActivity {
 
@@ -85,20 +102,47 @@ public class TicketPurchaseActivity extends AppCompatActivity {
     private void setupUi() {
         binding.btnBack.setOnClickListener(view -> finish());
 
-        binding.radioGroupTicketProducts.setOnCheckedChangeListener((radioGroup, checkedId) -> {
-            if (checkedId == binding.radioTicket1.getId()) {
-                selectedProductCode = PRODUCT_CODE_TICKET_1;
-            } else if (checkedId == binding.radioTicket5.getId()) {
-                selectedProductCode = PRODUCT_CODE_TICKET_5;
-            } else if (checkedId == binding.radioTicket10.getId()) {
-                selectedProductCode = PRODUCT_CODE_TICKET_10;
-            } else {
-                selectedProductCode = null;
-            }
-        });
+        binding.cardTicket1.setOnClickListener(view -> selectTicketProduct(PRODUCT_CODE_TICKET_1));
+        binding.cardTicket5.setOnClickListener(view -> selectTicketProduct(PRODUCT_CODE_TICKET_5));
+        binding.cardTicket10.setOnClickListener(view -> selectTicketProduct(PRODUCT_CODE_TICKET_10));
 
         binding.btnNext.setOnClickListener(view -> onNextButtonClicked());
         binding.btnRetryConfirm.setOnClickListener(view -> retryConfirmPayment());
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 상품 카드 선택
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * 등록권 상품 카드 선택 처리.
+     * 선택된 상품 코드를 저장하고, RadioButton 체크 표시와 카드 테두리 색상을
+     * 함께 갱신한다.
+     *
+     * @param productCode 선택된 상품 코드 (PRODUCT_CODE_TICKET_1/5/10 중 하나)
+     */
+    private void selectTicketProduct(String productCode) {
+        selectedProductCode = productCode;
+
+        boolean isTicket1Selected  = PRODUCT_CODE_TICKET_1.equals(productCode);
+        boolean isTicket5Selected  = PRODUCT_CODE_TICKET_5.equals(productCode);
+        boolean isTicket10Selected = PRODUCT_CODE_TICKET_10.equals(productCode);
+
+        binding.radioTicket1.setChecked(isTicket1Selected);
+        binding.radioTicket5.setChecked(isTicket5Selected);
+        binding.radioTicket10.setChecked(isTicket10Selected);
+
+        updateCardStrokeColor(binding.cardTicket1, isTicket1Selected);
+        updateCardStrokeColor(binding.cardTicket5, isTicket5Selected);
+        updateCardStrokeColor(binding.cardTicket10, isTicket10Selected);
+    }
+
+    /**
+     * 카드 테두리 색상만 선택 상태에 맞춰 갱신한다.
+     */
+    private void updateCardStrokeColor(MaterialCardView card, boolean isSelected) {
+        int strokeColorResourceId = isSelected ? R.color.primary_100 : R.color.border_100;
+        card.setStrokeColor(ContextCompat.getColor(this, strokeColorResourceId));
     }
 
     // ─────────────────────────────────────────────────────────────

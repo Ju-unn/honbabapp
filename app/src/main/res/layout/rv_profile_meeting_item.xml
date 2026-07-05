@@ -38,7 +38,7 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <!-- 역할 배지 + 제목 -->
+                <!-- 역할 배지 + 체험단 배지 + 제목 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -56,7 +56,21 @@
                         android:background="@drawable/button_primary_background"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="2dp"
-                        android:layout_marginEnd="8dp"/>
+                        android:layout_marginEnd="6dp"/>
+
+                    <!-- 체험단 배지 (이슈 #3 추가) - rv_meeting_card.xml의 tv_campaign_badge와 동일 스타일 -->
+                    <TextView
+                        android:id="@+id/tv_campaign_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="체험단"
+                        android:textSize="10sp"
+                        android:textColor="@color/white"
+                        android:background="@drawable/button_primary_background"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="2dp"
+                        android:layout_marginEnd="8dp"
+                        android:visibility="gone"/>
 
                     <TextView
                         android:id="@+id/tv_meeting_title"
@@ -124,7 +138,5 @@
         </LinearLayout>
 
     </LinearLayout>
-
-
 
 </androidx.cardview.widget.CardView>

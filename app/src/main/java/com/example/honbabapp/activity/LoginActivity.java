@@ -496,29 +496,34 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * 로그인 성공 처리
-     *  SharedPreferences에 최소 정보만 저장 (user_id, is_logged_in)
+     * SharedPreferences에 로그인 정보 + JWT 토큰 저장
+     *
+     * 수정 내역 (이슈 #4):
+     * - 기존에는 user_id, is_logged_in, 위치 정보만 저장하고 JWT 토큰(KEY_JWT_TOKEN)을
+     *   저장하지 않았다. handleSocialLoginSuccess()와 동일한 패턴으로 토큰 저장 라인을
+     *   추가한다.
      */
-
     private void handleLoginSuccess(LoginData loginData) {
         Log.d(TAG, "로그인 성공");
         Log.d(TAG, "user_id: " + loginData.getUser_id());
         Log.d(TAG, "nickname: " + loginData.getUser_nickname());
 
-        //SharedPreferences에 최소 정보만 저장
+        // SharedPreferences에 로그인 정보 + JWT 토큰 저장
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(KEY_IS_LOGGED_IN , true);
-        editor.putInt(KEY_USER_ID , loginData.getUser_id());
+        editor.putBoolean(KEY_IS_LOGGED_IN, true);
+        editor.putInt(KEY_USER_ID, loginData.getUser_id());
+        editor.putString(KEY_JWT_TOKEN, loginData.getToken());
 
         // user_location 파싱해서 저장
         String userLocation = loginData.getUser_location();
-        String[] parsed = parseLocation(userLocation);
-        editor.putString(KEY_SIGUNGU, parsed[0]);
-        editor.putString(KEY_DONG,    parsed[1]);
+        String[] parsedLocation = parseLocation(userLocation);
+        editor.putString(KEY_SIGUNGU, parsedLocation[0]);
+        editor.putString(KEY_DONG,    parsedLocation[1]);
 
         editor.apply();
 
-        Log.d(TAG, "위치 저장: sigungu=" + parsed[0] + ", dong=" + parsed[1]);
-        Log.d(TAG, "SharedPreferences 저장 완료: user_id=" + loginData.getUser_id());
+        Log.d(TAG, "위치 저장: sigungu=" + parsedLocation[0] + ", dong=" + parsedLocation[1]);
+        Log.d(TAG, "SharedPreferences 저장 완료 (JWT 토큰 포함): user_id=" + loginData.getUser_id());
 
         // FCM 디바이스 토큰 발급 후 서버에 등록
         registerFcmToken(loginData.getUser_id());

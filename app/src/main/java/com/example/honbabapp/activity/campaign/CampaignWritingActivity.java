@@ -360,6 +360,13 @@ public class CampaignWritingActivity extends AppCompatActivity {
             return;
         }
 
+
+        String campaignDeadline = binding.etCampaignDeadline.getText().toString().trim();
+        if (campaignDeadline.isEmpty()) {
+            Toast.makeText(this, "모집 마감일을 선택해주세요", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // 채널 문자열 조합
         StringBuilder channelsBuilder = new StringBuilder();
         if (isBlogChecked)      channelsBuilder.append("블로그,");
@@ -368,7 +375,6 @@ public class CampaignWritingActivity extends AppCompatActivity {
         String campaignChannels = channelsBuilder.toString().replaceAll(",$", "");
 
         String campaignRequirements = binding.etCampaignRequirements.getText().toString().trim();
-        String campaignDeadline     = binding.etCampaignDeadline.getText().toString().trim();
 
         NumberFormat formatter = NumberFormat.getInstance(Locale.KOREA);
         String priceRange = formatter.format(minPrice) + "원 ~ " + formatter.format(maxPrice) + "원";
@@ -505,9 +511,9 @@ public class CampaignWritingActivity extends AppCompatActivity {
         request.setCampaign_channels(channels);
         request.setCampaign_provided(provided);
         request.setCampaign_requirements(requirements.isEmpty() ? null : requirements);
-        request.setCampaign_deadline(deadline.isEmpty() ? null : deadline + ":00");
+        request.setCampaign_deadline(deadline.isEmpty() ? null : deadline + " 00:00:00");
 
-        apiService.createMeeting(request)
+        apiService.createCampaign(request)
                 .enqueue(new Callback<ApiResponse<MeetingCreateResponse>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<MeetingCreateResponse>> call,
