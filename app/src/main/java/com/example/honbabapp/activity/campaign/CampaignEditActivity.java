@@ -30,7 +30,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -560,6 +563,17 @@ public class CampaignEditActivity extends AppCompatActivity {
 
     private void setupDeadlinePicker() {
         binding.etCampaignDeadline.setOnClickListener(v -> {
+            Long maximumDeadlineTimestamp = calculateMaximumDeadlineTimestampOrNull();
+
+            if (maximumDeadlineTimestamp == null) {
+                // 등록일 정보를 신뢰할 수 없으면 새로운 14일 창을 열어주지 않는다
+                // (fail-closed). 기존 마감일 값은 그대로 유지된다.
+                Toast.makeText(this,
+                        "등록일 정보를 확인할 수 없어 마감일을 수정할 수 없습니다. 잠시 후 다시 시도해주세요.",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             Calendar calendar = Calendar.getInstance();
             DatePickerDialog dialog = new DatePickerDialog(this,
                     (view, year, month, dayOfMonth) -> {
@@ -572,8 +586,44 @@ public class CampaignEditActivity extends AppCompatActivity {
             );
             // 오늘 이전 날짜 선택 불가
             dialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+            // 원본 등록일(meeting_created_at) 기준 최대 14일까지만 선택 가능
+            dialog.getDatePicker().setMaxDate(maximumDeadlineTimestamp);
             dialog.show();
         });
+    }
+
+    /**
+     * 원본 등록일(existingCampaign.getMeeting_created_at()) + 14일의 타임스탬프를 반환한다.
+     *
+     * @return 최대 선택 가능 타임스탬프, 신뢰할 수 없으면 null
+     */
+    @Nullable
+    private Long calculateMaximumDeadlineTimestampOrNull() {
+        String originalCreatedAt = existingCampaign != null
+                ? existingCampaign.getMeeting_created_at() : null;
+
+        if (originalCreatedAt == null || originalCreatedAt.isEmpty()) {
+            return null;
+        }
+
+        try {
+            SimpleDateFormat createdAtFormat =
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+            Date originalCreatedAtDate = createdAtFormat.parse(originalCreatedAt);
+
+            if (originalCreatedAtDate == null) {
+                return null;
+            }
+
+            Calendar maximumDeadlineCalendar = Calendar.getInstance();
+            maximumDeadlineCalendar.setTime(originalCreatedAtDate);
+            maximumDeadlineCalendar.add(Calendar.DAY_OF_YEAR, 14);
+            return maximumDeadlineCalendar.getTimeInMillis();
+
+        } catch (ParseException parseException) {
+            Log.w(TAG, "meeting_created_at 파싱 실패: " + originalCreatedAt);
+            return null;
+        }
     }
 
     // ─────────────────────────────────────────────────────────────

@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.activity.MainActivity;
 import com.example.honbabapp.activity.meeting.PlaceSearchActivity;
+import com.example.honbabapp.activity.payment.TicketPurchaseActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.ImageUploadData;
@@ -85,6 +86,20 @@ public class CampaignWritingActivity extends AppCompatActivity {
     private boolean isTitleAutoFilled = false;
     // 자동 입력 중 TextWatcher 트리거 방지 플래그
     private boolean isAutoFillingTitle = false;
+
+    // ─────────────────────────────────────────────────────────────
+    // 체험단 등록권 구매 화면 launcher
+    // "등록권 없음" 실패 시 이 launcher로 구매 화면을 띄우고,
+    // 구매 성공(RESULT_OK) 시 폼을 다시 채울 필요 없이 바로 재등록 시도한다.
+    // ─────────────────────────────────────────────────────────────
+    private final ActivityResultLauncher<Intent> ticketPurchaseLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    validateAndRegisterCampaign();
+                }
+            }
+    );
 
     // ─────────────────────────────────────────────────────────────
     // 가게 검색 Launcher
@@ -298,6 +313,12 @@ public class CampaignWritingActivity extends AppCompatActivity {
             );
             // 오늘 이전 날짜 선택 불가
             dialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+
+            // 등록일(오늘) 기준 최대 14일 이후까지만 선택 가능
+            Calendar maximumSelectableCalendar = Calendar.getInstance();
+            maximumSelectableCalendar.add(Calendar.DAY_OF_YEAR, 14);
+            dialog.getDatePicker().setMaxDate(maximumSelectableCalendar.getTimeInMillis());
+
             dialog.show();
         });
     }
@@ -511,6 +532,18 @@ public class CampaignWritingActivity extends AppCompatActivity {
                         } else {
                             String message = response.body() != null
                                     ? response.body().getMessage() : "등록에 실패했습니다.";
+
+                            if ("NO_TICKET".equals(message)) {
+                                Toast.makeText(CampaignWritingActivity.this,
+                                        "체험단 등록권이 없어요. 등록권을 구매해주세요.",
+                                        Toast.LENGTH_SHORT).show();
+                                resetRegisterButton();
+                                Intent ticketPurchaseIntent =
+                                        new Intent(CampaignWritingActivity.this, TicketPurchaseActivity.class);
+                                ticketPurchaseLauncher.launch(ticketPurchaseIntent);
+                                return;
+                            }
+
                             Toast.makeText(CampaignWritingActivity.this,
                                     message, Toast.LENGTH_SHORT).show();
                             resetRegisterButton();

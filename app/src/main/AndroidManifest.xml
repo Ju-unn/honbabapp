@@ -110,6 +110,10 @@
             android:name=".activity.OnboardingActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".activity.payment.TicketPurchaseActivity"
+            android:exported="false" />
+
 
         <activity
             android:name=".activity.campaign.CampaignApplyActivity"

@@ -58,6 +58,12 @@ android {
             "\"${properties.getProperty("GOOGLE_WEB_CLIENT_ID", "")}\""
         )
 
+        buildConfigField(
+            "String",
+            "TOSS_CLIENT_KEY",
+            "\"${properties.getProperty("TOSS_CLIENT_KEY", "")}\""
+        )
+
 
         manifestPlaceholders["NAVER_MAPS_CLIENT_ID"] =
             properties.getProperty("NAVER_MAPS_CLIENT_ID", "")
@@ -124,4 +130,7 @@ dependencies {
     implementation("androidx.credentials:credentials:1.6.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
+    // 토스페이먼츠 결제 SDK (등록권 결제)
+    implementation("com.github.tosspayments:payment-sdk-android:0.1.22")
 }

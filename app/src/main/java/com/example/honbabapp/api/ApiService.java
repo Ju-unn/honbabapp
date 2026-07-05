@@ -19,6 +19,8 @@ import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
 import com.example.honbabapp.api.data.request.meeting.QrGenerateRequest;
 import com.example.honbabapp.api.data.request.meeting.QrScanRequest;
 import com.example.honbabapp.api.data.request.meeting.UpdateMeetingRequest;
+import com.example.honbabapp.api.data.request.payment.ConfirmPaymentRequest;
+import com.example.honbabapp.api.data.request.payment.PreparePaymentRequest;
 import com.example.honbabapp.api.data.request.review.ReviewSubmitRequest;
 import com.example.honbabapp.api.data.request.user.ChangePasswordRequest;
 import com.example.honbabapp.api.data.request.user.CheckCurrentPasswordRequest;
@@ -32,6 +34,9 @@ import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
 import com.example.honbabapp.api.data.response.chat.KickMemberResponse;
 import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
+import com.example.honbabapp.api.data.response.payment.ConfirmPaymentResponse;
+import com.example.honbabapp.api.data.response.payment.MyTicketsResponse;
+import com.example.honbabapp.api.data.response.payment.PreparePaymentResponse;
 import com.example.honbabapp.api.data.response.user.OnboardingStatusResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
@@ -561,6 +566,30 @@ public interface ApiService {
     Call<ApiResponse<ReceivedReviewsData>> getReceivedReviews(@Query("user_id") int userId);
 
 
+    // ==================== Payment API ====================
+
+    /**
+     * 체험단 등록권 결제 준비
+     * @param request product_code ("TICKET_1" | "TICKET_5" | "TICKET_10")
+     * @return PreparePaymentResponse - order_id, amount, order_name
+     */
+    @POST("api/payment/prepare.php")
+    Call<ApiResponse<PreparePaymentResponse>> preparePayment(@Body PreparePaymentRequest request);
+
+    /**
+     * 체험단 등록권 결제 승인
+     * 토스페이먼츠 결제창 성공 콜백에서 돌아온 payment_key, order_id, amount를 그대로 전달
+     * @return ConfirmPaymentResponse - ticket_count
+     */
+    @POST("api/payment/confirm.php")
+    Call<ApiResponse<ConfirmPaymentResponse>> confirmPayment(@Body ConfirmPaymentRequest request);
+
+    /**
+     * 내 체험단 등록권 잔액 조회
+     * @return MyTicketsResponse - ticket_balance
+     */
+    @GET("api/payment/my_tickets.php")
+    Call<ApiResponse<MyTicketsResponse>> getMyTickets();
 
 
 
