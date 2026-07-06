@@ -1,5 +1,6 @@
 package com.example.honbabapp.ui.fragment;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -9,16 +10,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.honbabapp.activity.campaign.CampaignWritingActivity;
+import com.example.honbabapp.activity.payment.TicketPurchaseActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.MeetingListResponse;
+import com.example.honbabapp.api.data.response.payment.MyTicketsResponse;
 import com.example.honbabapp.databinding.FragmentCampaignBinding;
 import com.example.honbabapp.ui.adapter.CampaignListAdapter;
 import com.example.honbabapp.ui.dialog.CampaignFilterBottomSheetDialog;
@@ -90,6 +95,17 @@ public class CampaignFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
+    // 등록권 결제 화면 결과 수신용 런처 — 결제 성공 시 자동으로 글쓰기 화면 진입
+    private final ActivityResultLauncher<Intent> ticketPurchaseLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            startActivity(new Intent(requireActivity(), CampaignWritingActivity.class));
+                        }
+                    }
+            );
 
     // ─────────────────────────────────────────────────────────────
     // RecyclerView 초기화 (기존 그대로)
@@ -267,9 +283,52 @@ public class CampaignFragment extends Fragment {
     // ─────────────────────────────────────────────────────────────
 
     private void initFabButton() {
-        binding.fabCreateCampaign.setOnClickListener(v -> {
-            Intent intent = new Intent(requireActivity(), CampaignWritingActivity.class);
-            startActivity(intent);
+        binding.fabCreateCampaign.setOnClickListener(v -> checkTicketBalanceAndProceed());
+    }
+
+    /**
+     * FAB 클릭 시 등록권 잔액을 먼저 확인한다.
+     * - 잔액 있음 → 바로 글쓰기 화면
+     * - 잔액 0 → 결제 화면으로 직행 (다이얼로그 없이)
+     * - 네트워크 오류 → 잔액을 확정할 수 없으므로 화면 전환하지 않고 토스트만 노출
+     *   (CampaignWritingActivity.registerCampaign()의 NO_TICKET 처리가
+     *    동시성 케이스에 대한 최종 안전망 역할을 하므로 이중 안전망 확보됨)
+     */
+    private void checkTicketBalanceAndProceed() {
+        apiService.getMyTickets().enqueue(new Callback<ApiResponse<MyTicketsResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<MyTicketsResponse>> call,
+                                   Response<ApiResponse<MyTicketsResponse>> response) {
+                if (binding == null) return;
+
+                if (response.isSuccessful()
+                        && response.body() != null
+                        && response.body().isSuccess()
+                        && response.body().getData() != null) {
+
+                    int ticketBalance = response.body().getData().getTicket_balance();
+
+                    if (ticketBalance > 0) {
+                        startActivity(new Intent(requireActivity(), CampaignWritingActivity.class));
+                    } else {
+                        ticketPurchaseLauncher.launch(
+                                new Intent(requireActivity(), TicketPurchaseActivity.class));
+                    }
+                } else {
+                    Toast.makeText(getContext(),
+                            "등록권 확인에 실패했습니다. 잠시 후 다시 시도해주세요",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<MyTicketsResponse>> call, Throwable throwable) {
+                if (binding == null) return;
+                Log.e(TAG, "등록권 잔액 확인 네트워크 오류: " + throwable.getMessage());
+                Toast.makeText(getContext(),
+                        "등록권 확인에 실패했습니다. 잠시 후 다시 시도해주세요",
+                        Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

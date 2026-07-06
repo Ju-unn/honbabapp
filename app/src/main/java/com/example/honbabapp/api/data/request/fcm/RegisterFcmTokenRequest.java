@@ -1,16 +1,17 @@
 package com.example.honbabapp.api.data.request.fcm;
 
+/**
+ * FCM 디바이스 토큰 등록 요청 모델
+ *
+ * POST /api/user/register_fcm_token.php
+ *
+ * user_id는 서버가 JWT 토큰에서 추출하므로 요청 바디에 포함하지 않는다.
+ */
 public class RegisterFcmTokenRequest {
-    private int user_id;
     private String fcm_token;
 
-    public RegisterFcmTokenRequest(int user_id, String fcm_token) {
-        this.user_id = user_id;
+    public RegisterFcmTokenRequest(String fcm_token) {
         this.fcm_token = fcm_token;
-    }
-
-    public int getUser_id() {
-        return user_id;
     }
 
     public String getFcm_token() {

@@ -7,19 +7,18 @@ package com.example.honbabapp.api.data.request.meeting;
  *
  * {
  *   "participant_id": 6,
- *   "action": "approve",  // "approve" or "reject"
- *   "host_id": 1
+ *   "action": "approve"  // "approve" or "reject"
  * }
+ *
+ * host_id는 서버가 JWT 토큰에서 추출하므로 요청 바디에 포함하지 않는다.
  */
 public class ApproveMeetingRequest {
     private int participant_id;
     private String action;  // "approve" or "reject"
-    private int host_id;
 
-    public ApproveMeetingRequest(int participant_id, String action, int host_id) {
+    public ApproveMeetingRequest(int participant_id, String action) {
         this.participant_id = participant_id;
         this.action = action;
-        this.host_id = host_id;
     }
 
     // Getters and Setters
@@ -37,13 +36,5 @@ public class ApproveMeetingRequest {
 
     public void setAction(String action) {
         this.action = action;
-    }
-
-    public int getHost_id() {
-        return host_id;
-    }
-
-    public void setHost_id(int host_id) {
-        this.host_id = host_id;
     }
 }

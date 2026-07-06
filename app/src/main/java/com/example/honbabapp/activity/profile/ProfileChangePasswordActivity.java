@@ -94,10 +94,7 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
 
     // 현재 비밀번호 서버에서 검사
     private void checkCurrentPassword(String currentPassword) {
-        int userId = getSharedPreferences(PREF_NAME, 0).getInt(KEY_USER_ID, -1);
-        if (userId == -1) return;
-
-        CheckCurrentPasswordRequest request = new CheckCurrentPasswordRequest(userId , currentPassword);
+        CheckCurrentPasswordRequest request = new CheckCurrentPasswordRequest(currentPassword);
 
         apiService.checkCurrentPassword(request)
                 .enqueue(new Callback<ApiResponse<Void>>() {
@@ -175,8 +172,6 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
     }
 
     private void changePassword() {
-        int userId = getSharedPreferences(PREF_NAME, 0).getInt(KEY_USER_ID, -1);
-        if (userId == -1) return;
 
         String currentPw = binding.etCurrentPassword.getText().toString().trim();
         String newPw = binding.etNewPassword.getText().toString().trim();
@@ -210,7 +205,7 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
         }
 
 
-        ChangePasswordRequest request = new ChangePasswordRequest(userId , currentPw , newPw);
+        ChangePasswordRequest request = new ChangePasswordRequest(currentPw , newPw);
 
         apiService.changePassword(request)
                 .enqueue(new Callback<ApiResponse<Void>>() {

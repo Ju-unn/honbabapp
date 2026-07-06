@@ -435,7 +435,7 @@ public class CampaignEditActivity extends AppCompatActivity {
                 );
 
         CampaignUpdateRequest request = new CampaignUpdateRequest(
-                campaignId, userId,
+                campaignId,
                 title, description,
                 selectedCategory, datetime,
                 participantCount, priceRange, imageUrl,

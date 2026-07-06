@@ -9,7 +9,6 @@ package com.example.honbabapp.api.data.request.campaign;
 public class CampaignUpdateRequest {
 
     private int meeting_id;
-    private int user_id;
     private String meeting_title;
     private String meeting_description;
     private String meeting_category;
@@ -61,7 +60,7 @@ public class CampaignUpdateRequest {
     // 생성자
     // ─────────────────────────────────────────────────────────────
 
-    public CampaignUpdateRequest(int meeting_id, int user_id,
+    public CampaignUpdateRequest(int meeting_id,
                                  String meeting_title, String meeting_description,
                                  String meeting_category, String meeting_date,
                                  int meeting_max_participants, String meeting_price_range,
@@ -69,7 +68,6 @@ public class CampaignUpdateRequest {
                                  String campaign_channels, String campaign_provided,
                                  String campaign_requirements, String campaign_deadline) {
         this.meeting_id = meeting_id;
-        this.user_id = user_id;
         this.meeting_title = meeting_title;
         this.meeting_description = meeting_description;
         this.meeting_category = meeting_category;
@@ -94,14 +92,6 @@ public class CampaignUpdateRequest {
 
     public void setMeeting_id(int meeting_id) {
         this.meeting_id = meeting_id;
-    }
-
-    public int getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
     }
 
     public String getMeeting_title() {

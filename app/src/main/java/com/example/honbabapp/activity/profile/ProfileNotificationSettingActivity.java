@@ -113,7 +113,7 @@ public class ProfileNotificationSettingActivity extends AppCompatActivity {
         }
 
         int pushEnabledValue = enabled ? 1 : 0;
-        UpdatePushSettingRequest request = new UpdatePushSettingRequest(userId, pushEnabledValue);
+        UpdatePushSettingRequest request = new UpdatePushSettingRequest(pushEnabledValue);
 
         apiService.updatePushSetting(request).enqueue(new Callback<ApiResponse<Void>>() {
             @Override

@@ -40,6 +40,8 @@ public class SocialLoginData {
         private double user_manner_score;
         private boolean user_email_verified;
         private String token;
+        private String refresh_token;
+
 
         public int getUser_id() {
             return user_id;
@@ -83,6 +85,10 @@ public class SocialLoginData {
 
         public String getToken() {
             return token;
+        }
+
+        public String getRefresh_token() {
+            return refresh_token;
         }
     }
 }

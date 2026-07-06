@@ -2,26 +2,18 @@ package com.example.honbabapp.api.data.request.meeting;
 
 /**
  * QR 스캔 요청 바디 DTO
- * POST /api/meeting/qr_scan.php
+ * POST /api/qr/qr_scan.php
  *
- * 요청 예시:
- * {
- *   "code_token": "1d749f4a...(64자)",
- *   "user_id": 3,
- *   "lat": 37.4979,
- *   "lng": 127.0276
- * }
+ * user_id는 서버가 JWT 토큰에서 추출하므로 요청 바디에 포함하지 않는다.
  */
 public class QrScanRequest {
 
     private String code_token;
-    private int user_id;
     private double lat;   // 스캔 기기의 현재 위도 (FusedLocationProviderClient 에서 획득)
     private double lng;   // 스캔 기기의 현재 경도
 
-    public QrScanRequest(String code_token, int user_id, double lat, double lng) {
+    public QrScanRequest(String code_token, double lat, double lng) {
         this.code_token = code_token;
-        this.user_id = user_id;
         this.lat = lat;
         this.lng = lng;
     }
@@ -32,14 +24,6 @@ public class QrScanRequest {
 
     public void setCode_token(String code_token) {
         this.code_token = code_token;
-    }
-
-    public int getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
     }
 
     public double getLat() {

@@ -90,10 +90,8 @@ public class ProfileMyMeetingsActivity extends AppCompatActivity {
     }
 
     private void loadMyMeetings() {
-        int userId = getSharedPreferences(PREF_NAME, 0).getInt(KEY_USER_ID, -1);
-        if (userId == -1) return;
 
-        apiService.getMyMeetings(userId)
+        apiService.getMyMeetings()
                 .enqueue(new Callback<ApiResponse<List<MyMeetingItem>>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<List<MyMeetingItem>>> call, Response<ApiResponse<List<MyMeetingItem>>> response) {

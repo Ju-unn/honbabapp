@@ -305,7 +305,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
     }
 
     private void deleteCampaign() {
-        DeleteMeetingRequest request = new DeleteMeetingRequest(campaignId, currentUserId);
+        DeleteMeetingRequest request = new DeleteMeetingRequest(campaignId);
         apiService.deleteMeeting(request).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call,

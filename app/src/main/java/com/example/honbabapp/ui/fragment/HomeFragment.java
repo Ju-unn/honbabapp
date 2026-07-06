@@ -403,12 +403,7 @@ public class HomeFragment extends Fragment {
      * @param location
      */
     private void updateLocationInDB(String location) {
-        int userId = prefs.getInt("user_id", -1);
-        if (userId == -1) {
-            return;
-        }
-
-        UpdateLocationRequest request = new UpdateLocationRequest(userId, location);
+        UpdateLocationRequest request = new UpdateLocationRequest(location);
 
         apiService.updateLocation(request).enqueue(new Callback<ApiResponse<Void>>() {
             @Override

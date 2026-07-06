@@ -6,6 +6,7 @@ import com.example.honbabapp.api.data.meeting.QrCodeData;
 import com.example.honbabapp.api.data.meeting.QrScanResultData;
 import com.example.honbabapp.api.data.meeting.QrStatusData;
 import com.example.honbabapp.api.data.request.LogoutRequest;
+import com.example.honbabapp.api.data.request.RefreshTokenRequest;
 import com.example.honbabapp.api.data.request.SocialLoginRequest;
 import com.example.honbabapp.api.data.request.campaign.CampaignUpdateRequest;
 import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
@@ -29,6 +30,7 @@ import com.example.honbabapp.api.data.request.user.DeleteAccountRequest;
 import com.example.honbabapp.api.data.request.user.UpdateLocationRequest;
 import com.example.honbabapp.api.data.request.user.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.MyMeetingItem;
+import com.example.honbabapp.api.data.response.RefreshTokenResponse;
 import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
 import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
 import com.example.honbabapp.api.data.response.chat.KickMemberResponse;
@@ -111,6 +113,18 @@ public interface ApiService {
      */
     @POST("api/auth/logout.php")
     Call<ApiResponse<Void>> logout(@Body LogoutRequest request);
+
+    /**
+     * Access Token 재발급
+     *
+     * 401 응답 수신 시 RetrofitClient의 TokenRefreshAuthenticator가
+     * 자동으로 호출한다. 화면 코드에서 직접 호출할 일은 거의 없다.
+     *
+     * @param request refresh_token
+     * @return RefreshTokenResponse - access_token, refresh_token (rotation된 새 값)
+     */
+    @POST("api/auth/refresh.php")
+    Call<ApiResponse<RefreshTokenResponse>> refreshToken(@Body RefreshTokenRequest request);
 
 
 
@@ -291,14 +305,12 @@ public interface ApiService {
     /**
      * 5. 신청자 목록 조회 (호스트 전용)
      * @param meetingId 모임 ID
-     * @param hostId 호스트 ID (권한 확인)
      * @param status 참여 상태 ("대기", "승인", "거절")
      * @return ApiResponse<ApplicantsData> - applicants 배열, total_count
      */
     @GET("api/meeting/applicants.php")
     Call<ApiResponse<ApplicantsResponse>> getApplicants(
             @Query("meeting_id") int meetingId,
-            @Query("host_id") int hostId,
             @Query("status") String status
     );
 
@@ -350,7 +362,7 @@ public interface ApiService {
      * 자동 로그인 시, 닉네임/위치/성별/생일/전화번호 중 비어있는 게 있는지 체크
      */
     @GET("api/user/check_onboarding_status.php")
-    Call<ApiResponse<OnboardingStatusResponse>> checkOnboardingStatus(@Query("user_id") int userId);
+    Call<ApiResponse<OnboardingStatusResponse>> checkOnboardingStatus();
 
     /**
      * 2. 프로필 수정 (닉네임, 상태메시지, 프로필이미지 선택적)
@@ -381,7 +393,7 @@ public interface ApiService {
      * 5. 내 모임 목록 (host + participant 전체)
      */
     @GET("api/user/my_meetings.php")
-    Call<ApiResponse<List<MyMeetingItem>>> getMyMeetings(@Query("user_id") int userId);
+    Call<ApiResponse<List<MyMeetingItem>>> getMyMeetings();
 
     /**
      * 6. 내 위치 업데이트
@@ -412,7 +424,7 @@ public interface ApiService {
      * 1. 내 채팅방 목록 조회
      */
     @GET("api/chat/rooms.php")
-    Call<ApiResponse<List<ChatRoomData>>> getChatRooms(@Query("user_id") int userId);
+    Call<ApiResponse<List<ChatRoomData>>> getChatRooms();
 
     /**
      * 2. 채팅방 생성
@@ -426,7 +438,6 @@ public interface ApiService {
     @GET("api/chat/messages.php")
     Call<ApiResponse<MessageListResponse>> getMessages(
             @Query("room_id") int roomId,
-            @Query("user_id") int userId,
             @Query("page") int page,
             @Query("limit") int limit
     );
@@ -460,14 +471,12 @@ public interface ApiService {
      * 7. 채팅방 사진 목록 조회 (페이지네이션)
      *
      * @param roomId 채팅방 ID
-     * @param userId 요청자 user_id (멤버 권한 체크용)
      * @param page   페이지 번호 (1부터)
      * @param limit  페이지당 개수 (보통 10 또는 30)
      */
     @GET("api/chat/photos.php")
     Call<ApiResponse<ChatPhotosResponse>> getChatPhotos (
             @Query("room_id") int roomId,
-            @Query("user_id") int userId,
             @Query("page")    int page,
             @Query("limit")   int limit
     );
@@ -501,15 +510,13 @@ public interface ApiService {
      *
      * @param image   MultipartBody.Part (파라미터명: "chat_image")
      * @param roomId  채팅방 ID (멤버 권한 검증용)
-     * @param userId  업로드하는 user_id
      * @return ApiResponse<ImageUploadData> - image_url (S3 URL)
      */
     @Multipart
     @POST("api/chat/upload_chat_image.php")
     Call<ApiResponse<ImageUploadData>> uploadChatImage(
             @Part MultipartBody.Part image,
-            @Part("room_id") RequestBody roomId,
-            @Part("user_id") RequestBody userId
+            @Part("room_id") RequestBody roomId
     );
 
     // ==================== QR 출석 인증 API ====================
@@ -520,10 +527,7 @@ public interface ApiService {
      */
 
     @GET("api/qr/qr_status.php")
-    Call<ApiResponse<QrStatusData>> getQrStatus(
-            @Query("meeting_id") int meeting_id,
-            @Query("user_id") int user_id
-    );
+    Call<ApiResponse<QrStatusData>> getQrStatus(@Query("meeting_id") int meeting_id);
 
     /**
      * QR 토큰 생성 (호스트 전용)
@@ -548,10 +552,7 @@ public interface ApiService {
      * - targets: 요청자 본인을 제외한 QR 인증자 목록 (already_reviewed 포함)
      */
     @GET("api/review/targets.php")
-    Call<ApiResponse<ReviewTargetsData>> getReviewTargets(
-            @Query("meeting_id") int meetingId,
-            @Query("user_id") int userId
-    );
+    Call<ApiResponse<ReviewTargetsData>> getReviewTargets(@Query("meeting_id") int meetingId);
 
     /**
      * 후기 제출

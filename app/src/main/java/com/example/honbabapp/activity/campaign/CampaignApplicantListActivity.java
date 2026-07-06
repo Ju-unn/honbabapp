@@ -31,13 +31,12 @@ import retrofit2.Response;
 
 /**
  * 체험단 신청자 목록 Activity (호스트 전용)
- *
  */
 public class CampaignApplicantListActivity extends AppCompatActivity {
 
     private static final String TAG = "CampaignApplicantList";
 
-    public static final String EXTRA_CAMPAIGN_ID    = "campaign_id";
+    public static final String EXTRA_CAMPAIGN_ID = "campaign_id";
     public static final String EXTRA_CAMPAIGN_TITLE = "campaign_title";
 
     private PageCampaignApplicantListBinding binding;
@@ -134,7 +133,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     // ─────────────────────────────────────────────────────────────
 
     private void loadApplicants(String status) {
-        apiService.getApplicants(campaignId, hostId, status)
+        apiService.getApplicants(campaignId, status)
                 .enqueue(new Callback<ApiResponse<ApplicantsResponse>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<ApplicantsResponse>> call,
@@ -203,7 +202,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
 
     private void approveApplicant(ApplicantsResponse.Applicant applicant, String action) {
         ApproveMeetingRequest request = new ApproveMeetingRequest(
-                applicant.getParticipant_id(), action, hostId
+                applicant.getParticipant_id(), action
         );
 
         apiService.approveMeeting(request)
@@ -241,7 +240,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
 
     private void onChatClick(ApplicantsResponse.Applicant applicant) {
         CreateRoomRequest request = new CreateRoomRequest(
-                hostId, applicant.getUser_id(), applicant.getUser_nickname()
+                applicant.getUser_id(), applicant.getUser_nickname()
         );
 
         apiService.createRoom(request)

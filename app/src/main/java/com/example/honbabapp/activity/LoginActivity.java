@@ -71,6 +71,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String KEY_DONG    = "user_dong";
     private static final String KEY_FCM_TOKEN = "fcm_token";
     private static final String KEY_JWT_TOKEN = "jwt_token";
+    private static final String KEY_REFRESH_TOKEN = "refresh_token";
 
 
 
@@ -123,7 +124,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void verifyOnboardingThenProceed(int userId) {
-        apiService.checkOnboardingStatus(userId).enqueue(new Callback<ApiResponse<OnboardingStatusResponse>>() {
+        apiService.checkOnboardingStatus().enqueue(new Callback<ApiResponse<OnboardingStatusResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<OnboardingStatusResponse>> call, Response<ApiResponse<OnboardingStatusResponse>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
@@ -373,6 +374,7 @@ public class LoginActivity extends AppCompatActivity {
         editor.putBoolean(KEY_IS_LOGGED_IN, true);
         editor.putInt(KEY_USER_ID, user.getUser_id());
         editor.putString(KEY_JWT_TOKEN, user.getToken());
+        editor.putString(KEY_REFRESH_TOKEN, user.getRefresh_token());
 
         // user_location 파싱해서 저장 (있을 경우만 - 온보딩 전이면 null일 수 있음)
         String userLocation = user.getUser_location();
@@ -513,6 +515,7 @@ public class LoginActivity extends AppCompatActivity {
         editor.putBoolean(KEY_IS_LOGGED_IN, true);
         editor.putInt(KEY_USER_ID, loginData.getUser_id());
         editor.putString(KEY_JWT_TOKEN, loginData.getToken());
+        editor.putString(KEY_REFRESH_TOKEN, loginData.getRefresh_token());
 
         // user_location 파싱해서 저장
         String userLocation = loginData.getUser_location();
@@ -556,7 +559,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     sharedPreferences.edit().putString(KEY_FCM_TOKEN, token).apply();
 
-                    RegisterFcmTokenRequest request = new RegisterFcmTokenRequest(userId, token);
+                    RegisterFcmTokenRequest request = new RegisterFcmTokenRequest(token);
                     apiService.registerFcmToken(request).enqueue(new Callback<ApiResponse<Void>>() {
                         @Override
                         public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {

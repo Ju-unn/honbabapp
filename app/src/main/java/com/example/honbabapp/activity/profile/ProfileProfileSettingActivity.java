@@ -187,7 +187,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
             return;
         }
 
-        UpdateProfileRequest request = new UpdateProfileRequest(userId);
+        UpdateProfileRequest request = new UpdateProfileRequest();
         request.setUser_nickname(nickname);
         request.setUser_status_message(statusMessage);
 

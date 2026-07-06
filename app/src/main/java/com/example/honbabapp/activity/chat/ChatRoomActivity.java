@@ -340,7 +340,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         }
 
         RetrofitClient.getClient().create(ApiService.class)
-                .getChatRooms(myUserId)
+                .getChatRooms()
                 .enqueue(new Callback<ApiResponse<List<ChatRoomData>>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<List<ChatRoomData>>> call,

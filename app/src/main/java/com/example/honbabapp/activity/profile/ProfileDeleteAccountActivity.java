@@ -80,12 +80,9 @@ public class ProfileDeleteAccountActivity extends AppCompatActivity {
     }
 
     private void deleteAccount() {
-        int userId = getSharedPreferences(PREF_NAME, 0).getInt(KEY_USER_ID, -1);
-        if (userId == -1) return;
-
         binding.btnDeleteAccount.setEnabled(false);
 
-        DeleteAccountRequest request = new DeleteAccountRequest(userId);
+        DeleteAccountRequest request = new DeleteAccountRequest();
 
         apiService.deleteAccount(request)
                 .enqueue(new Callback<ApiResponse<Void>>() {

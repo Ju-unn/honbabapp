@@ -603,9 +603,9 @@ public class MeetingEditActivity extends AppCompatActivity {
                         selectedPhone
                 );
 
+        // 변경
         UpdateMeetingRequest request = new UpdateMeetingRequest(
                 meetingId,
-                userId,
                 title,
                 description,
                 selectedCategory,

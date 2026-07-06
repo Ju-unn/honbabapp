@@ -1,8 +1,14 @@
 package com.example.honbabapp.api.data.request.meeting;
 
+/**
+ * 모임 수정 요청 모델
+ *
+ * POST /api/meeting/update.php
+ *
+ * user_id는 서버가 JWT 토큰에서 추출하므로 요청 바디에 포함하지 않는다.
+ */
 public class UpdateMeetingRequest {
     private int meeting_id;
-    private int user_id;
     private String meeting_title;
     private String meeting_description;
     private String meeting_category;
@@ -41,13 +47,12 @@ public class UpdateMeetingRequest {
         }
     }
 
-    public UpdateMeetingRequest(int meeting_id, int user_id, String meeting_title,
+    public UpdateMeetingRequest(int meeting_id, String meeting_title,
                                 String meeting_description, String meeting_category,
                                 String meeting_date, int meeting_max_participants,
                                 String meeting_price_range, String meeting_image,
                                 LocationRequest location) {
         this.meeting_id              = meeting_id;
-        this.user_id                 = user_id;
         this.meeting_title           = meeting_title;
         this.meeting_description     = meeting_description;
         this.meeting_category        = meeting_category;

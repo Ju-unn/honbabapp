@@ -59,7 +59,7 @@ public class ChatRepository {
      * @param chatRoomDb    성공 시 List<ChatRoomData> 반환
      */
     public void getChatRooms(int userId, Callback<ApiResponse<List<ChatRoomData>>> chatRoomDb) {
-        apiService.getChatRooms(userId).enqueue(chatRoomDb);
+        apiService.getChatRooms().enqueue(chatRoomDb);
     }
 
     // ─────────────────────────────────────────
@@ -76,7 +76,7 @@ public class ChatRepository {
      * @param chatRoomDb     성공 시 MessageListResponse 반환
      */
     public void getMessages(int roomId , int userId , int page, Callback<ApiResponse<MessageListResponse>> chatRoomDb) {
-        apiService.getMessages(roomId , userId, page , 30).enqueue(chatRoomDb);
+        apiService.getMessages(roomId , page , 30).enqueue(chatRoomDb);
     }
 
     // ─────────────────────────────────────────
@@ -94,7 +94,7 @@ public class ChatRepository {
      */
     public void createDirectRoom(int myUserId , int targetUserId , String roomName ,
                                  Callback<ApiResponse<CreateRoomResponse>> chatRoomDb) {
-        CreateRoomRequest request = new CreateRoomRequest(myUserId , targetUserId , roomName);
+        CreateRoomRequest request = new CreateRoomRequest(targetUserId , roomName);
         apiService.createRoom(request).enqueue(chatRoomDb);
     }
 
@@ -110,9 +110,8 @@ public class ChatRepository {
      */
     public void createGroupRoom(int myUserId , List<Integer> memberIds , int meetingId,
                                 String roomName , Callback<ApiResponse<CreateRoomResponse>> chatRoomDb) {
-        CreateRoomRequest request = new CreateRoomRequest(myUserId , memberIds , meetingId ,roomName);
+        CreateRoomRequest request = new CreateRoomRequest(memberIds , meetingId , roomName);
         apiService.createRoom(request).enqueue(chatRoomDb);
-
     }
 
     // ─────────────────────────────────────────
@@ -123,12 +122,9 @@ public class ChatRepository {
     /**
      * 채팅방의 모든 메시지를 읽음 처리한다
      *
-     * @param roomId 채팅방 ID
-     * @param userId 읽은 사용자 ID
-     * @param chatRoomDb  완료 콜백
      */
     public void markRead(int roomId , int userId , Callback<ApiResponse<Void>> chatRoomDb) {
-        MarkReadRequest request = new MarkReadRequest(roomId , userId);
+        MarkReadRequest request = new MarkReadRequest(roomId);
         apiService.markRead(request).enqueue(chatRoomDb);
     }
 
@@ -138,15 +134,10 @@ public class ChatRepository {
 
     /**
      * 그룹 채팅방에 새 멤버를 초대한다
-     *
-     * @param roomId       채팅방 ID
-     * @param inviterId    초대하는 사람 ID
-     * @param targetUserId 초대받는 사람 ID
-     * @param chatRoomDb   완료 콜백
      */
     public void inviteUser(int roomId , int inviterId , int targetUserId ,
                            Callback<ApiResponse<Void>> chatRoomDb) {
-        InviteUserRequest request = new InviteUserRequest(roomId , inviterId , targetUserId);
+        InviteUserRequest request = new InviteUserRequest(roomId , targetUserId);
         apiService.inviteUser(request).enqueue(chatRoomDb);
     }
 
@@ -163,16 +154,9 @@ public class ChatRepository {
      *  - 채팅방/모임 삭제 여부
      *  - 적용된 패널티 점수 (penalty_applied)
      *  - 변경된 매너점수 (new_manner_score)
-     *
-     * 서버에서 시스템 메시지 INSERT 및 WebSocket broadcast(member_left, host_changed)
-     * 까지 모두 자동 처리한다.
-     *
-     * @param roomId     채팅방 ID
-     * @param userId     나가는 사용자 ID
-     * @param chatRoomDb 완료 콜백 (LeaveRoomResponse 반환)
      */
     public void leaveRoom(int roomId, int userId, Callback<ApiResponse<LeaveRoomResponse>> chatRoomDb) {
-        LeaveRoomRequest request = new LeaveRoomRequest(roomId, userId);
+        LeaveRoomRequest request = new LeaveRoomRequest(roomId);
         apiService.leaveRoom(request).enqueue(chatRoomDb);
     }
 
@@ -190,7 +174,7 @@ public class ChatRepository {
      */
     public void kickMember(int roomId, int hostId, int targetUserId,
                            Callback<ApiResponse<KickMemberResponse>> chatRoomDb) {
-        KickMemberRequest request = new KickMemberRequest(roomId, hostId, targetUserId);
+        KickMemberRequest request = new KickMemberRequest(roomId, targetUserId);
         apiService.kickMember(request).enqueue(chatRoomDb);
     }
 
@@ -210,7 +194,7 @@ public class ChatRepository {
      */
     public void getChatPhotos(int roomId, int userId, int page, int limit,
                               Callback<ApiResponse<ChatPhotosResponse>> chatRoomDb) {
-        apiService.getChatPhotos(roomId, userId, page, limit).enqueue(chatRoomDb);
+        apiService.getChatPhotos(roomId, page, limit).enqueue(chatRoomDb);
     }
 
     // ─────────────────────────────────────────
@@ -231,9 +215,7 @@ public class ChatRepository {
                                 Callback<ApiResponse<ImageUploadData>> chatRoomDb) {
         RequestBody roomIdBody = RequestBody.create(
                 MediaType.parse("text/plain"), String.valueOf(roomId));
-        RequestBody userIdBody = RequestBody.create(
-                MediaType.parse("text/plain"), String.valueOf(userId));
-        apiService.uploadChatImage(imagePart, roomIdBody, userIdBody).enqueue(chatRoomDb);
+        apiService.uploadChatImage(imagePart, roomIdBody).enqueue(chatRoomDb);
     }
 
 

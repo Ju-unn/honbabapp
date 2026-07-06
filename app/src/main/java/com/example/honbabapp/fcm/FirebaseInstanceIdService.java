@@ -83,7 +83,7 @@ public class FirebaseInstanceIdService extends FirebaseMessagingService {
      */
     private void registerTokenToServer(int userId, String token) {
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
-        RegisterFcmTokenRequest request = new RegisterFcmTokenRequest(userId, token);
+        RegisterFcmTokenRequest request = new RegisterFcmTokenRequest(token);
 
         apiService.registerFcmToken(request).enqueue(new Callback<ApiResponse<Void>>() {
             @Override

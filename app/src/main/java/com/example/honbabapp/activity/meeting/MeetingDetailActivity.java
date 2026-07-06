@@ -106,6 +106,8 @@ public class MeetingDetailActivity extends AppCompatActivity {
         call.enqueue(new Callback<ApiResponse<Meeting>>() {
             @Override
             public void onResponse(Call<ApiResponse<Meeting>> call, Response<ApiResponse<Meeting>> response) {
+                if (binding == null) return;
+
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<Meeting> apiResponse = response.body();
 
@@ -426,12 +428,14 @@ public class MeetingDetailActivity extends AppCompatActivity {
         binding.btnJoinMeeting.setText("신청 중...");
 
         // API 호출
-        JoinMeetingRequest request = new JoinMeetingRequest(meetingId , currentUserId);
+        JoinMeetingRequest request = new JoinMeetingRequest(meetingId);
         Call<ApiResponse<ParticipantResponse>> call = apiService.joinMeeting(request);
 
         call.enqueue(new Callback<ApiResponse<ParticipantResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<ParticipantResponse>> call, Response<ApiResponse<ParticipantResponse>> response) {
+                if (binding == null) return;
+
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<ParticipantResponse> apiResponse = response.body();
 
@@ -572,10 +576,12 @@ public class MeetingDetailActivity extends AppCompatActivity {
     }
 
     private void deleteMeeting() {
-        DeleteMeetingRequest request = new DeleteMeetingRequest(meetingId, currentUserId);
+        DeleteMeetingRequest request = new DeleteMeetingRequest(meetingId);
         apiService.deleteMeeting(request).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                if (binding == null) return;
+
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Toast.makeText(MeetingDetailActivity.this, "모임이 삭제되었습니다.", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(MeetingDetailActivity.this , MainActivity.class);

@@ -36,6 +36,7 @@ public class LoginData {
     private double user_manner_score;
     private boolean user_email_verified;
     private String token;
+    private String refresh_token;
 
     public int getUser_id() {
         return user_id;
@@ -124,4 +125,13 @@ public class LoginData {
     public void setToken(String token) {
         this.token = token;
     }
+
+    public String getRefresh_token() {
+        return refresh_token;
+    }
+
+    public void setRefresh_token(String refresh_token) {
+        this.refresh_token = refresh_token;
+    }
+
 }

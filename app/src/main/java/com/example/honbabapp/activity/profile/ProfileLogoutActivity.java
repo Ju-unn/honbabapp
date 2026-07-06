@@ -63,7 +63,7 @@ public class ProfileLogoutActivity extends AppCompatActivity {
             return;
         }
 
-        LogoutRequest request = new LogoutRequest(userId);
+        LogoutRequest request = new LogoutRequest();
         apiService.logout(request).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {

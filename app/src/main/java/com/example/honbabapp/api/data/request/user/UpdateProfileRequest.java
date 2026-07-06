@@ -5,10 +5,10 @@ package com.example.honbabapp.api.data.request.user;
  *
  * POST /api/user/update_profile.php
  *
+ * user_id는 서버가 JWT 토큰에서 추출하므로 요청 바디에 포함하지 않는다.
  */
 public class UpdateProfileRequest {
 
-    private int user_id;
     private String user_nickname;       // 선택적
     private String user_status_message; // 선택적
     private String user_profile_image;  // 선택적 (S3 URL)
@@ -17,12 +17,8 @@ public class UpdateProfileRequest {
     private String user_instagram_id;
     private String user_blog_id;
 
-    // ── 생성자 (기존 그대로 — user_id만 필수) ────────────────────
-    public UpdateProfileRequest(int user_id) {
-        this.user_id = user_id;
+    public UpdateProfileRequest() {
     }
-
-    // ── 기존 Setter (그대로) ──────────────────────────────────────
 
     public void setUser_nickname(String user_nickname) {
         this.user_nickname = user_nickname;
@@ -36,8 +32,6 @@ public class UpdateProfileRequest {
         this.user_profile_image = user_profile_image;
     }
 
-    // ── 체험단 전용 Setter ────────────────────────────────────────
-
     public void setUser_instagram_id(String user_instagram_id) {
         this.user_instagram_id = user_instagram_id;
     }
@@ -46,9 +40,6 @@ public class UpdateProfileRequest {
         this.user_blog_id = user_blog_id;
     }
 
-    // ── Getter ────────────────────────────────────────────────────
-
-    public int getUser_id() { return user_id; }
     public String getUser_nickname() { return user_nickname; }
     public String getUser_status_message() { return user_status_message; }
     public String getUser_profile_image() { return user_profile_image; }

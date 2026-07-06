@@ -61,7 +61,7 @@ public class ReviewDialogHelper {
     // ─────────────────────────────────────────────────────────────
 
     public void onReviewButtonClicked() {
-        apiService.getReviewTargets(meetingId, myUserId)
+        apiService.getReviewTargets(meetingId)
                 .enqueue(new Callback<ApiResponse<ReviewTargetsData>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<ReviewTargetsData>> call,
@@ -178,7 +178,7 @@ public class ReviewDialogHelper {
                               DialogReviewBinding dialogBinding) {
 
         ReviewSubmitRequest request = new ReviewSubmitRequest(
-                meetingId, myUserId, target.getUser_id(), rating, content
+                meetingId, target.getUser_id(), rating, content
         );
 
         apiService.submitReview(request)

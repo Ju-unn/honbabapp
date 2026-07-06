@@ -28,7 +28,7 @@ import retrofit2.Response;
 
 /**
  * 신청자 목록 화면 (호스트 전용)
- *
+ * <p>
  * 기능:
  * 1. 모임 신청자 목록 표시
  * 2. 승인/거절 기능
@@ -57,7 +57,7 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
         setResult(RESULT_OK);
 
         // Intent에서 데이터 가져오기
-        meetingId = getIntent().getIntExtra("meeting_id" , -1);
+        meetingId = getIntent().getIntExtra("meeting_id", -1);
         meetingTitle = getIntent().getStringExtra("meeting_title");
 
         if (meetingId == -1) {
@@ -67,11 +67,12 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
         }
 
         // 현재 사용자 ID (호스트)
-        SharedPreferences prefs = getSharedPreferences("honbabapp_prefs" , MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("honbabapp_prefs", MODE_PRIVATE);
         hostId = prefs.getInt("user_id", -1);
 
         // 뒤로가기 버튼
-        binding.btnBack.setOnClickListener(v -> {finish();
+        binding.btnBack.setOnClickListener(v -> {
+            finish();
         });
 
         // recyclerView
@@ -87,7 +88,7 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
      * RecyclerView 설정
      */
     private void setupRecyclerView() {
-        adapter = new ApplicantListAdapter(new ArrayList<>() , this::onApproveClick , this::onRejectClick);
+        adapter = new ApplicantListAdapter(new ArrayList<>(), this::onApproveClick, this::onRejectClick);
         binding.rvApplicants.setAdapter(adapter);
     }
 
@@ -96,8 +97,7 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
      */
     private void loadApplicants() {
         Call<ApiResponse<ApplicantsResponse>> call = apiService.getApplicants(
-                meetingId ,
-                hostId ,
+                meetingId,
                 "대기"
         );
 
@@ -167,10 +167,10 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("참여 승인")
                 .setMessage(applicant.getUser_nickname() + "님의 참여를 승인하시겠습니까?")
-                .setPositiveButton("승인" , (dialog , which) -> {
-                    approveApplicant(applicant , "approve");
+                .setPositiveButton("승인", (dialog, which) -> {
+                    approveApplicant(applicant, "approve");
                 })
-                .setNegativeButton("취소" , null)
+                .setNegativeButton("취소", null)
                 .show();
     }
 
@@ -181,21 +181,20 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("참여 거절")
                 .setMessage(applicant.getUser_nickname() + "님의 참여를 거절하시겠습니까?")
-                .setPositiveButton("거절" , (dialog , which) -> {
-                    approveApplicant(applicant , "reject");
+                .setPositiveButton("거절", (dialog, which) -> {
+                    approveApplicant(applicant, "reject");
                 })
-                .setNegativeButton("취소" , null)
+                .setNegativeButton("취소", null)
                 .show();
     }
 
     /**
      * 승인/거절 API 호출
      */
-    private void approveApplicant(ApplicantsResponse.Applicant applicant , String action) {
+    private void approveApplicant(ApplicantsResponse.Applicant applicant, String action) {
         ApproveMeetingRequest request = new ApproveMeetingRequest(
-                applicant.getParticipant_id() ,
-                action ,
-                hostId
+                applicant.getParticipant_id(),
+                action
         );
 
         Call<ApiResponse<ApproveResponse>> call = apiService.approveMeeting(request);

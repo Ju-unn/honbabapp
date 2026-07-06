@@ -181,7 +181,7 @@ public class CampaignApplyActivity extends AppCompatActivity {
         binding.btnSubmitApply.setEnabled(false);
         binding.btnSubmitApply.setText("신청 중...");
 
-        JoinMeetingRequest request = new JoinMeetingRequest(campaignId, currentUserId, intro);
+        JoinMeetingRequest request = new JoinMeetingRequest(campaignId, intro);
 
         apiService.joinMeeting(request).enqueue(new Callback<ApiResponse<ParticipantResponse>>() {
             @Override

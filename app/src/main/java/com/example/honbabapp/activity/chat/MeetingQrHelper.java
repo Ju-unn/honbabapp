@@ -114,7 +114,7 @@ public class MeetingQrHelper {
     // ─────────────────────────────────────────────────────────────
 
     public void loadQrStatus() {
-        apiService.getQrStatus(meetingId, myUserId)
+        apiService.getQrStatus(meetingId)
                 .enqueue(new Callback<ApiResponse<QrStatusData>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<QrStatusData>> call,
@@ -189,7 +189,7 @@ public class MeetingQrHelper {
     }
 
     private void requestQrGenerate() {
-        QrGenerateRequest generateRequest = new QrGenerateRequest(meetingId, myUserId);
+        QrGenerateRequest generateRequest = new QrGenerateRequest(meetingId);
 
         apiService.generateQrCode(generateRequest)
                 .enqueue(new Callback<ApiResponse<QrCodeData>>() {
@@ -364,7 +364,7 @@ public class MeetingQrHelper {
     }
 
     private void submitQrScan(String codeToken, double latitude, double longitude) {
-        QrScanRequest scanRequest = new QrScanRequest(codeToken, myUserId, latitude, longitude);
+        QrScanRequest scanRequest = new QrScanRequest(codeToken, latitude, longitude);
 
         apiService.scanQrCode(scanRequest)
                 .enqueue(new Callback<ApiResponse<QrScanResultData>>() {
