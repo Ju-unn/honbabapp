@@ -481,10 +481,18 @@ public class MeetingEditActivity extends AppCompatActivity {
             Toast.makeText(this, "모임명을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
+        if (title.length() < 5 || title.length() > 30) {
+            Toast.makeText(this, "모임 제목은 5~30자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         String description = binding.etMeetingDescription.getText().toString().trim();
         if (description.isEmpty()) {
             Toast.makeText(this, "모임 설명을 입력해주세요", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (description.length() < 10 || description.length() > 100) {
+            Toast.makeText(this, "모임 설명은 10~100자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 

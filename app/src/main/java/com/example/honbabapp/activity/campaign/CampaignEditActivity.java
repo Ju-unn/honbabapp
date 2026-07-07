@@ -273,6 +273,10 @@ public class CampaignEditActivity extends AppCompatActivity {
             Toast.makeText(this, "체험단 제목을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
+        if (campaignTitle.length() < 2 || campaignTitle.length() > 50) {
+            Toast.makeText(this, "체험단 제목은 2~50자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (selectedPlaceName.isEmpty()) {
             Toast.makeText(this, "가게를 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
@@ -280,6 +284,10 @@ public class CampaignEditActivity extends AppCompatActivity {
         String campaignDescription = binding.etCampaignDescription.getText().toString().trim();
         if (campaignDescription.isEmpty()) {
             Toast.makeText(this, "체험단 설명을 입력해주세요", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (campaignDescription.length() < 10 || campaignDescription.length() > 500) {
+            Toast.makeText(this, "체험단 설명은 10~500자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
