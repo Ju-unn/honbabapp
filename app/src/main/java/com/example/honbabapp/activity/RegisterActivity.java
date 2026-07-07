@@ -492,7 +492,10 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         // API 호출
-        Call<ApiResponse<AvailabilityData>> call = apiService.checkEmail(email);
+        // 전화번호도 함께 전달: 탈퇴 계정의 번호 + 새 이메일 조합이면
+        // 서버가 "기존에 사용하던 이메일을 입력해주세요"로 안내해줌
+        Call<ApiResponse<AvailabilityData>> call = apiService.checkEmail(email,
+                registerBinding.etPhoneNumber.getText().toString().trim());
 
         call.enqueue(new Callback<ApiResponse<AvailabilityData>>() {
             @Override
@@ -501,9 +504,26 @@ public class RegisterActivity extends AppCompatActivity {
                     ApiResponse<AvailabilityData> apiResponse = response.body();
 
                     if (apiResponse.isSuccess() && apiResponse.getData().isAvailable()) {
-                        Toast.makeText(RegisterActivity.this,
-                                "사용 가능한 이메일입니다",
-                                Toast.LENGTH_SHORT).show();
+                        if (apiResponse.getData().isIs_restored()) {
+                            // 탈퇴 계정의 원본 이메일 → 가입 완료 시 계정 복원
+                            isRestored = true;
+                            showRestoredAccountDialog();
+                            // 탈퇴 번호라서 전화번호 확인이 실패해 있었다면,
+                            // 복원 이메일이 확인된 지금 자동으로 재검증
+                            // (서버가 이메일과 함께 판정하므로 이번엔 통과됨)
+                            String phoneInput = registerBinding.etPhoneNumber.getText().toString().trim();
+                            if (!isPhoneChecked && phoneInput.matches("^010-\\d{4}-\\d{4}$")) {
+                                checkPhoneDuplicate();
+                            }
+                        } else {
+                            isRestored = false;
+                            // 복원 다이얼로그로 숨겼던 필드가 있으면 복구
+                            registerBinding.layoutBirthday.setVisibility(View.VISIBLE);
+                            registerBinding.layoutGender.setVisibility(View.VISIBLE);
+                            Toast.makeText(RegisterActivity.this,
+                                    "사용 가능한 이메일입니다",
+                                    Toast.LENGTH_SHORT).show();
+                        }
                         isEmailChecked = true;
                         registerBinding.btnSendVerification.setText("코드 전송");
                     } else {
@@ -729,7 +749,10 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         // 3. API 호출 (서버에 중복 확인 요청)
-        Call<ApiResponse<AvailabilityData>> call = apiService.checkPhone(phone);
+        // 이메일을 함께 보내는 이유: 탈퇴 계정의 번호라도 그 계정의 원본 이메일로
+        // 가입(=복원) 중이면 서버가 허용해줌
+        Call<ApiResponse<AvailabilityData>> call = apiService.checkPhone(phone,
+                registerBinding.etEmail.getText().toString().trim());
 
         call.enqueue(new Callback<ApiResponse<AvailabilityData>>() {
             @Override
@@ -741,14 +764,11 @@ public class RegisterActivity extends AppCompatActivity {
 
                     if (apiResponse.isSuccess()) {
                         if (apiResponse.getData().isAvailable()) {
+                            // 복원 여부(isRestored)는 이메일 확인이 판정한다.
+                            // 여기서 건드리면 "복원 이메일 확인 → 새 전화번호 확인" 순서일 때
+                            // isRestored가 false로 덮여 숨겨진 생년월일 입력을 요구하게 됨
                             isPhoneChecked = true;
-                            if (apiResponse.getData().isIs_restored()) { // 복원 계정이면
-                                isRestored = true;
-                                showRestoredAccountDialog();
-                            } else {
-                                isRestored = false;
-                                Toast.makeText(RegisterActivity.this, "사용 가능한 전화번호입니다", Toast.LENGTH_SHORT).show();
-                            }
+                            Toast.makeText(RegisterActivity.this, apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
                         } else {
                             // 이미 사용중인 전화번호
                             Toast.makeText(RegisterActivity.this,

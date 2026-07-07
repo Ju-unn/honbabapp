@@ -24,11 +24,9 @@ import com.example.honbabapp.api.data.request.SocialLoginRequest;
 import com.example.honbabapp.api.data.request.fcm.RegisterFcmTokenRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.user.OnboardingStatusResponse;
-import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.ActivityLoginBinding;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
-import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.kakao.sdk.auth.model.OAuthToken;
 import com.kakao.sdk.common.model.ClientError;
@@ -48,11 +46,11 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * 로그인 Activity (최적화 버전)
-     *
+     * <p>
      * SharedPreferences 저장:
      * - user_id (int)         : API 호출 시 사용
      * - is_logged_in (boolean): 자동 로그인 체크
-     *
+     * <p>
      * 나머지 정보는 서버에서 가져오기:
      * - nickname, email, profile_image, location, manner_temp 등
      */
@@ -68,11 +66,10 @@ public class LoginActivity extends AppCompatActivity {
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_SIGUNGU = "user_sigungu";
-    private static final String KEY_DONG    = "user_dong";
+    private static final String KEY_DONG = "user_dong";
     private static final String KEY_FCM_TOKEN = "fcm_token";
     private static final String KEY_JWT_TOKEN = "jwt_token";
     private static final String KEY_REFRESH_TOKEN = "refresh_token";
-
 
 
     @Override
@@ -99,7 +96,7 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void initializeComponents() {
         apiService = RetrofitClient.getClient().create(ApiService.class);
-        sharedPreferences = getSharedPreferences(PREF_NAME , MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         credentialManager = CredentialManager.create(this);
 
         Log.d(TAG, "LoginActivity 초기화 완료");
@@ -160,6 +157,9 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = new Intent(LoginActivity.this, OnboardingActivity.class);
         intent.putExtra("needs_nickname", missing.isNickname());
         intent.putExtra("needs_phone", missing.isPhone_number());
+        intent.putExtra("needs_location", missing.isLocation());
+        intent.putExtra("needs_gender", missing.isGender());
+        intent.putExtra("needs_birthday", missing.isBirthday());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
@@ -269,8 +269,8 @@ public class LoginActivity extends AppCompatActivity {
      * 카카오톡 앱이 설치되어 있으면 앱으로 시도, 실패(취소 제외)하면 카카오계정(웹) 로그인으로 폴백
      */
     private void performKakaoLogin() {
-        // 카카오계정으로 로그인 공통 콜백
-        // 카카오톡으로 로그인할 수 없거나 실패했을 때 사용됨
+        // KakaoTalk 앱이 설치된 경우 앱 전환 방식 사용 (깜빡임 없음)
+        // 미설치 또는 실패 시 웹 기반 로그인으로 폴백
         Function2<OAuthToken, Throwable, Unit> accountCallback = (token, error) -> {
             if (error != null) {
                 Log.e(TAG, "카카오계정으로 로그인 실패", error);
@@ -291,14 +291,13 @@ public class LoginActivity extends AppCompatActivity {
                 if (error != null) {
                     Log.e(TAG, "카카오톡으로 로그인 실패", error);
 
-                    // 사용자가 의도적으로 취소한 경우(예: 뒤로 가기)는
-                    // 카카오계정 로그인으로 폴백하지 않고 그대로 취소 처리
+                    // 사용자가 의도적으로 취소한 경우 폴백 없이 그대로 취소 처리
                     if (error instanceof ClientError
                             && ((ClientError) error).getReason() == ClientErrorCause.Cancelled) {
                         return Unit.INSTANCE;
                     }
 
-                    // 카카오톡에 연결된 카카오계정이 없는 경우 등 - 카카오계정으로 로그인 시도
+                    // 카카오톡에 연결된 계정 없음 등 - 웹 로그인으로 폴백
                     UserApiClient.getInstance().loginWithKakaoAccount(this, accountCallback);
                     return Unit.INSTANCE;
                 }
@@ -318,9 +317,9 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * 소셜 로그인 토큰을 우리 서버로 전송 (카카오/구글 공통)
      *
-     * @param provider "kakao" 또는 "google"
+     * @param provider    "kakao" 또는 "google"
      * @param accessToken 카카오 access_token (구글이면 null)
-     * @param idToken 구글 id_token (카카오면 null)
+     * @param idToken     구글 id_token (카카오면 null)
      */
     private void sendSocialLoginToServer(String provider, String accessToken, String idToken) {
         SocialLoginRequest request = new SocialLoginRequest(provider, accessToken, idToken);
@@ -337,7 +336,7 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(LoginActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
-                        Log.e(TAG, "소셜 로그인 실패: " + apiResponse.getMessage());
+                        Log.e(TAG, "dd소셜 로그인 실패: " + apiResponse.getMessage());
                     }
                 } else {
                     Toast.makeText(LoginActivity.this,
@@ -408,8 +407,12 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void goToOnboardingActivity(SocialLoginData.SocialUserData user) {
         Intent intent = new Intent(LoginActivity.this, OnboardingActivity.class);
+        // 비어있는 필드만 온보딩에서 입력받는다 (복원 계정은 성별/생일/지역이 남아있음)
         intent.putExtra("needs_nickname", user.getUser_nickname() == null || user.getUser_nickname().isEmpty());
         intent.putExtra("needs_phone", user.getUser_phone_number() == null || user.getUser_phone_number().isEmpty());
+        intent.putExtra("needs_location", user.getUser_location() == null || user.getUser_location().isEmpty());
+        intent.putExtra("needs_gender", user.getUser_gender() == null || user.getUser_gender().isEmpty());
+        intent.putExtra("needs_birthday", user.getUser_birthday() == null || user.getUser_birthday().isEmpty());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
@@ -419,7 +422,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * 로그인 수행
      */
-    private void performLogin(){
+    private void performLogin() {
         String email = binding.etEmail.getText().toString().trim();
         String password = binding.etPassword.getText().toString().trim();
 
@@ -429,7 +432,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         // APi 호출
-        LoginRequest request = new LoginRequest(email , password);
+        LoginRequest request = new LoginRequest(email, password);
         Call<ApiResponse<LoginData>> call = apiService.login(request);
 
         call.enqueue(new Callback<ApiResponse<LoginData>>() {
@@ -471,7 +474,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * 입력 검증
      */
-    private boolean validateInput(String email , String password) {
+    private boolean validateInput(String email, String password) {
         // 이메일 빈 값 체크
         if (email.isEmpty()) {
             binding.etEmail.setError("이메일을 입력해주세요");
@@ -499,11 +502,11 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * 로그인 성공 처리
      * SharedPreferences에 로그인 정보 + JWT 토큰 저장
-     *
+     * <p>
      * 수정 내역 (이슈 #4):
      * - 기존에는 user_id, is_logged_in, 위치 정보만 저장하고 JWT 토큰(KEY_JWT_TOKEN)을
-     *   저장하지 않았다. handleSocialLoginSuccess()와 동일한 패턴으로 토큰 저장 라인을
-     *   추가한다.
+     * 저장하지 않았다. handleSocialLoginSuccess()와 동일한 패턴으로 토큰 저장 라인을
+     * 추가한다.
      */
     private void handleLoginSuccess(LoginData loginData) {
         Log.d(TAG, "로그인 성공");
@@ -521,7 +524,7 @@ public class LoginActivity extends AppCompatActivity {
         String userLocation = loginData.getUser_location();
         String[] parsedLocation = parseLocation(userLocation);
         editor.putString(KEY_SIGUNGU, parsedLocation[0]);
-        editor.putString(KEY_DONG,    parsedLocation[1]);
+        editor.putString(KEY_DONG, parsedLocation[1]);
 
         editor.apply();
 
@@ -542,7 +545,7 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * FCM 디바이스 토큰을 발급받아 SharedPreferences에 저장하고 서버에 등록한다.
-     *
+     * <p>
      * 로그인 성공 직후 1회 호출되며, 토큰 발급/등록이 실패해도 로그인 자체
      * 흐름(goToMainActivity)에는 영향을 주지 않는다 (이미 호출됨).
      */

@@ -133,8 +133,9 @@
 
         </LinearLayout>
 
-        <!-- ===================== 위치 선택 (항상 표시) ===================== -->
+        <!-- ===================== 위치 선택 (비어있을 때만 표시) ===================== -->
         <LinearLayout
+            android:id="@+id/layout_location_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -172,8 +173,9 @@
 
         </LinearLayout>
 
-        <!-- ===================== 성별 (항상 표시) ===================== -->
+        <!-- ===================== 성별 (비어있을 때만 표시) ===================== -->
         <LinearLayout
+            android:id="@+id/layout_gender_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -232,8 +234,9 @@
 
         </LinearLayout>
 
-        <!-- ===================== 생일 (항상 표시) ===================== -->
+        <!-- ===================== 생일 (비어있을 때만 표시) ===================== -->
         <LinearLayout
+            android:id="@+id/layout_birthday_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"

@@ -1,10 +1,8 @@
 package com.example.honbabapp.activity;
 
-import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
@@ -14,7 +12,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -26,12 +23,10 @@ import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.AvailabilityData;
 import com.example.honbabapp.api.data.request.user.CompleteSocialProfileRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
-import com.example.honbabapp.api.data.response.naver.NaverReverseGeoResponse;
 import com.example.honbabapp.databinding.ActivityOnboardingBinding;
 import com.example.honbabapp.ui.dialog.LocationSelectionBottomSheetDialog;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.Priority;
 
 import java.util.Calendar;
 
@@ -64,6 +59,9 @@ public class OnboardingActivity extends AppCompatActivity {
 
     private boolean needsNickname;
     private boolean needsPhone;
+    private boolean needsLocation;
+    private boolean needsGender;
+    private boolean needsBirthday;
     private boolean isNicknameChecked = false;
     private boolean isPhoneChecked = false;
 
@@ -85,6 +83,11 @@ public class OnboardingActivity extends AppCompatActivity {
 
         needsNickname = getIntent().getBooleanExtra("needs_nickname", false);
         needsPhone = getIntent().getBooleanExtra("needs_phone", false);
+        // 복원된 계정 등 기존 값이 남아있는 필드는 다시 입력받지 않는다
+        // (extra를 안 넘기는 기존 호출부와의 호환을 위해 기본값 true = 기존 동작 유지)
+        needsLocation = getIntent().getBooleanExtra("needs_location", true);
+        needsGender = getIntent().getBooleanExtra("needs_gender", true);
+        needsBirthday = getIntent().getBooleanExtra("needs_birthday", true);
 
         setupNicknameSection();
         setupPhoneSection();
@@ -210,7 +213,8 @@ public class OnboardingActivity extends AppCompatActivity {
             return;
         }
 
-        apiService.checkPhone(phone).enqueue(new Callback<ApiResponse<AvailabilityData>>() {
+        // 온보딩은 이미 로그인된 계정의 추가 정보 입력이므로 복원 판정용 이메일은 없음("")
+        apiService.checkPhone(phone, "").enqueue(new Callback<ApiResponse<AvailabilityData>>() {
             @Override
             public void onResponse(Call<ApiResponse<AvailabilityData>> call, Response<ApiResponse<AvailabilityData>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -223,7 +227,10 @@ public class OnboardingActivity extends AppCompatActivity {
                         showPhoneResult(true, "사용 가능한 전화번호입니다");
                     } else {
                         isPhoneChecked = false;
-                        showPhoneResult(false, "이미 사용중인 전화번호입니다");
+                        // 탈퇴 계정 번호 안내 등 서버가 내려주는 사유를 그대로 표시
+                        String message = response.body().getMessage() != null
+                                ? response.body().getMessage() : "이미 사용중인 전화번호입니다";
+                        showPhoneResult(false, message);
                     }
                 }
             }
@@ -247,6 +254,11 @@ public class OnboardingActivity extends AppCompatActivity {
      * 위치 선택 섹션 - 기존 LocationSelectionBottomSheetDialog 재사용
      */
     private void setupLocationSection() {
+        if (!needsLocation) {
+            binding.layoutLocationSection.setVisibility(View.GONE);
+            return;
+        }
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         naverMapsApiService = NaverMapsRetrofitClient.getInstance().getApiService();
 
@@ -268,6 +280,11 @@ public class OnboardingActivity extends AppCompatActivity {
      * 성별 선택 섹션
      */
     private void setupGenderButtons() {
+        if (!needsGender) {
+            binding.layoutGenderSection.setVisibility(View.GONE);
+            return;
+        }
+
         binding.btnGenderMale.setOnClickListener(v -> selectGender("남성"));
         binding.btnGenderFemale.setOnClickListener(v -> selectGender("여성"));
     }
@@ -283,6 +300,11 @@ public class OnboardingActivity extends AppCompatActivity {
      * 생일 선택 섹션
      */
     private void setupBirthdayPicker() {
+        if (!needsBirthday) {
+            binding.layoutBirthdaySection.setVisibility(View.GONE);
+            return;
+        }
+
         binding.layoutBirthdaySelect.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             DatePickerDialog datePickerDialog = new DatePickerDialog(
@@ -330,21 +352,22 @@ public class OnboardingActivity extends AppCompatActivity {
             }
         }
 
-        if (selectedLocation == null) {
+        if (needsLocation && selectedLocation == null) {
             Toast.makeText(this, "활동 지역을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (selectedGender == null) {
+        if (needsGender && selectedGender == null) {
             Toast.makeText(this, "성별을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (selectedBirthday == null) {
+        if (needsBirthday && selectedBirthday == null) {
             Toast.makeText(this, "생년월일을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // 숨긴 필드는 null로 전달 → 서버(complete_social_profile.php)가 요청에 포함된 필드만 갱신
         CompleteSocialProfileRequest request = new CompleteSocialProfileRequest(
                 nickname, phone, selectedLocation, selectedGender, selectedBirthday
         );
@@ -355,10 +378,12 @@ public class OnboardingActivity extends AppCompatActivity {
             public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     // 위치 정보 및 로그인 완료 플래그를 한 번의 edit()으로 저장
-                    String[] parts = selectedLocation.split(" ");
                     SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString(KEY_SIGUNGU, parts.length > 0 ? parts[0] : "전체");
-                    editor.putString(KEY_DONG, parts.length > 1 ? parts[1] : parts[0]);
+                    if (selectedLocation != null) { // 위치 섹션이 숨겨진 경우(복원 계정) null
+                        String[] parts = selectedLocation.split(" ");
+                        editor.putString(KEY_SIGUNGU, parts.length > 0 ? parts[0] : "전체");
+                        editor.putString(KEY_DONG, parts.length > 1 ? parts[1] : parts[0]);
+                    }
                     //온보딩 모든 입력 성공 시 비로소 is_logged_in = true
                     editor.putBoolean(KEY_IS_LOGGED_IN, true);
                     editor.apply();

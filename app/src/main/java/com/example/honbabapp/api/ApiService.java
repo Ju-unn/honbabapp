@@ -144,7 +144,8 @@ public interface ApiService {
      * @return ApiResponse<AvailabilityData> - available: true/false
      */
     @GET("api/auth/check_email.php")
-    Call<ApiResponse<AvailabilityData>> checkEmail(@Query("email") String email);
+    Call<ApiResponse<AvailabilityData>> checkEmail(@Query("email") String email,
+                                                   @Query("phone") String phone);
 
     /**
      * 3. 이메일 인증 코드 발송
@@ -168,7 +169,8 @@ public interface ApiService {
      * @return ApiResponse<AvailabilityData> - available: true/false
      */
     @GET("api/auth/check_phone.php")
-    Call<ApiResponse<AvailabilityData>> checkPhone(@Query("phone") String phone);
+    Call<ApiResponse<AvailabilityData>> checkPhone(@Query("phone") String phone,
+                                                   @Query("email") String email);
 
     /**
      * 6. 회원가입 최종 등록
