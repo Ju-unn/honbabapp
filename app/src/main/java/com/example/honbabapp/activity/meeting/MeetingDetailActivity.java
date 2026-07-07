@@ -569,7 +569,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
     private void showDeleteConfirmDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("모임 삭제")
-                .setMessage("모임을 삭제하시겠습니까?\n참가자들의 신청이 모두 취소됩니다.")
+                .setMessage("모임을 삭제하시겠습니까?\n대기 중인 신청은 모두 취소되며, 채팅방도 함께 삭제됩니다.\n(승인된 참여자가 있으면 삭제할 수 없습니다)")
                 .setPositiveButton("삭제", (dialog, which) -> deleteMeeting())
                 .setNegativeButton("취소", null)
                 .show();

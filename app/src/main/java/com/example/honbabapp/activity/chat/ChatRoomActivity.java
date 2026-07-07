@@ -684,7 +684,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         optimistic.setStatus(MessageData.STATUS_SENDING);
         optimistic.setSender_id(myUserId);
         optimistic.setRoom_id(roomId);
-        optimistic.setCreated_at(MessageData.nowUtcString());
+        optimistic.setCreated_at(MessageData.nowKstString());
 
         adapter.addMessage(optimistic);
         scrollToBottom();

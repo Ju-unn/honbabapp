@@ -164,13 +164,13 @@ public class MessageData {
     // ── 정적 유틸 ─────────────────────────────────
 
     /**
-     * 현재 UTC 시각을 "yyyy-MM-dd HH:mm:ss" 포맷으로 반환.
+     * 현재 KST 시각을 "yyyy-MM-dd HH:mm:ss" 포맷으로 반환.
      * optimistic 메시지의 created_at 초기값으로 사용.
-     * MessageAdapter.formatTime()과 동일 포맷(UTC 파싱)이므로 시간 표시·그룹핑 정상 동작.
+     * 서버가 KST 벽시계 시간을 내려주므로 동일 기준(Asia/Seoul)으로 생성
      */
-    public static String nowUtcString() {
+    public static String nowKstString() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
         return sdf.format(new Date());
     }
 }

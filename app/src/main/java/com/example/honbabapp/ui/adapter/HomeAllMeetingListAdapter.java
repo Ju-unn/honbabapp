@@ -218,7 +218,8 @@ public class HomeAllMeetingListAdapter extends RecyclerView.Adapter<HomeAllMeeti
 
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
-                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                // 서버는 KST 벽시계 시간을 내려줌 — UTC 로 파싱하면 상대시간이 9시간 밀림
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
                 Date createdAt = sdf.parse(meeting.getMeeting_created_at());
                 if (createdAt == null) return "";
 

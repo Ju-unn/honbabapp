@@ -523,7 +523,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
         if (meetingDateStr == null || meetingDateStr.isEmpty()) return 999;
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+            // meeting_date 는 KST 벽시계 시간 — UTC 로 파싱하면 남은 시간이 +9h 부풀어 매너점수 차감 구간 오판
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
             Date date = sdf.parse(meetingDateStr);
             if (date == null) return 999;
             long diffMillis = date.getTime() - System.currentTimeMillis();

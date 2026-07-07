@@ -88,7 +88,7 @@ public class ChatImageUploadHelper {
             optimistic.setLocalUris(new ArrayList<>(usableUris));
             optimistic.setSender_id(myUserId);
             optimistic.setRoom_id(roomId);
-            optimistic.setCreated_at(MessageData.nowUtcString());
+            optimistic.setCreated_at(MessageData.nowKstString());
 
             callbacks.onOptimisticMessage(optimistic);
             uploadAllAndSend(clientMsgId, usableUris);

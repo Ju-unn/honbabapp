@@ -9,14 +9,15 @@ import java.util.TimeZone;
 /**
  * 채팅 화면 전용 시간 포맷터.
  *
- * 서버 UTC 문자열("yyyy-MM-dd HH:mm:ss")을 Asia/Seoul 기준 라벨로 변환한다.
+ * 서버 KST 문자열("yyyy-MM-dd HH:mm:ss")을 Asia/Seoul 기준 라벨로 변환한다.
+ * (서버는 MySQL 세션 +09:00 로 통일되어 KST 벽시계 시간을 그대로 내려줌 — UTC 로 파싱하면 +9h 밀림)
  * 채팅방 목록과 메시지 말풍선의 표시 규칙이 다르므로 메서드를 분리해 각각의 동작을 보존한다.
  *
  * SimpleDateFormat 은 스레드 안전하지 않으므로 원본과 동일하게 호출마다 지역 인스턴스를 만든다.
  */
 public final class ChatTimeFormatter {
 
-    private static final String SERVER_TIME_ZONE = "UTC";
+    private static final String SERVER_TIME_ZONE = "Asia/Seoul";
     private static final String DISPLAY_TIME_ZONE = "Asia/Seoul";
     private static final String SERVER_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
