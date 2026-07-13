@@ -1046,14 +1046,17 @@ public class RegisterActivity extends AppCompatActivity {
     private void registerWithData(String nickname, String email, String password,
                                   String phoneNumber, String birthday, String location,
                                   String profileImageUrl) {
-        // RegisterRequest 생성
+
+        // 복원 계정은 birthday/gender 입력을 받지 않으므로 null 전송
+        // 서버의 COALESCE(:birthday, ...), COALESCE(:gender, ...)가 기존 값을 유지
+        // (여기서 selectedGender를 보내면 기본값 "남성"이 원래 성별을 덮어씀)
         RegisterRequest request = new RegisterRequest(
                 nickname,
                 email,
                 password,
                 phoneNumber,
-                birthday,
-                selectedGender,
+                isRestored ? null : birthday,
+                isRestored ? null : selectedGender,
                 location,
                 profileImageUrl  // S3 URL (null 가능)
         );
