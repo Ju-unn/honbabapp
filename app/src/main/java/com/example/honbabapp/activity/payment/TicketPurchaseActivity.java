@@ -76,7 +76,6 @@ public class TicketPurchaseActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = PageTicketPurchaseBinding.inflate(getLayoutInflater());
-        binding = PageTicketPurchaseBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         apiService = RetrofitClient.getClient().create(ApiService.class);

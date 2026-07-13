@@ -225,7 +225,7 @@ public interface ApiService {
     @GET("api/meeting/list.php")
     Call<ApiResponse<MeetingListResponse>> getMeetingList(
             @Query("sigungu") String sigungu,
-            @Query("category") String category,
+            @Query("categories") String categories, // 콤마 구분 목록, null이면 전체 (서버는 categories만 읽음)
             @Query("status") String status,
             @Query("page") int page,
             @Query("limit") int limit

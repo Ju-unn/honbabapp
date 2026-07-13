@@ -97,6 +97,9 @@ public class RegisterActivity extends AppCompatActivity {
     private String uploadedImageUrl = null; // S3 URL
     private boolean isImageUploading = false;
 
+    // 가입 제출 중 플래그 — 버튼 연타로 register API가 중복 호출되는 것 방지
+    private boolean isRegistering = false;
+
     // 이미지 선택 Launcher
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
@@ -503,7 +506,8 @@ public class RegisterActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<AvailabilityData> apiResponse = response.body();
 
-                    if (apiResponse.isSuccess() && apiResponse.getData().isAvailable()) {
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null
+                            && apiResponse.getData().isAvailable()) {
                         if (apiResponse.getData().isIs_restored()) {
                             // 탈퇴 계정의 원본 이메일 → 가입 완료 시 계정 복원
                             isRestored = true;
@@ -558,7 +562,7 @@ public class RegisterActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() !=  null) {
                     ApiResponse<VerificationData> apiResponse = response.body();
 
-                    if (apiResponse.isSuccess()) {
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                         // 개발 단계 : 서버에서 코드를 응답으로 보내줌
                         verificationCode = apiResponse.getData().getCode();
 
@@ -603,7 +607,8 @@ public class RegisterActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<VerifiedData> apiResponse = response.body();
 
-                    if (apiResponse.isSuccess() && apiResponse.getData().isVerified()) {
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null
+                            && apiResponse.getData().isVerified()) {
                         Toast.makeText(RegisterActivity.this,
                                 "이메일 인증이 완료되었습니다",
                                 Toast.LENGTH_SHORT).show();
@@ -762,7 +767,7 @@ public class RegisterActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<AvailabilityData> apiResponse = response.body();
 
-                    if (apiResponse.isSuccess()) {
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                         if (apiResponse.getData().isAvailable()) {
                             // 복원 여부(isRestored)는 이메일 확인이 판정한다.
                             // 여기서 건드리면 "복원 이메일 확인 → 새 전화번호 확인" 순서일 때
@@ -882,6 +887,11 @@ public class RegisterActivity extends AppCompatActivity {
      * 최종 회원가입
      */
     private void performRegister() {
+        // 이미 제출 중이면 무시 (연타 방지)
+        if (isRegistering) {
+            return;
+        }
+
         // 모든 검증 완료 확인
         if (!isEmailVerified) {
             Toast.makeText(this, "이메일 인증이 필요합니다", Toast.LENGTH_SHORT).show();
@@ -946,6 +956,9 @@ public class RegisterActivity extends AppCompatActivity {
             }
         }
 
+        // 제출 시작 — 응답/실패 시 finishRegisterSubmission()으로 복구
+        startRegisterSubmission();
+
         // 프로필 이미지가 있으면 먼저 업로드!
         if (selectedProfileBitmap != null && uploadedImageUrl == null) {
             Toast.makeText(this, "프로필 이미지 업로드 중...", Toast.LENGTH_SHORT).show();
@@ -954,6 +967,16 @@ public class RegisterActivity extends AppCompatActivity {
             // 이미지 없거나 이미 업로드됨 → 바로 회원가입
             registerWithData(nickname, email, password, phoneNumber, birthday, location, uploadedImageUrl);
         }
+    }
+
+    private void startRegisterSubmission() {
+        isRegistering = true;
+        registerBinding.btnSignupComplete.setEnabled(false);
+    }
+
+    private void finishRegisterSubmission() {
+        isRegistering = false;
+        registerBinding.btnSignupComplete.setEnabled(true);
     }
 
     /**
@@ -1002,7 +1025,7 @@ public class RegisterActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         ApiResponse<ImageUploadData> apiResponse = response.body();
 
-                        if (apiResponse.isSuccess()) {
+                        if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                             ImageUploadData data = apiResponse.getData();
                             uploadedImageUrl = data.getProfile_image_url();
 
@@ -1015,11 +1038,13 @@ public class RegisterActivity extends AppCompatActivity {
                             Toast.makeText(RegisterActivity.this,
                                     "이미지 업로드 실패: " + apiResponse.getMessage(),
                                     Toast.LENGTH_SHORT).show();
+                            finishRegisterSubmission();
                         }
                     } else {
                         Toast.makeText(RegisterActivity.this,
                                 "이미지 업로드 실패: " + response.code(),
                                 Toast.LENGTH_SHORT).show();
+                        finishRegisterSubmission();
                     }
                 }
 
@@ -1030,6 +1055,7 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.makeText(RegisterActivity.this,
                             "네트워크 오류: " + t.getMessage(),
                             Toast.LENGTH_LONG).show();
+                    finishRegisterSubmission();
                 }
             });
 
@@ -1037,6 +1063,7 @@ public class RegisterActivity extends AppCompatActivity {
             isImageUploading = false;
             Log.e(TAG, "파일 변환 오류: " + e.getMessage());
             Toast.makeText(this, "이미지 처리 오류", Toast.LENGTH_SHORT).show();
+            finishRegisterSubmission();
         }
     }
 
@@ -1081,11 +1108,13 @@ public class RegisterActivity extends AppCompatActivity {
                         Toast.makeText(RegisterActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
+                        finishRegisterSubmission();
                     }
                 } else {
                     Toast.makeText(RegisterActivity.this,
                             "서버 응답 오류: " + response.code(),
                             Toast.LENGTH_SHORT).show();
+                    finishRegisterSubmission();
                 }
             }
 
@@ -1095,6 +1124,7 @@ public class RegisterActivity extends AppCompatActivity {
                 Toast.makeText(RegisterActivity.this,
                         "네트워크 오류: " + t.getMessage(),
                         Toast.LENGTH_LONG).show();
+                finishRegisterSubmission();
             }
         });
 

@@ -31,6 +31,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -407,6 +409,27 @@ public class MeetingEditActivity extends AppCompatActivity {
 
             new TimePickerDialog(this,
                     (view, selectedHour, selectedMinute) -> {
+                        // 오늘을 선택한 경우에만 시간 유효성 검증 (생성 화면과 동일)
+                        Calendar now = Calendar.getInstance();
+                        String todayString = String.format(Locale.KOREA, "%04d-%02d-%02d",
+                                now.get(Calendar.YEAR),
+                                now.get(Calendar.MONTH) + 1,
+                                now.get(Calendar.DAY_OF_MONTH));
+
+                        if (selectedDate.equals(todayString)) {
+                            int currentHour   = now.get(Calendar.HOUR_OF_DAY);
+                            int currentMinute = now.get(Calendar.MINUTE);
+                            boolean isPastTime = selectedHour < currentHour
+                                    || (selectedHour == currentHour && selectedMinute <= currentMinute);
+
+                            if (isPastTime) {
+                                Toast.makeText(this,
+                                        "현재 시간 이후를 선택해주세요",
+                                        Toast.LENGTH_SHORT).show();
+                                return; // selectedTime 설정 안 함
+                            }
+                        }
+
                         selectedTime = String.format("%02d:%02d:00", selectedHour, selectedMinute);
                         String ampm = selectedHour >= 12 ? "오후" : "오전";
                         int displayHour = selectedHour > 12 ? selectedHour - 12 :
@@ -498,6 +521,21 @@ public class MeetingEditActivity extends AppCompatActivity {
 
         if (selectedDate.isEmpty() || selectedTime.isEmpty()) {
             Toast.makeText(this, "날짜와 시간을 선택해주세요", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 과거 시각 최종 검증 — "시간 먼저 선택 후 날짜를 오늘로 변경" 같은 조합도 커버
+        // (서버 update.php도 거부하지만 클라이언트에서 먼저 안내)
+        try {
+            SimpleDateFormat sdf =
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+            java.util.Date meetingDateTime = sdf.parse(selectedDate + " " + selectedTime);
+            if (meetingDateTime == null || !meetingDateTime.after(new java.util.Date())) {
+                Toast.makeText(this, "현재 시간 이후를 선택해주세요", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } catch (ParseException e) {
+            Toast.makeText(this, "날짜와 시간을 다시 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 

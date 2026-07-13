@@ -163,7 +163,7 @@ public class HomeFragment extends Fragment {
         // API 호출 (currentSigungu는 loadCurrentLocationAndMeetings에서 설정됨)
         Call<ApiResponse<MeetingListResponse>> call = apiService.getMeetingList(
                 currentSigungu ,
-                "전체" ,
+                null ,   // categories: null = 전체 (서버에 '전체' 특례 없음 — MapFragment와 동일 규약)
                 "모집중" ,
                 1 ,
                 30
