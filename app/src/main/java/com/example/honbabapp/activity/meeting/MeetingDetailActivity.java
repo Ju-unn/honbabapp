@@ -514,13 +514,9 @@ public class MeetingDetailActivity extends AppCompatActivity {
                     new ActivityResultContracts.StartActivityForResult() ,
                     result -> {
                         if (result.getResultCode() == RESULT_OK) {
+                            // 상세 화면에 머물며 재로딩 (체험단 상세와 동일한 동작)
+                            // 홈 목록은 돌아갈 때 HomeFragment.onResume이 갱신함
                             loadMeetingDetail();
-
-                            // 홈도 새로고침 신호
-                            Intent intent = new Intent(MeetingDetailActivity.this, MainActivity.class);
-                            intent.putExtra("refresh_home", true);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                            startActivity(intent);
                         }
                     }
             );
