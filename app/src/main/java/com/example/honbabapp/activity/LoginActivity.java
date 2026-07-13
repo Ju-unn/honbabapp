@@ -127,6 +127,12 @@ public class LoginActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     OnboardingStatusResponse status = response.body().getData();
 
+                    if (status == null) {
+                        Log.e(TAG, "자동 로그인 온보딩 상태 응답 data 없음 - 로그인 화면 표시");
+                        showLoginScreen();
+                        return;
+                    }
+
                     if (status.isNeeds_onboarding()) {
                         Log.w(TAG, "온보딩 미완료 계정 - OnboardingActivity로 이동");
                         goToOnboardingActivityFromAutoLogin(status.getMissing());
