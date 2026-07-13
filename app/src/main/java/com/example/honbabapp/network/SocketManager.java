@@ -205,18 +205,6 @@ public class SocketManager {
         }
     }
 
-    public void emitMemberJoined(int roomId, int userId) {
-        try {
-            JSONObject data = new JSONObject();
-            data.put("room_id", roomId);
-            data.put("user_id", userId);
-            socket.emit("member_joined", data);
-            Log.d(TAG, "member_joined emit! room:" + roomId + " user:" + userId);
-        } catch (Exception e) {
-            Log.e(TAG, "member_joined emit 실패: " + e.getMessage());
-        }
-    }
-
     public boolean isConnected() {
         return socket != null && socket.connected();
     }

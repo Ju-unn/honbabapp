@@ -8,7 +8,6 @@ import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
 import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
 import com.example.honbabapp.api.data.request.chat.KickMemberRequest;
 import com.example.honbabapp.api.data.request.chat.LeaveRoomRequest;
-import com.example.honbabapp.api.data.request.chat.MarkReadRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
 import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
@@ -118,15 +117,6 @@ public class ChatRepository {
     // 읽음 처리
     // ChatRoomActivity 진입 시 호출
     // ─────────────────────────────────────────
-
-    /**
-     * 채팅방의 모든 메시지를 읽음 처리한다
-     *
-     */
-    public void markRead(int roomId , int userId , Callback<ApiResponse<Void>> chatRoomDb) {
-        MarkReadRequest request = new MarkReadRequest(roomId);
-        apiService.markRead(request).enqueue(chatRoomDb);
-    }
 
     // ─────────────────────────────────────────
     // 멤버 초대 (그룹 채팅 전용)

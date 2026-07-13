@@ -13,7 +13,6 @@ import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
 import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
 import com.example.honbabapp.api.data.request.chat.KickMemberRequest;
 import com.example.honbabapp.api.data.request.chat.LeaveRoomRequest;
-import com.example.honbabapp.api.data.request.chat.MarkReadRequest;
 import com.example.honbabapp.api.data.request.fcm.RegisterFcmTokenRequest;
 import com.example.honbabapp.api.data.request.fcm.UpdatePushSettingRequest;
 import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
@@ -443,12 +442,6 @@ public interface ApiService {
             @Query("page") int page,
             @Query("limit") int limit
     );
-
-    /**
-     * 4. 읽음처리
-     */
-    @POST("api/chat/mark_read.php")
-    Call<ApiResponse<Void>> markRead(@Body MarkReadRequest request);
 
     /**
      * 5. 멤버 초대 (그룹방 전용)

@@ -18,6 +18,10 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.honbabapp.R;
+import com.example.honbabapp.api.ApiService;
+import com.example.honbabapp.api.RetrofitClient;
+import com.example.honbabapp.api.data.request.fcm.RegisterFcmTokenRequest;
+import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.ActivityMainBinding;
 import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.ui.adapter.MainFragmentAdapter;
@@ -25,8 +29,13 @@ import com.example.honbabapp.ui.fragment.CampaignFragment;
 import com.example.honbabapp.ui.fragment.HomeFragment;
 import com.example.honbabapp.ui.fragment.MapFragment;
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,6 +62,44 @@ public class MainActivity extends AppCompatActivity {
         int userId = prefs.getInt("user_id", -1);
 
         SocketManager.getInstance().login(userId);
+
+        // FCM 토큰 재등록 — 자동로그인 경로는 LoginActivity의 registerFcmToken을
+        // 거치지 않으므로, 서버가 무효 토큰을 NULL 처리한 뒤에도 푸시가 유실되지
+        // 않도록 메인 진입 때마다 현재 토큰을 서버에 등록한다
+        if (userId != -1) {
+            registerFcmToken();
+        }
+    }
+
+    private void registerFcmToken() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.e(TAG, "FCM 토큰 발급 실패", task.getException());
+                        return;
+                    }
+
+                    String token = task.getResult();
+                    ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+                    RegisterFcmTokenRequest request = new RegisterFcmTokenRequest(token);
+                    apiService.registerFcmToken(request).enqueue(new Callback<ApiResponse<Void>>() {
+                        @Override
+                        public void onResponse(Call<ApiResponse<Void>> call,
+                                               Response<ApiResponse<Void>> response) {
+                            if (response.isSuccessful() && response.body() != null
+                                    && response.body().isSuccess()) {
+                                Log.d(TAG, "FCM 토큰 서버 재등록 완료");
+                            } else {
+                                Log.e(TAG, "FCM 토큰 서버 재등록 실패: HTTP " + response.code());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                            Log.e(TAG, "FCM 토큰 서버 재등록 네트워크 오류: " + t.getMessage(), t);
+                        }
+                    });
+                });
     }
 
     /**

@@ -6,7 +6,6 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.honbabapp.databinding.PageHomeNotificationBinding;
-import com.example.honbabapp.databinding.PageProfileAccountsettingBinding;
 
 public class NotificationActivity extends AppCompatActivity {
 
