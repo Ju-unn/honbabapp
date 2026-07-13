@@ -519,7 +519,8 @@ public class CampaignWritingActivity extends AppCompatActivity {
         request.setCampaign_channels(channels);
         request.setCampaign_provided(provided);
         request.setCampaign_requirements(requirements.isEmpty() ? null : requirements);
-        request.setCampaign_deadline(deadline.isEmpty() ? null : deadline + " 00:00:00");
+        // 마감일 당일까지 유효하도록 그 날의 끝(23:59:59)으로 전송 (서버도 동일하게 정규화)
+        request.setCampaign_deadline(deadline.isEmpty() ? null : deadline + " 23:59:59");
 
         apiService.createCampaign(request)
                 .enqueue(new Callback<ApiResponse<MeetingCreateResponse>>() {

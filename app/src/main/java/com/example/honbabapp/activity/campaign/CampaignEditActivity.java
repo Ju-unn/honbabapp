@@ -451,7 +451,8 @@ public class CampaignEditActivity extends AppCompatActivity {
                 channels,
                 provided,
                 requirements.isEmpty() ? null : requirements,
-                deadline + " 00:00:00"
+                // 마감일 당일까지 유효하도록 그 날의 끝(23:59:59)으로 전송 (서버도 동일하게 정규화)
+                deadline + " 23:59:59"
         );
 
         apiService.updateCampaign(request).enqueue(new Callback<ApiResponse<Void>>() {
