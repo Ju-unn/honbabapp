@@ -9,6 +9,7 @@ import com.example.honbabapp.activity.LoginActivity;
 import com.example.honbabapp.api.data.request.RefreshTokenRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.RefreshTokenResponse;
+import com.example.honbabapp.network.SocketManager;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -205,6 +206,13 @@ public class RetrofitClient {
         return prefs != null ? prefs.getString(KEY_JWT_TOKEN, null) : null;
     }
 
+    /**
+     * 현재 저장된 access token 조회 (소켓 login 인증용)
+     */
+    public static String getAccessToken() {
+        return getStoredAccessToken();
+    }
+
     private static String getStoredRefreshToken() {
         SharedPreferences prefs = getPrefs();
         return prefs != null ? prefs.getString(KEY_REFRESH_TOKEN, null) : null;
@@ -218,6 +226,10 @@ public class RetrofitClient {
                 .putString(KEY_JWT_TOKEN, accessToken)
                 .putString(KEY_REFRESH_TOKEN, refreshToken)
                 .apply();
+
+        // 토큰이 갱신되면 소켓 login도 새 토큰으로 재등록
+        // (만료된 토큰으로 소켓 login이 거부된 세션을 복구)
+        SocketManager.getInstance().relogin();
     }
 
     private static SharedPreferences getPrefs() {

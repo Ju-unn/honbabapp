@@ -2,6 +2,8 @@ package com.example.honbabapp.network;
 
 import android.util.Log;
 
+import com.example.honbabapp.api.RetrofitClient;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -109,11 +111,24 @@ public class SocketManager {
         }
     }
 
+    /**
+     * 토큰 갱신 후 재로그인 — RetrofitClient가 access token을 갱신하면 호출.
+     * 만료된 토큰으로 서버에서 login이 거부된 소켓 세션을 새 토큰으로 복구한다.
+     */
+    public void relogin() {
+        if (pendingLoginUserId != -1 && socket != null && socket.connected()) {
+            emitLogin(pendingLoginUserId);
+        }
+    }
+
     /** 실제 login emit 로직 (내부 전용) */
     private void emitLogin(int userId) {
         try {
             JSONObject data = new JSONObject();
             data.put("user_id", userId);
+            // 서버가 JWT_SECRET으로 검증 — user_id 위조 login 차단 (server.js)
+            String token = RetrofitClient.getAccessToken();
+            if (token != null) data.put("token", token);
             socket.emit("login", data);
             Log.d(TAG, "login emit 완료 — user_id: " + userId);
         } catch (Exception e) {
