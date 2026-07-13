@@ -33,7 +33,10 @@ class OtherMessageViewHolder extends RecyclerView.ViewHolder {
 
         // ── 닉네임 ──
         if (showSenderName) {
-            binding.textSenderName.setText(message.getSender_name());
+            // 탈퇴한 사용자는 user_nickname이 NULL로 내려옴
+            String senderName = message.getSender_name();
+            binding.textSenderName.setText(
+                    (senderName == null || senderName.isEmpty()) ? "(탈퇴한 사용자)" : senderName);
             binding.textSenderName.setVisibility(View.VISIBLE);
         } else {
             binding.textSenderName.setVisibility(View.GONE);

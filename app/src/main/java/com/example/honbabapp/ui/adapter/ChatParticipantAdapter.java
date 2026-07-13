@@ -134,8 +134,10 @@ public class ChatParticipantAdapter
         }
 
         void bind(MeetingParticipant participant) {
-            // ── 닉네임 ──
-            binding.tvParticipantNickname.setText(participant.getUser_nickname());
+            // ── 닉네임 ── (탈퇴한 사용자는 user_nickname이 NULL로 내려옴)
+            String nickname = participant.getUser_nickname();
+            binding.tvParticipantNickname.setText(
+                    (nickname == null || nickname.isEmpty()) ? "(탈퇴한 사용자)" : nickname);
 
             // ── 프로필 이미지 (원형) ──
             // ShapeableImageView 는 자동으로 원형 마스킹됨 (XML 의 shapeAppearanceOverlay)
