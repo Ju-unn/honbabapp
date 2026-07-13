@@ -516,6 +516,8 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
                         Intent intent = new Intent(MeetingCardWritingActivity.this, MainActivity.class);
                         intent.putExtra("refresh_home", true);
                         intent.putExtra("new_meeting_id", meetingId);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         finish();
                     } else {
