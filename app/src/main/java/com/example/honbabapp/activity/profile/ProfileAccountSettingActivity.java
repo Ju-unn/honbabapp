@@ -3,6 +3,7 @@ package com.example.honbabapp.activity.profile;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -79,6 +80,11 @@ public class ProfileAccountSettingActivity extends AppCompatActivity {
                             String gender = profile.getUser_gender();
                             binding.tvGender.setText(
                                     (gender != null && !gender.isEmpty()) ? gender : "-"
+                            );
+
+                            // 소셜 로그인 계정은 비밀번호가 없으므로 변경 메뉴 숨김
+                            binding.btnChangePassword.setVisibility(
+                                    profile.isSocialAccount() ? View.GONE : View.VISIBLE
                             );
 
                         }

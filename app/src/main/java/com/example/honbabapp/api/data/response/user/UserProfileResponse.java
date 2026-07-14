@@ -24,6 +24,9 @@ public class UserProfileResponse {
     private String user_instagram_id;
     private String user_blog_id;
 
+    // 소셜 로그인 계정이면 'kakao'/'google', 일반 계정이면 null
+    private String social_provider;
+
     // ── 기존 Getter──────────────────────────────────────
 
     public int getUser_id() { return user_id; }
@@ -42,6 +45,8 @@ public class UserProfileResponse {
     public String getUser_instagram_id() { return user_instagram_id; }
     public String getUser_blog_id() { return user_blog_id; }
 
+    public String getSocial_provider() { return social_provider; }
+
     // ── 편의 메서드 ───────────────────────────────────────────────
 
     /** 인스타그램 ID 등록 여부 */
@@ -57,5 +62,10 @@ public class UserProfileResponse {
     /** SNS 계정 하나라도 등록 여부 — 체험단 신청 가능 조건 */
     public boolean hasSnsId() {
         return hasInstagramId() || hasBlogId();
+    }
+
+    /** 소셜 로그인 계정 여부 — 비밀번호 변경 메뉴 노출 조건 */
+    public boolean isSocialAccount() {
+        return social_provider != null && !social_provider.isEmpty();
     }
 }
