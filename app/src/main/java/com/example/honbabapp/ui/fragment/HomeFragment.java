@@ -21,7 +21,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.honbabapp.activity.MainActivity;
-import com.example.honbabapp.activity.NotificationActivity;
 import com.example.honbabapp.activity.meeting.MeetingCardWritingActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.NaverMapsApiService;
@@ -104,9 +103,6 @@ public class HomeFragment extends Fragment {
 
         // floating버튼 클릭 이벤트
         meetingCardWritingOnClick();
-
-        // 알림버튼 클릭
-        notificationButtonOnClick();
 
         // 더보기 버튼 클릭 이벤트
         binding.tvHotMeetingsMore.setOnClickListener(v -> navigateToMapHot());
@@ -430,17 +426,6 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity() , MeetingCardWritingActivity.class);
-                startActivity(intent);
-            }
-        });
-    }
-
-    /// 알림 버튼
-    public void notificationButtonOnClick() {
-        binding.btnNotification.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity() , NotificationActivity.class);
                 startActivity(intent);
             }
         });
