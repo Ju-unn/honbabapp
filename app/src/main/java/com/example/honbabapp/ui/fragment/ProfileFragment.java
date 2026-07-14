@@ -22,6 +22,7 @@ import com.example.honbabapp.activity.profile.ProfileAccountSettingActivity;
 import com.example.honbabapp.activity.profile.ProfileMyMeetingsActivity;
 import com.example.honbabapp.activity.profile.ProfileNotificationSettingActivity;
 import com.example.honbabapp.activity.profile.ProfileProfileSettingActivity;
+import com.example.honbabapp.activity.profile.ProfileTicketActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.response.ApiResponse;
@@ -75,6 +76,8 @@ public class ProfileFragment extends Fragment {
         // API 호출
         loadProfile();
 
+        // 체험단 등록권 클릭 이벤트
+        menuTicketOnClick();
         // 내 모임 관리 클릭 이벤트
         menuMyMeetingsOnClick();
         // 알림 설정 클릭 이벤트
@@ -195,6 +198,17 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity() , ProfileAccountSettingActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
+    /// 체험단 등록권 클릭 이벤트
+    public void menuTicketOnClick() {
+        binding.menuTicket.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity() , ProfileTicketActivity.class);
                 startActivity(intent);
             }
         });
