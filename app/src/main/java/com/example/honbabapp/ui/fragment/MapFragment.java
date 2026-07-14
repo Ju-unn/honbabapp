@@ -31,6 +31,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.geometry.LatLng;
+import com.naver.maps.geometry.LatLngBounds;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.MapView;
@@ -405,7 +406,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     // ──────────────────────────────────────────────
 
     /**
-     * 현재 좌표 + 필터로 일반 모임과 체험단을 한 번에 조회한다.
+     * 지도 화면에 보이는 범위(뷰포트 bounds) + 필터로
+     * 일반 모임과 체험단을 한 번에 조회한다.
+     * 지도가 아직 준비 전이면 기존 방식(현재 좌표 중심 반경 3km)으로 폴백.
      */
 
     private void loadMeetingsOnMap () {
@@ -425,6 +428,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         // 정렬 옵션 변환
         String orderBy = "거리순".equals(currentSortOption) ? "distance" : null ;
 
+        // 뷰포트 bounds — 화면에 보이는 범위 그대로 조회
+        // (bounds 사용 시 radius는 null로 생략 → 서버가 bbox 모드로 동작)
+        Double swLat = null, swLng = null, neLat = null, neLng = null;
+        Double radius = DEFAULT_RADIUS_KM;
+        if (naverMap != null) {
+            LatLngBounds bounds = naverMap.getContentBounds();
+            swLat = bounds.getSouthWest().latitude;
+            swLng = bounds.getSouthWest().longitude;
+            neLat = bounds.getNorthEast().latitude;
+            neLng = bounds.getNorthEast().longitude;
+            radius = null;
+        }
+
         Call<ApiResponse<MeetingListResponse>> call = apiService.getMeetingList(
                 "전체",
                 null,
@@ -432,15 +448,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 "모집중",
                 1,
                 50,
-                currentLat,
+                currentLat,      // 거리 정렬 기준점으로 계속 사용
                 currentLng,
-                DEFAULT_RADIUS_KM,
+                radius,
                 orderBy,
                 minPrice,
                 maxPrice,
                 channels,
                 currentDate,
-                currentTime
+                currentTime,
+                swLat,
+                swLng,
+                neLat,
+                neLng
         );
 
         call.enqueue(new Callback<ApiResponse<MeetingListResponse>>() {

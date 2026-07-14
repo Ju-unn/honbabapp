@@ -49,6 +49,7 @@ import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.api.data.response.meeting.MeetingCreateResponse;
 import com.example.honbabapp.api.data.response.meeting.MeetingListResponse;
 import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
+import com.example.honbabapp.api.data.FindEmailData;
 import com.example.honbabapp.api.data.VerificationData;
 import com.example.honbabapp.api.data.VerifiedData;
 import com.example.honbabapp.api.data.request.meeting.ApproveMeetingRequest;
@@ -56,6 +57,9 @@ import com.example.honbabapp.api.data.request.meeting.JoinMeetingRequest;
 import com.example.honbabapp.api.data.request.LoginRequest;
 import com.example.honbabapp.api.data.request.meeting.MeetingCreateRequest;
 import com.example.honbabapp.api.data.request.RegisterRequest;
+import com.example.honbabapp.api.data.request.FindEmailRequest;
+import com.example.honbabapp.api.data.request.ResetPasswordRequest;
+import com.example.honbabapp.api.data.request.SendPasswordResetRequest;
 import com.example.honbabapp.api.data.request.SendVerificationRequest;
 import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
@@ -163,6 +167,30 @@ public interface ApiService {
     Call<ApiResponse<VerifiedData>> verifyCode(@Body VerifyCodeRequest request);
 
     /**
+     * 4-2. 아이디(이메일) 찾기
+     * @param request 휴대폰 번호
+     * @return ApiResponse<FindEmailData> - masked_email (예: ho***@naver.com)
+     */
+    @POST("api/auth/find_email.php")
+    Call<ApiResponse<FindEmailData>> findEmail(@Body FindEmailRequest request);
+
+    /**
+     * 4-3. 비밀번호 재설정 인증코드 발송
+     * @param request 이메일 주소
+     * @return ApiResponse<VerificationData> - expires_in
+     */
+    @POST("api/auth/send_password_reset.php")
+    Call<ApiResponse<VerificationData>> sendPasswordReset(@Body SendPasswordResetRequest request);
+
+    /**
+     * 4-4. 임시 비밀번호 발급
+     * 임시 비밀번호는 메일로만 발송된다 (응답 data 없음)
+     * @param request 이메일, 인증 코드
+     */
+    @POST("api/auth/reset_password.php")
+    Call<ApiResponse<Object>> resetPassword(@Body ResetPasswordRequest request);
+
+    /**
      * 5. 전화번호 중복 확인
      * @param phone 확인할 전화번호 (010-1234-5678)
      * @return ApiResponse<AvailabilityData> - available: true/false
@@ -237,10 +265,14 @@ public interface ApiService {
      * @param status   모임 상태
      * @param page     페이지 번호
      * @param limit    페이지당 개수
-     * @param lat      중심 위도 (Bbox + Haversine 활성화)
+     * @param lat      중심 위도 (거리 계산/정렬 기준점, bbox 없으면 반경 필터 활성화)
      * @param lng      중심 경도
-     * @param radius   반경 km
+     * @param radius   반경 km (bbox 사용 시 null로 생략)
      * @param orderBy  "distance" → 거리순, null → 기본 정렬
+     * @param swLat    뷰포트 남서쪽 위도 (bbox 4개 모두 있어야 뷰포트 조회 활성화)
+     * @param swLng    뷰포트 남서쪽 경도
+     * @param neLat    뷰포트 북동쪽 위도
+     * @param neLng    뷰포트 북동쪽 경도
      *
      * Retrofit에서 Double(박스타입) 파라미터가 null이면
      * 쿼리스트링에서 자동으로 생략됨 → 하위 호환 유지
@@ -263,7 +295,11 @@ public interface ApiService {
             @Query("max_price") Integer maxPrice,
             @Query("channels") String channels,
             @Query("date") String date,
-            @Query("time") String time
+            @Query("time") String time,
+            @Query("sw_lat") Double swLat,
+            @Query("sw_lng") Double swLng,
+            @Query("ne_lat") Double neLat,
+            @Query("ne_lng") Double neLng
     );
 
     // ── CampaignFragment용 ──────────────

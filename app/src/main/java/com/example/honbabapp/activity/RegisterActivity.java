@@ -91,7 +91,6 @@ public class RegisterActivity extends AppCompatActivity {
     // 입력 데이터
     private String selectedGender = "남성"; // 기본값
     private String selectedLocation = "";
-    private String verificationCode = ""; // 서버에서 받은 코드 (개발용)
 
     // 프로필 이미지 관련 변수
     private String uploadedImageUrl = null; // S3 URL
@@ -563,11 +562,9 @@ public class RegisterActivity extends AppCompatActivity {
                     ApiResponse<VerificationData> apiResponse = response.body();
 
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
-                        // 개발 단계 : 서버에서 코드를 응답으로 보내줌
-                        verificationCode = apiResponse.getData().getCode();
-
+                        // 인증코드는 이메일로 발송됨 (응답에 포함되지 않음)
                         Toast.makeText(RegisterActivity.this,
-                                "인증 코드가 발송되었습니다\n코드: " + verificationCode,
+                                "인증 코드가 발송되었습니다\n메일함을 확인해주세요",
                                 Toast.LENGTH_LONG).show();
 
                         // 인증 코드 입력란 활성화

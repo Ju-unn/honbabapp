@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_200">
+
+    <!-- 상단 헤더 (page_meeting_card_writing.xml과 동일 패턴) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:background="@color/bg_100"
+        android:elevation="2dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_arrow_back"
+            android:scaleType="centerCrop"
+            android:background="@color/white"
+            android:layout_marginEnd="12dp"
+            android:contentDescription="뒤로가기" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="아이디 찾기"
+            android:textColor="@color/primary_200"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:letterSpacing="-0.05"
+            android:layout_marginEnd="56dp" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="32dp">
+
+            <!-- 안내 문구 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="가입 시 등록한 휴대폰 번호를 입력하면\n가입된 이메일을 알려드려요"
+                android:textColor="@color/text_200"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="24dp" />
+
+            <!-- 휴대폰 번호 입력 -->
+            <EditText
+                android:id="@+id/et_phone"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="휴대폰 번호"
+                android:textColorHint="@color/text_200"
+                android:textColor="@color/text_100"
+                android:textSize="14sp"
+                android:inputType="phone"
+                android:background="@drawable/edittext_background"
+                android:paddingHorizontal="16dp"
+                android:layout_marginBottom="18dp" />
+
+            <!-- 아이디 찾기 버튼 -->
+            <Button
+                android:id="@+id/btn_find_email"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="아이디 찾기"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@drawable/button_primary_background"
+                android:elevation="2dp"
+                android:layout_marginBottom="24dp" />
+
+            <!-- 결과 영역 (성공 시 노출) -->
+            <LinearLayout
+                android:id="@+id/layout_result"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/edittext_readonly_background"
+                android:padding="24dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="가입된 이메일"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_masked_email"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ho***@naver.com"
+                    android:textColor="@color/text_100"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="이 이메일로 로그인해주세요"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

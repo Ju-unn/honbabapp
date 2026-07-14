@@ -192,6 +192,12 @@ public class LoginActivity extends AppCompatActivity {
         // 회원가입 링크
         binding.tvSingupLink.setOnClickListener(v -> goToRegisterActivity());
 
+        // 아이디 찾기 링크
+        binding.tvFindEmailLink.setOnClickListener(v -> goToFindEmailActivity());
+
+        // 비밀번호 찾기 링크
+        binding.tvForgotPasswordLink.setOnClickListener(v -> goToForgotPasswordActivity());
+
         binding.btnKakaoLogin.setOnClickListener(v -> performKakaoLogin());
 
         binding.btnGoogleLogin.setOnClickListener(v -> performGoogleLogin());
@@ -623,6 +629,22 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void goToRegisterActivity() {
         Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+        startActivity(intent);
+    }
+
+    /**
+     * 아이디 찾기 Activity로 이동
+     */
+    private void goToFindEmailActivity() {
+        Intent intent = new Intent(LoginActivity.this, FindEmailActivity.class);
+        startActivity(intent);
+    }
+
+    /**
+     * 비밀번호 찾기 Activity로 이동
+     */
+    private void goToForgotPasswordActivity() {
+        Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
         startActivity(intent);
     }
 

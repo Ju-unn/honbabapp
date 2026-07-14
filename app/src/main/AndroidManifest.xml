@@ -187,6 +187,12 @@
             android:name=".activity.RegisterActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.FindEmailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.ForgotPasswordActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.LoginActivity"
             android:exported="false" />
         <activity
