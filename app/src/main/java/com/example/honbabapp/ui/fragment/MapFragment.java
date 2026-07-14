@@ -31,8 +31,8 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.geometry.LatLng;
-import com.naver.maps.geometry.LatLngBounds;
 import com.naver.maps.map.CameraUpdate;
+import com.naver.maps.map.Projection;
 import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.MapView;
 import com.naver.maps.map.NaverMap;
@@ -41,6 +41,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Looper;
@@ -90,16 +91,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     // onMapReady에서 호출 , map 초기화 안 될 수도 있으니 바로 호출하면 에러 날 확률방지
     private String pendingCategory = null;
 
-    // isInitialLoad: 지도 초기 렌더링 시 CameraIdleListener가 즉시 발동해서
-    // API를 두 번 호출하는 문제 방지용 플래그
-    private boolean isInitialLoad = true;
-
     // Clusterer: SDK 내장 클러스터링 관리자
     private Clusterer<MeetingKey> clusterer;
 
     // debounce용 Handler (카메라 이동 시 API 과다 호출 방지)
     private final Handler debounceHandler = new Handler(Looper.getMainLooper());
     private Runnable debounceRunnable;
+
+    // 진행 중인 목록 요청 — 새 요청 시작 시 취소해서
+    // 늦게 도착한 이전 화면 범위의 응답이 최신 결과를 덮어쓰는 것을 방지
+    private Call<ApiResponse<MeetingListResponse>> currentLoadCall = null;
+
+    // 직전에 마커로 그린 모임 ID 목록 — 결과가 같으면 클러스터 재구성 생략 (깜빡임 방지)
+    private List<Integer> lastMarkerMeetingIds = new ArrayList<>();
 
     private List<Meeting> currentMapMeetings = new ArrayList<>();
 
@@ -240,13 +244,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         naverMap.getUiSettings().setLocationButtonEnabled(true);
         naverMap.setLocationTrackingMode(LocationTrackingMode.Follow);
 
-        // 지도 드래그 후 멈추면 새 중심 좌표로 API 재조회
+        // 카메라가 멈출 때마다(초기 렌더링 포함) 화면 범위로 API 재조회.
+        // 카메라를 움직이는 코드(moveCameraTo 등)는 직접 load를 호출하지 않고
+        // 이 리스너에 맡긴다 — 이동 전의 낡은 bounds로 요청이 나가는 것을 방지
         naverMap.addOnCameraIdleListener(() -> {
-            if (isInitialLoad) {
-                isInitialLoad = false;
-                return;
-            }
-
             LatLng center = naverMap.getCameraPosition().target;
             currentLat = center.latitude;
             currentLng = center.longitude;
@@ -286,8 +287,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             double lng = pendingLng;
             pendingLat = null;
             pendingLng = null;
+            // 카메라 이동이 끝나면 CameraIdleListener가 화면 범위로 조회한다
             moveCameraTo(lat , lng);
-            loadMeetingsOnMap();
             return;
         }
 
@@ -377,15 +378,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                     // 위치를 못 받으면 서울 시청 기본값 유지
                     Log.w(TAG, "위치 없음 → 서울 기본값 사용");
                 }
-                // 카메라 이동 후 API 호출
+                // 카메라 이동이 끝나면 CameraIdleListener가 화면 범위로 조회한다
+                // (이동 전에 즉시 조회하면 낡은 bounds로 요청이 나가 마커가 사라지는 원인)
                 moveCameraTo(currentLat, currentLng);
-                loadMeetingsOnMap ();
             });
         } catch (SecurityException e) {
             // 위치 권한이 없을 때 — 기본값으로 진행
             Log.e(TAG, "위치 권한 없음: " + e.getMessage());
             moveCameraTo(currentLat, currentLng);
-            loadMeetingsOnMap ();
         }
     }
 
@@ -430,15 +430,26 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         // 뷰포트 bounds — 화면에 보이는 범위 그대로 조회
         // (bounds 사용 시 radius는 null로 생략 → 서버가 bbox 모드로 동작)
+        // getContentBounds()는 contentPadding(바텀시트 높이만큼 지정)이 빠진 영역이라
+        // 시트를 올리면 폭 0에 가까운 띠가 되어 빈 결과가 온다 →
+        // padding과 무관한 지도 뷰 전체 픽셀 기준으로 bounds를 직접 계산
         Double swLat = null, swLng = null, neLat = null, neLng = null;
         Double radius = DEFAULT_RADIUS_KM;
-        if (naverMap != null) {
-            LatLngBounds bounds = naverMap.getContentBounds();
-            swLat = bounds.getSouthWest().latitude;
-            swLng = bounds.getSouthWest().longitude;
-            neLat = bounds.getNorthEast().latitude;
-            neLng = bounds.getNorthEast().longitude;
+        if (naverMap != null && mapView.getWidth() > 0 && mapView.getHeight() > 0) {
+            Projection projection = naverMap.getProjection();
+            LatLng bottomLeft = projection.fromScreenLocation(new PointF(0f, mapView.getHeight()));
+            LatLng topRight = projection.fromScreenLocation(new PointF(mapView.getWidth(), 0f));
+            swLat = Math.min(bottomLeft.latitude, topRight.latitude);
+            neLat = Math.max(bottomLeft.latitude, topRight.latitude);
+            swLng = Math.min(bottomLeft.longitude, topRight.longitude);
+            neLng = Math.max(bottomLeft.longitude, topRight.longitude);
             radius = null;
+        }
+
+        // 이전 요청이 진행 중이면 취소 — 늦게 도착한 이전 화면 범위의 응답이
+        // 최신 결과를 덮어써서 마커가 사라지는 현상 방지
+        if (currentLoadCall != null && !currentLoadCall.isCanceled()) {
+            currentLoadCall.cancel();
         }
 
         Call<ApiResponse<MeetingListResponse>> call = apiService.getMeetingList(
@@ -462,11 +473,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 neLat,
                 neLng
         );
+        currentLoadCall = call;
 
         call.enqueue(new Callback<ApiResponse<MeetingListResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<MeetingListResponse>> call, Response<ApiResponse<MeetingListResponse>> response) {
                 if (binding == null) return;
+                if (call != currentLoadCall) return; // 더 새로운 요청이 이미 나감 — 무시
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
 
@@ -501,6 +514,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onFailure(Call<ApiResponse<MeetingListResponse>> call, Throwable t) {
                 if (binding == null) return;
+                if (call.isCanceled()) return; // 새 요청으로 대체된 취소 — 오류 아님
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
                 Toast.makeText(getContext(), "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
@@ -514,6 +528,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private void updateMarkersOnMap(List<Meeting> meetings) {
         currentMapMeetings = new ArrayList<>(meetings);
         if (clusterer == null) return;
+
+        // 직전과 같은 결과면 클러스터 재구성 생략 — 마커 깜빡임/버벅임 방지
+        List<Integer> newIds = new ArrayList<>();
+        for (Meeting meeting : meetings) {
+            newIds.add(meeting.getMeeting_id());
+        }
+        if (newIds.equals(lastMarkerMeetingIds)) return;
+        lastMarkerMeetingIds = newIds;
 
         // 기존 클러스터 데이터 전부 제거
         clusterer.clear();
@@ -633,8 +655,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             return;
         }
 
+        // 카메라 이동이 끝나면 CameraIdleListener가 화면 범위로 조회한다
         moveCameraTo(lat , lng);
-        loadMeetingsOnMap();
     }
 
     public void setFilter(String category) {
@@ -705,6 +727,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
                 // 현재 보이는 높이
                 int visibleHeight = (int) (peekHeight + (sheetHeight - peekHeight) * slideOffset);
+
+                // padding이 지도 높이에 가까워지면 콘텐츠 영역이 붕괴해
+                // 카메라가 크게 튀고 마커가 사라지는 원인이 됨 → 60%로 제한
+                int mapHeight = binding.mapView.getHeight();
+                if (mapHeight > 0) {
+                    visibleHeight = Math.min(visibleHeight, (int) (mapHeight * 0.6f));
+                }
 
                 // Naver 지도 UI 버튼 위치를 visibleHeight 만큼 위로 이동
                 naverMap.setContentPadding(0 , 0 , 0, visibleHeight);
@@ -796,6 +825,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         }
         if (debounceRunnable != null) {
             debounceHandler.removeCallbacks(debounceRunnable);  // 대기 중인 API 호출 취소
+        }
+        if (currentLoadCall != null && !currentLoadCall.isCanceled()) {
+            currentLoadCall.cancel();  // 진행 중인 목록 요청 취소
         }
         mapView.onDestroy();
         binding = null;
