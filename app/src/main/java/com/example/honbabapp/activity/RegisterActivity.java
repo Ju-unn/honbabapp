@@ -2,10 +2,12 @@ package com.example.honbabapp.activity;
 
 import android.Manifest;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -14,7 +16,10 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Patterns;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -98,6 +103,10 @@ public class RegisterActivity extends AppCompatActivity {
 
     // 가입 제출 중 플래그 — 버튼 연타로 register API가 중복 호출되는 것 방지
     private boolean isRegistering = false;
+
+    // 이메일 중복확인/인증코드 전송, 인증코드 검증 진행 중 플래그 — 버튼 연타 방지
+    private boolean isSendVerificationRequesting = false;
+    private boolean isVerifyCodeRequesting = false;
 
     // 이미지 선택 Launcher
     private ActivityResultLauncher<Intent> imagePickerLauncher;
@@ -231,6 +240,11 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 이메일 중복확인 / 코드 전송 버튼
         registerBinding.btnSendVerification.setOnClickListener(v -> {
+            // 요청이 끝나기 전 연타로 중복확인/코드 전송이 여러 번 발생하는 것 방지
+            if (isSendVerificationRequesting) {
+                return;
+            }
+
             String buttonText = registerBinding.btnSendVerification.getText().toString();
 
             if (buttonText.equals("중복확인")) {
@@ -241,7 +255,13 @@ public class RegisterActivity extends AppCompatActivity {
         });
 
         // 인증 코드 확인 버튼
-        registerBinding.btnVerifyCode.setOnClickListener(v -> verifyEmailCode());
+        registerBinding.btnVerifyCode.setOnClickListener(v -> {
+            // 응답 오기 전 연타로 인증 코드 검증이 여러 번 발생하는 것 방지
+            if (isVerifyCodeRequesting) {
+                return;
+            }
+            verifyEmailCode();
+        });
 
         // 비밀번호 확인 버튼
         registerBinding.btnVerifyPassword.setOnClickListener(v -> checkPasswordMatch());
@@ -498,12 +518,14 @@ public class RegisterActivity extends AppCompatActivity {
         // API 호출
         // 전화번호도 함께 전달: 탈퇴 계정의 번호 + 새 이메일 조합이면
         // 서버가 "기존에 사용하던 이메일을 입력해주세요"로 안내해줌
+        isSendVerificationRequesting = true;
         Call<ApiResponse<AvailabilityData>> call = apiService.checkEmail(email,
                 registerBinding.etPhoneNumber.getText().toString().trim());
 
         call.enqueue(new Callback<ApiResponse<AvailabilityData>>() {
             @Override
             public void onResponse(Call<ApiResponse<AvailabilityData>> call, Response<ApiResponse<AvailabilityData>> response) {
+                isSendVerificationRequesting = false;
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<AvailabilityData> apiResponse = response.body();
 
@@ -541,6 +563,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse<AvailabilityData>> call, Throwable t) {
+                isSendVerificationRequesting = false;
                 Toast.makeText(RegisterActivity.this,
                         "네트워크 오류: " + t.getMessage(),
                         Toast.LENGTH_SHORT).show();
@@ -554,12 +577,14 @@ public class RegisterActivity extends AppCompatActivity {
     private void sendVerificationCode() {
         String email = registerBinding.etEmail.getText().toString().trim();
 
+        isSendVerificationRequesting = true;
         SendVerificationRequest request = new SendVerificationRequest(email);
         Call<ApiResponse<VerificationData>> call = apiService.sendVerification(request);
 
         call.enqueue(new Callback<ApiResponse<VerificationData>>() {
             @Override
             public void onResponse(Call<ApiResponse<VerificationData>> call, Response<ApiResponse<VerificationData>> response) {
+                isSendVerificationRequesting = false;
                 if (response.isSuccessful() && response.body() !=  null) {
                     ApiResponse<VerificationData> apiResponse = response.body();
 
@@ -583,6 +608,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse<VerificationData>> call, Throwable t) {
+                isSendVerificationRequesting = false;
                 Toast.makeText(RegisterActivity.this,
                         "네트워크 오류: " + t.getMessage(),
                         Toast.LENGTH_SHORT).show();
@@ -597,12 +623,14 @@ public class RegisterActivity extends AppCompatActivity {
         String email = registerBinding.etEmail.getText().toString().trim();
         String code = registerBinding.etVerificationCode.getText().toString().trim();
 
+        isVerifyCodeRequesting = true;
         VerifyCodeRequest request = new VerifyCodeRequest(email , code);
         Call<ApiResponse<VerifiedData>> call = apiService.verifyCode(request);
 
         call.enqueue(new Callback<ApiResponse<VerifiedData>>() {
             @Override
             public void onResponse(Call<ApiResponse<VerifiedData>> call, Response<ApiResponse<VerifiedData>> response) {
+                isVerifyCodeRequesting = false;
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<VerifiedData> apiResponse = response.body();
 
@@ -625,6 +653,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse<VerifiedData>> call, Throwable t) {
+                isVerifyCodeRequesting = false;
                 Toast.makeText(RegisterActivity.this,
                         "네트워크 오류: " + t.getMessage(),
                         Toast.LENGTH_SHORT).show();
@@ -843,7 +872,13 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // 3. 서버에 중복 확인
+        // 3. 숫자로만 이루어진 닉네임 금지
+        if (nickname.matches("^[0-9]+$")) {
+            showNicknameResult(false, "닉네임은 숫자로만 만들 수 없습니다");
+            return;
+        }
+
+        // 4. 서버에 중복 확인
         apiService.checkNickname(nickname)
                 .enqueue(new Callback<ApiResponse<AvailabilityData>>() {
                     @Override
@@ -919,7 +954,7 @@ public class RegisterActivity extends AppCompatActivity {
         String password = registerBinding.etPassword.getText().toString();
         String phoneNumber = registerBinding.etPhoneNumber.getText().toString().trim();
         String birthday = registerBinding.etBirthdate.getText().toString().trim();
-        String location = selectedLocation.isEmpty() ? "서울특별시 관악구" : selectedLocation;
+        String location = selectedLocation;
 
         // 필수 입력 확인
         if (nickname.isEmpty()) {
@@ -939,6 +974,11 @@ public class RegisterActivity extends AppCompatActivity {
 
         if (phoneNumber.isEmpty()) {
             Toast.makeText(this, "전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (location.isEmpty()) {
+            Toast.makeText(this, "활동 지역을 설정해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -1127,6 +1167,29 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    /**
+     * 입력창 바깥(다른 버튼/영역)을 터치하면 포커스를 해제하고 키보드를 내린다.
+     * EditText가 포커스된 상태에서 그 영역 밖을 눌러도 키보드가 안 내려가던 문제 수정.
+     */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            View focused = getCurrentFocus();
+            if (focused instanceof EditText) {
+                Rect outRect = new Rect();
+                focused.getGlobalVisibleRect(outRect);
+                if (!outRect.contains((int) event.getRawX(), (int) event.getRawY())) {
+                    focused.clearFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(focused.getWindowToken(), 0);
+                    }
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event);
 
     }
 
