@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.R;
@@ -24,6 +25,7 @@ import com.example.honbabapp.api.data.request.user.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageProfileProfilesettingBinding;
+import com.example.honbabapp.util.InsetsUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -85,6 +87,8 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageProfileProfilesettingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsetsWithIme(binding.getRoot());
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
 

@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.api.ApiService;
@@ -24,6 +25,7 @@ import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.api.data.request.meeting.UpdateMeetingRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageMeetingCardWritingBinding;
+import com.example.honbabapp.util.InsetsUtils;
 import com.google.android.gms.common.util.IOUtils;
 import com.google.android.material.slider.RangeSlider;
 
@@ -90,6 +92,8 @@ public class MeetingEditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageMeetingCardWritingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsetsWithIme(binding.getRoot());
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
 

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class CampaignApplicantAdapter
         extends RecyclerView.Adapter<CampaignApplicantAdapter.ViewHolder> {
@@ -184,6 +185,9 @@ public class CampaignApplicantAdapter
         try {
             SimpleDateFormat dateFormat =
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+            // 서버는 항상 KST(Asia/Seoul) 문자열을 내려주므로, 기기 타임존이 달라도
+            // 항상 KST로 해석하도록 명시한다 (안 하면 기기 기본 타임존으로 파싱되어 시간이 어긋남)
+            dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
             Date applyDate = dateFormat.parse(appliedAt);
             if (applyDate == null) return appliedAt;
             long diffMilliseconds = System.currentTimeMillis() - applyDate.getTime();

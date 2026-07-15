@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
@@ -30,6 +31,7 @@ import com.example.honbabapp.api.data.response.chat.KickMemberResponse;
 import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
 import com.example.honbabapp.databinding.PageChatRoomDetailBinding;
 import com.example.honbabapp.repository.ChatRepository;
+import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.ui.adapter.ChatParticipantAdapter;
 import com.example.honbabapp.ui.adapter.ChatPhotoPreviewAdapter;
 import com.example.honbabapp.ui.dialog.ChatParticipantActionBottomSheetDialog;
@@ -111,6 +113,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageChatRoomDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         // ── Intent extra 받기 ──
         roomId    = getIntent().getIntExtra("room_id", -1);

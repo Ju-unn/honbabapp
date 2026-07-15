@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
@@ -32,6 +33,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
 import com.example.honbabapp.databinding.PageMeetingDetailBinding;
 import com.example.honbabapp.ui.adapter.ParticipantListAdapter;
+import com.example.honbabapp.util.InsetsUtils;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -63,6 +65,8 @@ public class MeetingDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageMeetingDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         // Naver Mini Map
         binding.miniMap.onCreate(savedInstanceState);

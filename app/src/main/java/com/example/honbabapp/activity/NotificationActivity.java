@@ -4,8 +4,10 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.example.honbabapp.databinding.PageHomeNotificationBinding;
+import com.example.honbabapp.util.InsetsUtils;
 
 public class NotificationActivity extends AppCompatActivity {
 
@@ -16,6 +18,8 @@ public class NotificationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageHomeNotificationBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         // 뒤로가기 버튼
         onBackButtonClick();

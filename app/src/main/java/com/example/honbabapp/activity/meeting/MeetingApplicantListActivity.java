@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
@@ -18,6 +19,7 @@ import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
 import com.example.honbabapp.api.data.response.meeting.ApproveResponse;
 import com.example.honbabapp.databinding.PageMeetingApplicantListBinding;
 import com.example.honbabapp.ui.adapter.ApplicantListAdapter;
+import com.example.honbabapp.util.InsetsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +51,8 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageMeetingApplicantListBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         // API 서비스 초기화
         apiService = RetrofitClient.getClient().create(ApiService.class);

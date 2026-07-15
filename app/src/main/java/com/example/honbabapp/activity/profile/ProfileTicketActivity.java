@@ -8,6 +8,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.example.honbabapp.activity.payment.TicketPurchaseActivity;
 import com.example.honbabapp.api.ApiService;
@@ -15,6 +16,7 @@ import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.payment.MyTicketsResponse;
 import com.example.honbabapp.databinding.PageProfileTicketBinding;
+import com.example.honbabapp.util.InsetsUtils;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -49,6 +51,8 @@ public class ProfileTicketActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageProfileTicketBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
 

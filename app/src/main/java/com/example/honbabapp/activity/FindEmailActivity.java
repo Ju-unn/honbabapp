@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
@@ -14,6 +15,7 @@ import com.example.honbabapp.api.data.FindEmailData;
 import com.example.honbabapp.api.data.request.FindEmailRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.ActivityFindEmailBinding;
+import com.example.honbabapp.util.InsetsUtils;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -36,6 +38,8 @@ public class FindEmailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityFindEmailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
 

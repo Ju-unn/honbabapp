@@ -13,10 +13,12 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.honbabapp.databinding.ActivityFullscreenImageBinding;
 import com.example.honbabapp.ui.adapter.FullScreenImagePagerAdapter;
+import com.example.honbabapp.util.InsetsUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,6 +50,8 @@ public class FullScreenImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityFullscreenImageBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyTopInsetMargin(binding.topBar);
 
         // ── Extras 파싱 ──
         imageUrls = getIntent().getStringArrayListExtra(EXTRA_IMAGE_URLS);

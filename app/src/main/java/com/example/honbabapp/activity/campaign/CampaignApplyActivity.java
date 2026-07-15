@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.example.honbabapp.activity.profile.ProfileProfileSettingActivity;
 import com.example.honbabapp.api.ApiService;
@@ -19,6 +20,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageCampaignApplyBinding;
+import com.example.honbabapp.util.InsetsUtils;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -53,6 +55,8 @@ public class CampaignApplyActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageCampaignApplyBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsetsWithIme(binding.getRoot());
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
 

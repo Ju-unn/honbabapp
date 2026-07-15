@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -24,6 +25,7 @@ import com.example.honbabapp.api.data.request.fcm.RegisterFcmTokenRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.ActivityMainBinding;
 import com.example.honbabapp.network.SocketManager;
+import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.ui.adapter.MainFragmentAdapter;
 import com.example.honbabapp.ui.fragment.CampaignFragment;
 import com.example.honbabapp.ui.fragment.HomeFragment;
@@ -51,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsetsExceptBottom(binding.getRoot());
 
         initViewPager();
         initNavigation();
@@ -217,7 +221,12 @@ public class MainActivity extends AppCompatActivity {
                     targetPosition = 4;
                 }
 
-                binding.viewPager.setCurrentItem(targetPosition);
+                // smooth scroll(기본값)로 이동하면 중간 페이지들을 거쳐가면서 onPageSelected가
+                // 매번 호출되고, 그때마다 setSelectedItemId()가 이 리스너를 재호출해서
+                // 애니메이션 도중 경합이 생겨 엉뚱한 탭에 멈추는 문제가 있었다.
+                // 스와이프 자체가 막혀있어(setUserInputEnabled(false)) 중간 페이지를 보여줄
+                // 필요가 없으므로 애니메이션 없이 바로 이동한다.
+                binding.viewPager.setCurrentItem(targetPosition, false);
                 Log.i(TAG, "onNavigationItemSelected targetPosition = " + targetPosition);
                 return true;
             }

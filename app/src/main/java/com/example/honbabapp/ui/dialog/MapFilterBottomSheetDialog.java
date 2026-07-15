@@ -497,45 +497,45 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
             dialog.show();
         });
 
-        binding.btnTimePick.setOnClickListener(v -> {
-            Calendar now = Calendar.getInstance();
-            new TimePickerDialog(
-                    requireContext(),
-                    (view, hour, minute) -> {
-                        // 선택된 날짜가 "오늘"이거나, 날짜를 아직 선택하지 않은
-                        // 경우에만 현재 시각 이전인지 검증한다.
-                        String todayQuery = String.format(Locale.KOREA, "%04d-%02d-%02d",
-                                now.get(Calendar.YEAR),
-                                now.get(Calendar.MONTH) + 1,
-                                now.get(Calendar.DAY_OF_MONTH));
-                        boolean isTodaySelected = selectedDateQuery == null || todayQuery.equals(selectedDateQuery);
-
-                        if (isTodaySelected) {
-                            int currentHour = now.get(Calendar.HOUR_OF_DAY);
-                            int currentMinute = now.get(Calendar.MINUTE);
-                            boolean isPastTime = hour < currentHour
-                                    || (hour == currentHour && minute <= currentMinute);
-
-                            if (isPastTime) {
-                                Toast.makeText(requireContext(),
-                                        "현재 시간 이후를 선택해주세요",
-                                        Toast.LENGTH_SHORT).show();
-                                return; // selectedTime 설정 안 함
-                            }
-                        }
-
-                        // 쿼리용 값은 항상 24시간제 "HH:MM"으로 저장
-                        selectedTime = String.format("%02d:%02d", hour, minute);
-                        // 칩에는 MeetingCardWritingActivity와 동일한 "오후 7:30" 형식으로 표시
-                        setTimeChip(formatTimeDisplay(hour, minute));
-
-                        updateChipAreaVisibility();
-                    },
-                    now.get(Calendar.HOUR_OF_DAY),
-                    now.get(Calendar.MINUTE),
-                    false // false = 12시간 형식(오전/오후) — MeetingCardWritingActivity와 동일 UI
-            ).show();
-        });
+//        binding.btnTimePick.setOnClickListener(v -> {
+//            Calendar now = Calendar.getInstance();
+//            new TimePickerDialog(
+//                    requireContext(),
+//                    (view, hour, minute) -> {
+//                        // 선택된 날짜가 "오늘"이거나, 날짜를 아직 선택하지 않은
+//                        // 경우에만 현재 시각 이전인지 검증한다.
+//                        String todayQuery = String.format(Locale.KOREA, "%04d-%02d-%02d",
+//                                now.get(Calendar.YEAR),
+//                                now.get(Calendar.MONTH) + 1,
+//                                now.get(Calendar.DAY_OF_MONTH));
+//                        boolean isTodaySelected = selectedDateQuery == null || todayQuery.equals(selectedDateQuery);
+//
+//                        if (isTodaySelected) {
+//                            int currentHour = now.get(Calendar.HOUR_OF_DAY);
+//                            int currentMinute = now.get(Calendar.MINUTE);
+//                            boolean isPastTime = hour < currentHour
+//                                    || (hour == currentHour && minute <= currentMinute);
+//
+//                            if (isPastTime) {
+//                                Toast.makeText(requireContext(),
+//                                        "현재 시간 이후를 선택해주세요",
+//                                        Toast.LENGTH_SHORT).show();
+//                                return; // selectedTime 설정 안 함
+//                            }
+//                        }
+//
+//                        // 쿼리용 값은 항상 24시간제 "HH:MM"으로 저장
+//                        selectedTime = String.format("%02d:%02d", hour, minute);
+//                        // 칩에는 MeetingCardWritingActivity와 동일한 "오후 7:30" 형식으로 표시
+//                        setTimeChip(formatTimeDisplay(hour, minute));
+//
+//                        updateChipAreaVisibility();
+//                    },
+//                    now.get(Calendar.HOUR_OF_DAY),
+//                    now.get(Calendar.MINUTE),
+//                    false // false = 12시간 형식(오전/오후) — MeetingCardWritingActivity와 동일 UI
+//            ).show();
+//        });
     }
 
     /** "HH:MM" 쿼리값을 "오후 7:30" 형식으로 변환 (재오픈 시 칩 라벨 복원용) */

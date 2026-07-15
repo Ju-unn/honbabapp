@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
@@ -13,6 +14,7 @@ import com.example.honbabapp.api.data.request.fcm.UpdatePushSettingRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageProfileNotificationSettingsBinding;
+import com.example.honbabapp.util.InsetsUtils;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,6 +41,8 @@ public class ProfileNotificationSettingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageProfileNotificationSettingsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
         sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);

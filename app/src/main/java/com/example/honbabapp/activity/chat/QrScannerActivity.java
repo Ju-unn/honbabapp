@@ -3,8 +3,10 @@ package com.example.honbabapp.activity.chat;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.example.honbabapp.databinding.ActivityQrScannerBinding;
+import com.example.honbabapp.util.InsetsUtils;
 import com.journeyapps.barcodescanner.CaptureManager;
 
 /**
@@ -28,6 +30,9 @@ public class QrScannerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityQrScannerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyTopInsetMargin(binding.btnScannerBack);
+        InsetsUtils.applyBottomInsetMargin(binding.btnScannerFlash);
 
         // CaptureManager: ZXing 의 QR 인식 로직을 DecoratedBarcodeView 와 연결
         captureManager = new CaptureManager(this, binding.decoratedBarcodeView);

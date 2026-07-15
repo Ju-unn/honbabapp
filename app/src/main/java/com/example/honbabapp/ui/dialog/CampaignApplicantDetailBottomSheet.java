@@ -137,6 +137,9 @@ public class CampaignApplicantDetailBottomSheet extends BottomSheetDialogFragmen
         try {
             java.text.SimpleDateFormat dateFormat =
                     new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.KOREA);
+            // 서버는 항상 KST(Asia/Seoul) 문자열을 내려주므로, 기기 타임존이 달라도
+            // 항상 KST로 해석하도록 명시한다 (안 하면 기기 기본 타임존으로 파싱되어 시간이 어긋남)
+            dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul"));
             java.util.Date applyDate = dateFormat.parse(appliedAt);
             if (applyDate == null) return appliedAt;
             long diffMilliseconds = System.currentTimeMillis() - applyDate.getTime();

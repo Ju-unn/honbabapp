@@ -491,7 +491,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="14dp"
-                    android:text="날짜 및 시간"
+                    android:text="날짜"
                     android:textColor="@color/text_100"
                     android:textSize="15sp"
                     android:textStyle="bold"
@@ -521,22 +521,22 @@
                         android:textColor="@color/text_100"
                         android:textSize="14sp" />
 
-                    <Button
-                        android:id="@+id/btn_time_pick"
-                        style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="48dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/button_secondary_background"
-                        app:backgroundTint="@null"
-                        android:drawableStart="@drawable/ic_clock"
-                        android:drawablePadding="8dp"
-                        android:minHeight="0dp"
-                        android:minWidth="0dp"
-                        android:text="시간 선택"
-                        android:textAllCaps="false"
-                        android:textColor="@color/text_100"
-                        android:textSize="14sp" />
+<!--                    <Button-->
+<!--                        android:id="@+id/btn_time_pick"-->
+<!--                        style="@style/Widget.MaterialComponents.Button.UnelevatedButton"-->
+<!--                        android:layout_width="0dp"-->
+<!--                        android:layout_height="48dp"-->
+<!--                        android:layout_weight="1"-->
+<!--                        android:background="@drawable/button_secondary_background"-->
+<!--                        app:backgroundTint="@null"-->
+<!--                        android:drawableStart="@drawable/ic_clock"-->
+<!--                        android:drawablePadding="8dp"-->
+<!--                        android:minHeight="0dp"-->
+<!--                        android:minWidth="0dp"-->
+<!--                        android:text="시간 선택"-->
+<!--                        android:textAllCaps="false"-->
+<!--                        android:textColor="@color/text_100"-->
+<!--                        android:textSize="14sp" />-->
 
                 </LinearLayout>
 

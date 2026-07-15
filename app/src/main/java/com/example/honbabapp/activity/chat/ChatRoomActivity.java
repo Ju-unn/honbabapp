@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.core.view.WindowCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,6 +33,7 @@ import com.example.honbabapp.BuildConfig;
 import com.example.honbabapp.R;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
+import com.example.honbabapp.api.data.chat.ChatMemberData;
 import com.example.honbabapp.api.data.chat.ChatRoomData;
 import com.example.honbabapp.api.data.chat.MessageData;
 import com.example.honbabapp.api.data.local.AppDatabase;
@@ -43,6 +45,7 @@ import com.example.honbabapp.databinding.PageChatDetailBinding;
 import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.MessageAdapter;
+import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.ui.dialog.ChatAttachBottomSheetDialog;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
@@ -162,6 +165,8 @@ public class ChatRoomActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageChatDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsetsWithIme(binding.getRoot());
 
         roomId      = getIntent().getIntExtra("room_id", -1);
         roomName    = getIntent().getStringExtra("room_name");
@@ -354,7 +359,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                         for (ChatRoomData room : response.body().getData()) {
                             if (room.getRoom_id() == roomId) {
                                 roomName = room.getRoom_name() != null ? room.getRoom_name() : "";
-                                roomImage = room.getRoom_image();
+                                roomImage = resolveRoomImage(room);
                                 roomType = room.getRoom_type() != null ? room.getRoom_type() : "group";
                                 memberCount = room.getParticipants() != null ? room.getParticipants().size() : 0;
                                 meetingId = room.getMeeting_id() != null ? room.getMeeting_id() : -1;
@@ -384,6 +389,33 @@ public class ChatRoomActivity extends AppCompatActivity {
                         Log.e("ChatRoomActivity", "방 정보 재조회 네트워크 오류: " + t.getMessage(), t);
                     }
                 });
+    }
+
+    /**
+     * 1:1 방은 room_image 컬럼이 항상 비어있으므로(서버가 채워주지 않음) 상대방의
+     * 프로필 이미지를 참여자 목록에서 직접 찾는다. ChatFragment/ChatRoomListAdapter의
+     * 동일 로직과 맞춰야 한다 — 안 그러면 FCM 알림 딥링크로 들어왔을 때만 기본이미지가 뜬다.
+     */
+    private String resolveRoomImage(ChatRoomData room) {
+        if (room.isGroup()) {
+            String groupImage = room.getRoom_image();
+            if (groupImage != null && !groupImage.isEmpty()) {
+                return groupImage;
+            }
+            if (room.getParticipants() != null && !room.getParticipants().isEmpty()) {
+                return room.getParticipants().get(0).getUser_profile_image();
+            }
+            return null;
+        }
+
+        if (room.getParticipants() != null) {
+            for (ChatMemberData member : room.getParticipants()) {
+                if (member.getUser_id() != myUserId) {
+                    return member.getUser_profile_image();
+                }
+            }
+        }
+        return null;
     }
 
     @Override

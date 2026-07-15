@@ -9,6 +9,7 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.example.honbabapp.activity.LoginActivity;
 import com.example.honbabapp.api.ApiService;
@@ -16,6 +17,7 @@ import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.request.user.DeleteAccountRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageProfileDeleteAccountBinding;
+import com.example.honbabapp.util.InsetsUtils;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -35,6 +37,8 @@ public class ProfileDeleteAccountActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageProfileDeleteAccountBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsetsWithIme(binding.getRoot());
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
 

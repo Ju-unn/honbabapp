@@ -8,6 +8,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
@@ -20,6 +21,7 @@ import com.example.honbabapp.api.data.review.ReceivedReview;
 import com.example.honbabapp.api.data.review.ReceivedReviewsData;
 import com.example.honbabapp.databinding.PageChatParticipantDetailBinding;
 import com.example.honbabapp.ui.adapter.ReceivedReviewAdapter;
+import com.example.honbabapp.util.InsetsUtils;
 
 import java.util.List;
 
@@ -56,6 +58,8 @@ public class ChatRoomParticipantDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageChatParticipantDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         // ── Intent extra ──
         userId = getIntent().getIntExtra("user_id", -1);

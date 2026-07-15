@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,6 +21,7 @@ import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
 import com.example.honbabapp.databinding.PageChatPhotosBinding;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.ChatPhotoGridAdapter;
+import com.example.honbabapp.util.InsetsUtils;
 
 import java.util.ArrayList;
 
@@ -77,6 +79,8 @@ public class ChatRoomPhotosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageChatPhotosBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         roomId = getIntent().getIntExtra("room_id", -1);
         if (roomId == -1) {

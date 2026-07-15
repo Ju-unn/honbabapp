@@ -28,6 +28,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
 
 import com.example.honbabapp.BuildConfig;
 import com.example.honbabapp.R;
@@ -45,6 +46,7 @@ import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.naver.NaverReverseGeoResponse;
 import com.example.honbabapp.databinding.PageRegisterBinding;
+import com.example.honbabapp.util.InsetsUtils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
@@ -116,6 +118,8 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         registerBinding = PageRegisterBinding.inflate(getLayoutInflater());
         setContentView(registerBinding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsetsWithIme(registerBinding.getRoot());
 
         // API 서비스 초기화
         apiService = RetrofitClient.getClient().create(ApiService.class);

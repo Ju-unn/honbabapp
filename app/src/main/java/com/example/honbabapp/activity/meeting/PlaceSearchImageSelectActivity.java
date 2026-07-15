@@ -10,6 +10,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.honbabapp.BuildConfig;
@@ -19,6 +20,7 @@ import com.example.honbabapp.api.data.response.naver.NaverImageSearchResponse;
 import com.example.honbabapp.databinding.PageMeetingCardImageSelectBinding;
 import com.example.honbabapp.databinding.RvImageSelectBinding;
 import com.example.honbabapp.ui.adapter.ImageSelectAdapter;
+import com.example.honbabapp.util.InsetsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +77,8 @@ public class PlaceSearchImageSelectActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageMeetingCardImageSelectBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         naverApiService = NaverRetrofitClient.getClient().create(NaverApiService.class);
 

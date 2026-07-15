@@ -126,7 +126,8 @@
 
         <activity
             android:name=".activity.campaign.CampaignEditActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
 
         <activity
@@ -142,11 +143,13 @@
 
         <activity
             android:name=".activity.chat.ChatRoomActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".activity.meeting.MeetingEditActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
 
         <activity
@@ -161,16 +164,19 @@
             android:exported="false" />
         <activity
             android:name=".activity.profile.ProfileChangePasswordActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activity.profile.ProfileDeleteAccountActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activity.profile.ProfileNotificationSettingActivity"
             android:exported="false" />
         <activity
             android:name=".activity.profile.ProfileProfileSettingActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activity.profile.ProfileAccountSettingActivity"
             android:exported="false" />
@@ -185,7 +191,8 @@
             android:exported="false" />
         <activity
             android:name=".activity.RegisterActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activity.FindEmailActivity"
             android:exported="false" />
@@ -203,7 +210,8 @@
             android:exported="false" />
         <activity
             android:name=".activity.meeting.MeetingCardWritingActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activity.chat.ChatRoomDetailActivity"
             android:exported="false" />

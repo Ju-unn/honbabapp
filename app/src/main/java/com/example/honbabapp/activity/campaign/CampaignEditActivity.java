@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.activity.meeting.PlaceSearchActivity;
@@ -24,6 +25,7 @@ import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.api.data.request.campaign.CampaignUpdateRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageCampaignWritingBinding;
+import com.example.honbabapp.util.InsetsUtils;
 import com.google.android.material.slider.RangeSlider;
 
 import java.io.File;
@@ -138,6 +140,8 @@ public class CampaignEditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageCampaignWritingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsetsWithIme(binding.getRoot());
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
 

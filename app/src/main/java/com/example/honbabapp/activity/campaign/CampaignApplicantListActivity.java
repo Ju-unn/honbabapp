@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
@@ -20,6 +21,7 @@ import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
 import com.example.honbabapp.api.data.response.meeting.ApproveResponse;
 import com.example.honbabapp.activity.chat.ChatRoomActivity;
 import com.example.honbabapp.databinding.PageCampaignApplicantListBinding;
+import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.ui.adapter.CampaignApplicantAdapter;
 import com.example.honbabapp.ui.dialog.CampaignApplicantDetailBottomSheet;
 
@@ -57,6 +59,8 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = PageCampaignApplicantListBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         setResult(RESULT_OK);
 

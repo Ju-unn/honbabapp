@@ -11,12 +11,14 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 import com.example.honbabapp.BuildConfig;
 import com.example.honbabapp.api.NaverApiService;
 import com.example.honbabapp.api.NaverRetrofitClient;
 import com.example.honbabapp.api.data.response.naver.NaverLocalSearchResponse;
 import com.example.honbabapp.databinding.ActivityPlaceSearchBinding;
 import com.example.honbabapp.ui.adapter.PlaceSearchAdapter;
+import com.example.honbabapp.util.InsetsUtils;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -54,6 +56,8 @@ public class PlaceSearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityPlaceSearchBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        InsetsUtils.applyRootInsets(binding.getRoot());
 
         // Naver API 서비스 초기화
         naverApiService = NaverRetrofitClient.getClient().create(NaverApiService.class);
