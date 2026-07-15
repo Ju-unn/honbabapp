@@ -463,8 +463,10 @@ public class RegisterActivity extends AppCompatActivity {
                     defaultYear  , defaultMonth , defaultDay
             );
 
-            // 미래 날짜 선택 불가
-            datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
+            // 만 10세 미만 가입 불가 (오늘로부터 -10년 이후 날짜는 선택 불가)
+            Calendar maxDate = Calendar.getInstance();
+            maxDate.add(Calendar.YEAR, -10);
+            datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
 
             // 너무 오래된 날짜 선택 불가
             Calendar minDate = Calendar.getInstance();

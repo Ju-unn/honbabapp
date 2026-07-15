@@ -12,6 +12,7 @@ import androidx.credentials.CredentialManager;
 import androidx.credentials.CredentialManagerCallback;
 import androidx.credentials.GetCredentialRequest;
 import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialCancellationException;
 import androidx.credentials.exceptions.GetCredentialException;
 
 import com.example.honbabapp.BuildConfig;
@@ -232,6 +233,12 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(GetCredentialException e) {
+                        // 사용자가 계정 선택 UI를 의도적으로 취소한 경우 - 카카오와 동일하게 조용히 처리
+                        if (e instanceof GetCredentialCancellationException) {
+                            Log.d(TAG, "구글 로그인 취소됨");
+                            return;
+                        }
+
                         Log.e(TAG, "구글 로그인 실패", e);
                         runOnUiThread(() ->
                                 Toast.makeText(LoginActivity.this, "구글 로그인에 실패했습니다", Toast.LENGTH_SHORT).show()
