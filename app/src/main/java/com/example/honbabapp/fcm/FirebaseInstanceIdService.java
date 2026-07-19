@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.util.Log;
 
@@ -146,6 +147,7 @@ public class FirebaseInstanceIdService extends FirebaseMessagingService {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.drawable.app_logo2)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.app_logo2))
                 .setContentTitle(title != null ? title : getString(R.string.app_name))
                 .setContentText(body != null ? body : "")
                 .setAutoCancel(true)
