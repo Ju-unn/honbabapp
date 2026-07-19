@@ -222,6 +222,16 @@
 
             </androidx.cardview.widget.CardView>
 
+            <!-- 개인정보 보관 안내 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:text="개인정보는 3년간 유지되며 3년 후 폐기됩니다."
+                android:textColor="@color/text_200"
+                android:textSize="13sp"
+                android:lineSpacingExtra="4dp" />
+
             <!-- 탈퇴 사유 -->
             <TextView
                 android:layout_width="wrap_content"

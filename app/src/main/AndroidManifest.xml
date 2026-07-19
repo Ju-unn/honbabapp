@@ -187,6 +187,9 @@
             android:name=".activity.profile.ProfileTicketActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.profile.ProfileSupportActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.SearchViewActivity"
             android:exported="false" />
         <activity
