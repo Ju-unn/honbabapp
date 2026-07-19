@@ -15,6 +15,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageProfileNotificationSettingsBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -144,7 +145,7 @@ public class ProfileNotificationSettingActivity extends AppCompatActivity {
      * setChecked 호출이 다시 리스너를 트리거하지 않도록 잠시 해제한다.
      */
     private void showUpdateFailed(boolean attemptedValue) {
-        Toast.makeText(this, "알림 설정 변경에 실패했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+        ToastUtil.makeText(this, "알림 설정 변경에 실패했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
 
         binding.switchPushEnabled.setOnCheckedChangeListener(null);
         binding.switchPushEnabled.setChecked(!attemptedValue);

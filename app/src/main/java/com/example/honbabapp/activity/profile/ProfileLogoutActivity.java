@@ -16,6 +16,7 @@ import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.request.LogoutRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.network.SocketManager;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 
@@ -110,7 +111,7 @@ public class ProfileLogoutActivity extends AppCompatActivity {
         preferences.edit().clear().apply();
         Log.d(TAG, "SharedPreferences 초기화 완료");
 
-        Toast.makeText(this, "로그아웃 되었습니다", Toast.LENGTH_SHORT).show();
+        ToastUtil.makeText(this, "로그아웃 되었습니다", Toast.LENGTH_SHORT).show();
 
         // Step 5: LoginActivity 로 이동 — 태스크 스택 전체 클리어
         Intent loginIntent = new Intent(this, LoginActivity.class);

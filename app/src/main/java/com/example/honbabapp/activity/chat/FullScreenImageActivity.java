@@ -19,6 +19,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.honbabapp.databinding.ActivityFullscreenImageBinding;
 import com.example.honbabapp.ui.adapter.FullScreenImagePagerAdapter;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,7 +99,7 @@ public class FullScreenImageActivity extends AppCompatActivity {
     private void downloadCurrentImage() {
         if (imageUrls.isEmpty()) return;
         String url = imageUrls.get(currentIndex);
-        Toast.makeText(this, "저장 중…", Toast.LENGTH_SHORT).show();
+        ToastUtil.makeText(this, "저장 중…", Toast.LENGTH_SHORT).show();
 
         executor.execute(() -> {
             try {
@@ -166,11 +167,11 @@ public class FullScreenImageActivity extends AppCompatActivity {
                 getContentResolver().update(imageUri, values, null, null);
 
                 mainHandler.post(() ->
-                        Toast.makeText(this, "갤러리에 저장되었습니다", Toast.LENGTH_SHORT).show());
+                        ToastUtil.makeText(this, "갤러리에 저장되었습니다", Toast.LENGTH_SHORT).show());
 
             } catch (Exception e) {
                 mainHandler.post(() ->
-                        Toast.makeText(this, "저장 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        ToastUtil.makeText(this, "저장 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             }
         });
     }

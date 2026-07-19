@@ -18,6 +18,7 @@ import com.example.honbabapp.api.data.review.ReviewTarget;
 import com.example.honbabapp.api.data.review.ReviewTargetsData;
 import com.example.honbabapp.databinding.DialogReviewBinding;
 import com.example.honbabapp.ui.adapter.ReviewTargetAdapter;
+import com.example.honbabapp.util.ToastUtil;
 
 import java.util.List;
 
@@ -72,14 +73,14 @@ public class ReviewDialogHelper {
                             String errorMessage = (response.body() != null)
                                     ? response.body().getMessage()
                                     : "후기 대상을 불러오지 못했습니다";
-                            Toast.makeText(activity, errorMessage, Toast.LENGTH_SHORT).show();
+                            ToastUtil.makeText(activity, errorMessage, Toast.LENGTH_SHORT).show();
                             return;
                         }
 
                         ReviewTargetsData data = response.body().getData();
 
                         if (!data.isIs_eligible()) {
-                            Toast.makeText(activity,
+                            ToastUtil.makeText(activity,
                                     "QR 인증을 하지 않아 후기를 작성할 수 없습니다",
                                     Toast.LENGTH_LONG).show();
                             return;
@@ -87,7 +88,7 @@ public class ReviewDialogHelper {
 
                         List<ReviewTarget> targets = data.getTargets();
                         if (targets == null || targets.isEmpty()) {
-                            Toast.makeText(activity,
+                            ToastUtil.makeText(activity,
                                     "후기를 남길 수 있는 멤버가 없습니다",
                                     Toast.LENGTH_SHORT).show();
                             return;
@@ -98,7 +99,7 @@ public class ReviewDialogHelper {
 
                     @Override
                     public void onFailure(Call<ApiResponse<ReviewTargetsData>> call, Throwable throwable) {
-                        Toast.makeText(activity,
+                        ToastUtil.makeText(activity,
                                 "네트워크 오류: " + throwable.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
@@ -147,13 +148,13 @@ public class ReviewDialogHelper {
         // 제출 버튼
         dialogBinding.btnReviewSubmit.setOnClickListener(view -> {
             if (selectedTarget == null) {
-                Toast.makeText(activity, "멤버를 선택해주세요", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(activity, "멤버를 선택해주세요", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             int rating = (int) dialogBinding.ratingBar.getRating();
             if (rating == 0) {
-                Toast.makeText(activity, "별점을 선택해주세요", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(activity, "별점을 선택해주세요", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -190,7 +191,7 @@ public class ReviewDialogHelper {
                                 && response.body() != null
                                 && response.body().isSuccess()) {
 
-                            Toast.makeText(activity, "후기가 등록되었습니다", Toast.LENGTH_SHORT).show();
+                            ToastUtil.makeText(activity, "후기가 등록되었습니다", Toast.LENGTH_SHORT).show();
 
                             // 해당 대상 already_reviewed=true 갱신
                             adapter.markReviewed(position);
@@ -204,14 +205,14 @@ public class ReviewDialogHelper {
                             String errorMessage = (response.body() != null)
                                     ? response.body().getMessage()
                                     : "후기 등록에 실패했습니다";
-                            Toast.makeText(activity, errorMessage, Toast.LENGTH_SHORT).show();
+                            ToastUtil.makeText(activity, errorMessage, Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ApiResponse<ReviewSubmitData>> call, Throwable throwable) {
                         Log.e(TAG, "후기 제출 실패: " + throwable.getMessage());
-                        Toast.makeText(activity,
+                        ToastUtil.makeText(activity,
                                 "네트워크 오류: " + throwable.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }

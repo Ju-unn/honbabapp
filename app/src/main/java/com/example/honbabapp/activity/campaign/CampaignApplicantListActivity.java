@@ -24,6 +24,7 @@ import com.example.honbabapp.databinding.PageCampaignApplicantListBinding;
 import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.ui.adapter.CampaignApplicantAdapter;
 import com.example.honbabapp.ui.dialog.CampaignApplicantDetailBottomSheet;
+import com.example.honbabapp.util.ToastUtil;
 
 import java.util.List;
 
@@ -68,7 +69,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
 
         campaignId = getIntent().getIntExtra(EXTRA_CAMPAIGN_ID, -1);
         if (campaignId == -1) {
-            Toast.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -154,7 +155,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
 
                         } else {
                             Log.e(TAG, "API 실패: " + response.code());
-                            Toast.makeText(CampaignApplicantListActivity.this,
+                            ToastUtil.makeText(CampaignApplicantListActivity.this,
                                     "신청자 목록을 불러오지 못했습니다.", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -163,7 +164,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                     public void onFailure(Call<ApiResponse<ApplicantsResponse>> call,
                                           Throwable throwable) {
                         Log.e(TAG, "네트워크 오류: " + throwable.getMessage());
-                        Toast.makeText(CampaignApplicantListActivity.this,
+                        ToastUtil.makeText(CampaignApplicantListActivity.this,
                                 "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -217,13 +218,13 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                         if (response.isSuccessful() && response.body() != null
                                 && response.body().isSuccess()) {
                             String message = "approve".equals(action) ? "승인되었습니다." : "거절되었습니다.";
-                            Toast.makeText(CampaignApplicantListActivity.this,
+                            ToastUtil.makeText(CampaignApplicantListActivity.this,
                                     message, Toast.LENGTH_SHORT).show();
                             loadApplicants(currentStatusFilter);
                         } else {
                             String message = response.body() != null
                                     ? response.body().getMessage() : "처리에 실패했습니다.";
-                            Toast.makeText(CampaignApplicantListActivity.this,
+                            ToastUtil.makeText(CampaignApplicantListActivity.this,
                                     message, Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -232,7 +233,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                     public void onFailure(Call<ApiResponse<ApproveResponse>> call,
                                           Throwable throwable) {
                         Log.e(TAG, "승인/거절 오류: " + throwable.getMessage());
-                        Toast.makeText(CampaignApplicantListActivity.this,
+                        ToastUtil.makeText(CampaignApplicantListActivity.this,
                                 "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -268,7 +269,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                         } else {
                             String message = response.body() != null
                                     ? response.body().getMessage() : "채팅방 생성에 실패했습니다.";
-                            Toast.makeText(CampaignApplicantListActivity.this,
+                            ToastUtil.makeText(CampaignApplicantListActivity.this,
                                     message, Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -277,7 +278,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                     public void onFailure(Call<ApiResponse<CreateRoomResponse>> call,
                                           Throwable throwable) {
                         Log.e(TAG, "채팅방 생성 오류: " + throwable.getMessage());
-                        Toast.makeText(CampaignApplicantListActivity.this,
+                        ToastUtil.makeText(CampaignApplicantListActivity.this,
                                 "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                     }
                 });

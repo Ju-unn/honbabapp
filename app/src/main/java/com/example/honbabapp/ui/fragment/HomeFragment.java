@@ -33,6 +33,7 @@ import com.example.honbabapp.databinding.FragmentHomeBinding;
 import com.example.honbabapp.ui.adapter.HomeAllMeetingListAdapter;
 import com.example.honbabapp.ui.adapter.HomeHotMeetingListAdapter;
 import com.example.honbabapp.ui.dialog.LocationSelectionBottomSheetDialog;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
@@ -191,13 +192,13 @@ public class HomeFragment extends Fragment {
                         updateAdapters();
                     } else {
                         Log.e(TAG , "API 실패: " + apiResponse.getMessage());
-                        Toast.makeText(getContext() ,
+                        ToastUtil.makeText(getContext() ,
                                 apiResponse.getMessage() ,
                                 Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     Log.e(TAG, "HTTP 오류: " + response.code());
-                    Toast.makeText(getContext(),
+                    ToastUtil.makeText(getContext(),
                             "모임 목록을 불러오는데 실패했습니다.",
                             Toast.LENGTH_SHORT).show();
                 }
@@ -206,7 +207,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onFailure(Call<ApiResponse<MeetingListResponse>> call, Throwable t) {
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
-                Toast.makeText(getContext(),
+                ToastUtil.makeText(getContext(),
                         "네트워크 오류가 발생했습니다.",
                         Toast.LENGTH_SHORT).show();
             }

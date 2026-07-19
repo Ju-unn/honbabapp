@@ -26,6 +26,7 @@ import com.example.honbabapp.api.data.request.campaign.CampaignUpdateRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageCampaignWritingBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.material.slider.RangeSlider;
 
 import java.io.File;
@@ -150,7 +151,7 @@ public class CampaignEditActivity extends AppCompatActivity {
 
         campaignId = getIntent().getIntExtra(EXTRA_CAMPAIGN_ID, -1);
         if (campaignId == -1) {
-            Toast.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -176,7 +177,7 @@ public class CampaignEditActivity extends AppCompatActivity {
                             existingCampaign = response.body().getData();
                             prefillForm();
                         } else {
-                            Toast.makeText(CampaignEditActivity.this,
+                            ToastUtil.makeText(CampaignEditActivity.this,
                                     "체험단 정보를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show();
                             finish();
                         }
@@ -185,7 +186,7 @@ public class CampaignEditActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ApiResponse<Meeting>> call, Throwable throwable) {
                         Log.e(TAG, "로드 오류: " + throwable.getMessage());
-                        Toast.makeText(CampaignEditActivity.this,
+                        ToastUtil.makeText(CampaignEditActivity.this,
                                 "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                         finish();
                     }
@@ -274,24 +275,24 @@ public class CampaignEditActivity extends AppCompatActivity {
     private void validateAndUpdate() {
         String campaignTitle = binding.etCampaignTitle.getText().toString().trim();
         if (campaignTitle.isEmpty()) {
-            Toast.makeText(this, "체험단 제목을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "체험단 제목을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
         if (campaignTitle.length() < 2 || campaignTitle.length() > 50) {
-            Toast.makeText(this, "체험단 제목은 2~50자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "체험단 제목은 2~50자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
         if (selectedPlaceName.isEmpty()) {
-            Toast.makeText(this, "가게를 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "가게를 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
         String campaignDescription = binding.etCampaignDescription.getText().toString().trim();
         if (campaignDescription.isEmpty()) {
-            Toast.makeText(this, "체험단 설명을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "체험단 설명을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
         if (campaignDescription.length() < 10 || campaignDescription.length() > 500) {
-            Toast.makeText(this, "체험단 설명은 10~500자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "체험단 설명은 10~500자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -300,20 +301,20 @@ public class CampaignEditActivity extends AppCompatActivity {
         boolean isYoutubeChecked   = binding.checkboxChannelYoutube.isChecked();
 
         if (!isBlogChecked && !isInstagramChecked && !isYoutubeChecked) {
-            Toast.makeText(this, "홍보 채널을 하나 이상 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "홍보 채널을 하나 이상 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String campaignProvided = binding.etCampaignProvided.getText().toString().trim();
         if (campaignProvided.isEmpty()) {
-            Toast.makeText(this, "제공 내역을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "제공 내역을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // 모집 마감일 필수 선택 검증 (등록 화면과 동일한 정책 적용)
         String campaignDeadline = binding.etCampaignDeadline.getText().toString().trim();
         if (campaignDeadline.isEmpty()) {
-            Toast.makeText(this, "모집 마감일을 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "모집 마감일을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -420,7 +421,7 @@ public class CampaignEditActivity extends AppCompatActivity {
 
     private void onUploadFailed() {
         runOnUiThread(() -> {
-            Toast.makeText(this, "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
+            ToastUtil.makeText(this, "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
                     Toast.LENGTH_SHORT).show();
             resetUpdateButton();
         });
@@ -465,14 +466,14 @@ public class CampaignEditActivity extends AppCompatActivity {
                                    Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null
                         && response.body().isSuccess()) {
-                    Toast.makeText(CampaignEditActivity.this,
+                    ToastUtil.makeText(CampaignEditActivity.this,
                             "체험단이 수정되었습니다.", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     finish();
                 } else {
                     String message = response.body() != null
                             ? response.body().getMessage() : "수정에 실패했습니다.";
-                    Toast.makeText(CampaignEditActivity.this,
+                    ToastUtil.makeText(CampaignEditActivity.this,
                             message, Toast.LENGTH_SHORT).show();
                     resetUpdateButton();
                 }
@@ -481,7 +482,7 @@ public class CampaignEditActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable throwable) {
                 Log.e(TAG, "수정 네트워크 오류: " + throwable.getMessage());
-                Toast.makeText(CampaignEditActivity.this,
+                ToastUtil.makeText(CampaignEditActivity.this,
                         "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                 resetUpdateButton();
             }
@@ -588,7 +589,7 @@ public class CampaignEditActivity extends AppCompatActivity {
             if (maximumDeadlineTimestamp == null) {
                 // 등록일 정보를 신뢰할 수 없으면 새로운 14일 창을 열어주지 않는다
                 // (fail-closed). 기존 마감일 값은 그대로 유지된다.
-                Toast.makeText(this,
+                ToastUtil.makeText(this,
                         "등록일 정보를 확인할 수 없어 마감일을 수정할 수 없습니다. 잠시 후 다시 시도해주세요.",
                         Toast.LENGTH_SHORT).show();
                 return;

@@ -21,6 +21,7 @@ import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageCampaignApplyBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -65,7 +66,7 @@ public class CampaignApplyActivity extends AppCompatActivity {
 
         campaignId = getIntent().getIntExtra(EXTRA_CAMPAIGN_ID, -1);
         if (campaignId == -1) {
-            Toast.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -178,7 +179,7 @@ public class CampaignApplyActivity extends AppCompatActivity {
     private void submitApply() {
         String intro = binding.etApplicantIntro.getText().toString().trim();
         if (intro.isEmpty()) {
-            Toast.makeText(this, "자기소개를 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "자기소개를 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -193,14 +194,14 @@ public class CampaignApplyActivity extends AppCompatActivity {
                                    Response<ApiResponse<ParticipantResponse>> response) {
                 if (response.isSuccessful() && response.body() != null
                         && response.body().isSuccess()) {
-                    Toast.makeText(CampaignApplyActivity.this,
+                    ToastUtil.makeText(CampaignApplyActivity.this,
                             "체험단 신청이 완료되었습니다!", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     finish();
                 } else {
                     String message = response.body() != null
                             ? response.body().getMessage() : "신청에 실패했습니다.";
-                    Toast.makeText(CampaignApplyActivity.this,
+                    ToastUtil.makeText(CampaignApplyActivity.this,
                             message, Toast.LENGTH_SHORT).show();
                     binding.btnSubmitApply.setEnabled(true);
                     binding.btnSubmitApply.setText("신청하기");
@@ -210,7 +211,7 @@ public class CampaignApplyActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<ParticipantResponse>> call, Throwable throwable) {
                 Log.e(TAG, "신청 네트워크 오류: " + throwable.getMessage());
-                Toast.makeText(CampaignApplyActivity.this,
+                ToastUtil.makeText(CampaignApplyActivity.this,
                         "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                 binding.btnSubmitApply.setEnabled(true);
                 binding.btnSubmitApply.setText("신청하기");

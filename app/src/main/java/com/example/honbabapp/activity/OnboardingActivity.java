@@ -27,6 +27,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.ActivityOnboardingBinding;
 import com.example.honbabapp.ui.dialog.LocationSelectionBottomSheetDialog;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
@@ -166,7 +167,7 @@ public class OnboardingActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<AvailabilityData>> call, Throwable t) {
                 Log.e(TAG, "닉네임 중복확인 실패: " + t.getMessage());
-                Toast.makeText(OnboardingActivity.this, "네트워크 오류", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(OnboardingActivity.this, "네트워크 오류", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -242,7 +243,7 @@ public class OnboardingActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<AvailabilityData>> call, Throwable t) {
                 Log.e(TAG, "전화번호 중복확인 실패: " + t.getMessage());
-                Toast.makeText(OnboardingActivity.this, "네트워크 오류", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(OnboardingActivity.this, "네트워크 오류", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -347,38 +348,38 @@ public class OnboardingActivity extends AppCompatActivity {
         // 필수 입력값 검증
         if (needsNickname) {
             if (nickname.isEmpty()) {
-                Toast.makeText(this, "닉네임을 입력해주세요", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(this, "닉네임을 입력해주세요", Toast.LENGTH_SHORT).show();
                 return;
             }
             if (!isNicknameChecked) {
-                Toast.makeText(this, "닉네임 중복확인을 해주세요", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(this, "닉네임 중복확인을 해주세요", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
 
         if (needsPhone) {
             if (phone.isEmpty()) {
-                Toast.makeText(this, "전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(this, "전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
                 return;
             }
             if (!isPhoneChecked) {
-                Toast.makeText(this, "전화번호 중복확인을 해주세요", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(this, "전화번호 중복확인을 해주세요", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
 
         if (needsLocation && selectedLocation == null) {
-            Toast.makeText(this, "활동 지역을 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "활동 지역을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (needsGender && selectedGender == null) {
-            Toast.makeText(this, "성별을 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "성별을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (needsBirthday && selectedBirthday == null) {
-            Toast.makeText(this, "생년월일을 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "생년월일을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -403,18 +404,18 @@ public class OnboardingActivity extends AppCompatActivity {
                     editor.putBoolean(KEY_IS_LOGGED_IN, true);
                     editor.apply();
 
-                    Toast.makeText(OnboardingActivity.this, "환영합니다!", Toast.LENGTH_SHORT).show();
+                    ToastUtil.makeText(OnboardingActivity.this, "환영합니다!", Toast.LENGTH_SHORT).show();
                     goToMainActivity();
                 } else {
                     String message = response.body() != null ? response.body().getMessage() : "처리에 실패했습니다";
-                    Toast.makeText(OnboardingActivity.this, message, Toast.LENGTH_SHORT).show();
+                    ToastUtil.makeText(OnboardingActivity.this, message, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Object>> call, Throwable t) {
                 Log.e(TAG, "온보딩 완료 실패: " + t.getMessage(), t);
-                Toast.makeText(OnboardingActivity.this, "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(OnboardingActivity.this, "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -429,7 +430,7 @@ public class OnboardingActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // 온보딩은 필수 단계이므로 뒤로가기 비활성화 (로그인 화면으로 못 돌아가게)
-        Toast.makeText(this, "추가 정보 입력을 완료해주세요", Toast.LENGTH_SHORT).show();
+        ToastUtil.makeText(this, "추가 정보 입력을 완료해주세요", Toast.LENGTH_SHORT).show();
     }
 
     @Override

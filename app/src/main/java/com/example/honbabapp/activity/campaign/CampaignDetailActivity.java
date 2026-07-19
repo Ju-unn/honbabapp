@@ -28,6 +28,7 @@ import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageCampaignDetailBinding;
 import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.ui.adapter.ParticipantListAdapter;
+import com.example.honbabapp.util.ToastUtil;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.NaverMap;
@@ -104,7 +105,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
 
         campaignId = getIntent().getIntExtra("meeting_id", -1);
         if (campaignId == -1) {
-            Toast.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -133,7 +134,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
                             bindCampaignData();
                             setupApplyButton();
                         } else {
-                            Toast.makeText(CampaignDetailActivity.this,
+                            ToastUtil.makeText(CampaignDetailActivity.this,
                                     "체험단 정보를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -141,7 +142,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ApiResponse<Meeting>> call, Throwable throwable) {
                         Log.e(TAG, "네트워크 오류: " + throwable.getMessage());
-                        Toast.makeText(CampaignDetailActivity.this,
+                        ToastUtil.makeText(CampaignDetailActivity.this,
                                 "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -316,7 +317,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
                                    Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null
                         && response.body().isSuccess()) {
-                    Toast.makeText(CampaignDetailActivity.this,
+                    ToastUtil.makeText(CampaignDetailActivity.this,
                             "체험단이 삭제되었습니다.", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(CampaignDetailActivity.this, MainActivity.class);
                     intent.putExtra("refresh_campaign", true);
@@ -326,14 +327,14 @@ public class CampaignDetailActivity extends AppCompatActivity {
                 } else {
                     String message = response.body() != null
                             ? response.body().getMessage() : "삭제에 실패했습니다.";
-                    Toast.makeText(CampaignDetailActivity.this, message, Toast.LENGTH_SHORT).show();
+                    ToastUtil.makeText(CampaignDetailActivity.this, message, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable throwable) {
                 Log.e(TAG, "삭제 네트워크 오류: " + throwable.getMessage());
-                Toast.makeText(CampaignDetailActivity.this,
+                ToastUtil.makeText(CampaignDetailActivity.this,
                         "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
         });
@@ -362,7 +363,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
                                 navigateToCampaignApply(profile);
                             }
                         } else {
-                            Toast.makeText(CampaignDetailActivity.this,
+                            ToastUtil.makeText(CampaignDetailActivity.this,
                                     "프로필 조회에 실패했습니다.", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -372,7 +373,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
                                           Throwable throwable) {
                         binding.btnApplyCampaign.setEnabled(true);
                         Log.e(TAG, "프로필 조회 오류: " + throwable.getMessage());
-                        Toast.makeText(CampaignDetailActivity.this,
+                        ToastUtil.makeText(CampaignDetailActivity.this,
                                 "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                     }
                 });

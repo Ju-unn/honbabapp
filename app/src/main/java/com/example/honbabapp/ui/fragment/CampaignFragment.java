@@ -28,6 +28,7 @@ import com.example.honbabapp.databinding.FragmentCampaignBinding;
 import com.example.honbabapp.ui.adapter.CampaignListAdapter;
 import com.example.honbabapp.ui.dialog.CampaignFilterBottomSheetDialog;
 import com.example.honbabapp.ui.dialog.CampaignSortBottomSheetDialog;
+import com.example.honbabapp.util.ToastUtil;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -181,7 +182,7 @@ public class CampaignFragment extends Fragment {
                     Log.e(TAG, "API 실패: " + (response.body() != null
                             ? response.body().getMessage() : response.code()));
                     showEmptyState(true);
-                    Toast.makeText(getContext(),
+                    ToastUtil.makeText(getContext(),
                             "체험단 목록을 불러오지 못했습니다.", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -191,7 +192,7 @@ public class CampaignFragment extends Fragment {
                 if (binding == null) return;
                 Log.e(TAG, "네트워크 오류: " + throwable.getMessage());
                 showEmptyState(true);
-                Toast.makeText(getContext(),
+                ToastUtil.makeText(getContext(),
                         "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
         });
@@ -315,7 +316,7 @@ public class CampaignFragment extends Fragment {
                                 new Intent(requireActivity(), TicketPurchaseActivity.class));
                     }
                 } else {
-                    Toast.makeText(getContext(),
+                    ToastUtil.makeText(getContext(),
                             "등록권 확인에 실패했습니다. 잠시 후 다시 시도해주세요",
                             Toast.LENGTH_SHORT).show();
                 }
@@ -325,7 +326,7 @@ public class CampaignFragment extends Fragment {
             public void onFailure(Call<ApiResponse<MyTicketsResponse>> call, Throwable throwable) {
                 if (binding == null) return;
                 Log.e(TAG, "등록권 잔액 확인 네트워크 오류: " + throwable.getMessage());
-                Toast.makeText(getContext(),
+                ToastUtil.makeText(getContext(),
                         "등록권 확인에 실패했습니다. 잠시 후 다시 시도해주세요",
                         Toast.LENGTH_SHORT).show();
             }

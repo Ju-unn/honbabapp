@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import com.example.honbabapp.R;
 import com.example.honbabapp.databinding.BottomsheetCampaignFilterBinding;
 import com.example.honbabapp.util.KoreaRegion;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -168,7 +169,7 @@ public class CampaignFilterBottomSheetDialog extends BottomSheetDialogFragment {
 
         binding.spinnerSigungu.setOnTouchListener((v, event) -> {
             if (selectedSido == null && event.getAction() == MotionEvent.ACTION_UP) {
-                Toast.makeText(requireContext(), "시/도를 먼저 선택해주세요", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(requireContext(), "시/도를 먼저 선택해주세요", Toast.LENGTH_SHORT).show();
                 return true; // 이벤트 소비 → 드롭다운 열리지 않음
             }
             return false; // 정상 동작(드롭다운 열림) 허용

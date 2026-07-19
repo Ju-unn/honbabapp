@@ -20,6 +20,7 @@ import com.example.honbabapp.api.data.response.meeting.ApproveResponse;
 import com.example.honbabapp.databinding.PageMeetingApplicantListBinding;
 import com.example.honbabapp.ui.adapter.ApplicantListAdapter;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,7 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
         meetingTitle = getIntent().getStringExtra("meeting_title");
 
         if (meetingId == -1) {
-            Toast.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -121,13 +122,13 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
                         updateUI(applicants);
                     } else {
                         Log.e(TAG, "API 실패: " + apiResponse.getMessage());
-                        Toast.makeText(MeetingApplicantListActivity.this,
+                        ToastUtil.makeText(MeetingApplicantListActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     Log.e(TAG, "HTTP 오류: " + response.code());
-                    Toast.makeText(MeetingApplicantListActivity.this,
+                    ToastUtil.makeText(MeetingApplicantListActivity.this,
                             "신청자 목록을 불러오는데 실패했습니다.",
                             Toast.LENGTH_SHORT).show();
                 }
@@ -136,7 +137,7 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<ApplicantsResponse>> call, Throwable t) {
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
-                Toast.makeText(MeetingApplicantListActivity.this,
+                ToastUtil.makeText(MeetingApplicantListActivity.this,
                         "네트워크 오류가 발생했습니다.",
                         Toast.LENGTH_SHORT).show();
             }
@@ -221,11 +222,11 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
                             String chatMsg = (roomId != null)
                                     ? "채팅방에 참여자를 추가했습니다"
                                     : "참여를 승인했습니다";
-                            Toast.makeText(MeetingApplicantListActivity.this,
+                            ToastUtil.makeText(MeetingApplicantListActivity.this,
                                     chatMsg, Toast.LENGTH_SHORT).show();
                         } else {
                             // 거절
-                            Toast.makeText(MeetingApplicantListActivity.this,
+                            ToastUtil.makeText(MeetingApplicantListActivity.this,
                                     "참여를 거절했습니다", Toast.LENGTH_SHORT).show();
                         }
 
@@ -233,13 +234,13 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
                         loadApplicants();
                     } else {
                         Log.e(TAG, action + " 실패: " + apiResponse.getMessage());
-                        Toast.makeText(MeetingApplicantListActivity.this,
+                        ToastUtil.makeText(MeetingApplicantListActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     Log.e(TAG, "HTTP 오류: " + response.code());
-                    Toast.makeText(MeetingApplicantListActivity.this,
+                    ToastUtil.makeText(MeetingApplicantListActivity.this,
                             action.equals("approve") ?
                                     "승인에 실패했습니다" : "거절에 실패했습니다",
                             Toast.LENGTH_SHORT).show();
@@ -249,7 +250,7 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<ApproveResponse>> call, Throwable t) {
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
-                Toast.makeText(MeetingApplicantListActivity.this,
+                ToastUtil.makeText(MeetingApplicantListActivity.this,
                         "네트워크 오류가 발생했습니다.",
                         Toast.LENGTH_SHORT).show();
             }

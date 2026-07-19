@@ -26,6 +26,7 @@ import com.example.honbabapp.api.data.request.meeting.UpdateMeetingRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageMeetingCardWritingBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.gms.common.util.IOUtils;
 import com.google.android.material.slider.RangeSlider;
 
@@ -102,7 +103,7 @@ public class MeetingEditActivity extends AppCompatActivity {
 
         meetingId = getIntent().getIntExtra("meeting_id", -1);
         if (meetingId == -1) {
-            Toast.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -229,7 +230,7 @@ public class MeetingEditActivity extends AppCompatActivity {
                             meeting = response.body().getData();
                             prefillForm();
                         } else {
-                            Toast.makeText(MeetingEditActivity.this,
+                            ToastUtil.makeText(MeetingEditActivity.this,
                                     "모임 정보를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show();
                             finish();
                         }
@@ -237,7 +238,7 @@ public class MeetingEditActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Call<ApiResponse<Meeting>> call, Throwable t) {
-                        Toast.makeText(MeetingEditActivity.this,
+                        ToastUtil.makeText(MeetingEditActivity.this,
                                 "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                         finish();
                     }
@@ -427,7 +428,7 @@ public class MeetingEditActivity extends AppCompatActivity {
                                     || (selectedHour == currentHour && selectedMinute <= currentMinute);
 
                             if (isPastTime) {
-                                Toast.makeText(this,
+                                ToastUtil.makeText(this,
                                         "현재 시간 이후를 선택해주세요",
                                         Toast.LENGTH_SHORT).show();
                                 return; // selectedTime 설정 안 함
@@ -505,26 +506,26 @@ public class MeetingEditActivity extends AppCompatActivity {
     private void validateAndUpdate() {
         String title = binding.etMeetingTitle.getText().toString().trim();
         if (title.isEmpty()) {
-            Toast.makeText(this, "모임명을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "모임명을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
         if (title.length() < 5 || title.length() > 30) {
-            Toast.makeText(this, "모임 제목은 5~30자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "모임 제목은 5~30자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String description = binding.etMeetingDescription.getText().toString().trim();
         if (description.isEmpty()) {
-            Toast.makeText(this, "모임 설명을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "모임 설명을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
         if (description.length() < 10 || description.length() > 100) {
-            Toast.makeText(this, "모임 설명은 10~100자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "모임 설명은 10~100자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (selectedDate.isEmpty() || selectedTime.isEmpty()) {
-            Toast.makeText(this, "날짜와 시간을 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "날짜와 시간을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -535,11 +536,11 @@ public class MeetingEditActivity extends AppCompatActivity {
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
             java.util.Date meetingDateTime = sdf.parse(selectedDate + " " + selectedTime);
             if (meetingDateTime == null || !meetingDateTime.after(new java.util.Date())) {
-                Toast.makeText(this, "현재 시간 이후를 선택해주세요", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(this, "현재 시간 이후를 선택해주세요", Toast.LENGTH_SHORT).show();
                 return;
             }
         } catch (ParseException e) {
-            Toast.makeText(this, "날짜와 시간을 다시 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "날짜와 시간을 다시 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -627,7 +628,7 @@ public class MeetingEditActivity extends AppCompatActivity {
     /** 업로드 실패 시 버튼 복구 */
     private void onUploadFailed() {
         runOnUiThread(() -> {
-            Toast.makeText(this, "이미지 업로드에 실패했습니다.", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "이미지 업로드에 실패했습니다.", Toast.LENGTH_SHORT).show();
             binding.btnCreateMeeting.setEnabled(true);
             binding.btnCreateMeeting.setText("모임 수정");
         });
@@ -672,14 +673,14 @@ public class MeetingEditActivity extends AppCompatActivity {
                                    Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null
                         && response.body().isSuccess()) {
-                    Toast.makeText(MeetingEditActivity.this,
+                    ToastUtil.makeText(MeetingEditActivity.this,
                             "모임이 수정되었습니다.", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK); // DetailActivity에 새로고침 신호
                     finish();
                 } else {
                     String msg = response.body() != null
                             ? response.body().getMessage() : "수정에 실패했습니다.";
-                    Toast.makeText(MeetingEditActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    ToastUtil.makeText(MeetingEditActivity.this, msg, Toast.LENGTH_SHORT).show();
                     binding.btnCreateMeeting.setEnabled(true);
                     binding.btnCreateMeeting.setText("모임 수정");
                 }
@@ -688,7 +689,7 @@ public class MeetingEditActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
-                Toast.makeText(MeetingEditActivity.this,
+                ToastUtil.makeText(MeetingEditActivity.this,
                         "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                 binding.btnCreateMeeting.setEnabled(true);
                 binding.btnCreateMeeting.setText("모임 수정");

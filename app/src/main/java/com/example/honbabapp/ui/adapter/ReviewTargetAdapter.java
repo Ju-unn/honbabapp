@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.honbabapp.api.data.review.ReviewTarget;
 import com.example.honbabapp.databinding.RvReviewTargetBinding;
 import com.example.honbabapp.util.ChatGlide;
+import com.example.honbabapp.util.ToastUtil;
 
 import java.util.List;
 
@@ -83,7 +84,7 @@ public class ReviewTargetAdapter extends RecyclerView.Adapter<ReviewTargetAdapte
 
         holder.binding.getRoot().setOnClickListener(view -> {
             if (target.isAlready_reviewed()) {
-                Toast.makeText(view.getContext(), "이미 후기를 작성했습니다", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(view.getContext(), "이미 후기를 작성했습니다", Toast.LENGTH_SHORT).show();
                 return;
             }
             if (listener != null) {

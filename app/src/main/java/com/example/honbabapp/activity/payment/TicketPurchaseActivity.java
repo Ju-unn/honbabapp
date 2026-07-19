@@ -22,6 +22,7 @@ import com.example.honbabapp.api.data.response.payment.ConfirmPaymentResponse;
 import com.example.honbabapp.api.data.response.payment.PreparePaymentResponse;
 import com.example.honbabapp.databinding.PageTicketPurchaseBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.material.card.MaterialCardView;
 import com.tosspayments.paymentsdk.PaymentWidget;
 import com.tosspayments.paymentsdk.model.PaymentCallback;
@@ -144,7 +145,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
 
     private void onNextButtonClicked() {
         if (selectedProductCode == null) {
-            Toast.makeText(this, "구매할 등록권을 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "구매할 등록권을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -173,7 +174,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
                         } else {
                             String message = response.body() != null
                                     ? response.body().getMessage() : "결제 준비에 실패했습니다.";
-                            Toast.makeText(TicketPurchaseActivity.this, message, Toast.LENGTH_SHORT).show();
+                            ToastUtil.makeText(TicketPurchaseActivity.this, message, Toast.LENGTH_SHORT).show();
                             resetNextButton();
                         }
                     }
@@ -181,7 +182,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ApiResponse<PreparePaymentResponse>> call, Throwable throwable) {
                         Log.e(TAG, "결제 준비 네트워크 오류: " + throwable.getMessage());
-                        Toast.makeText(TicketPurchaseActivity.this,
+                        ToastUtil.makeText(TicketPurchaseActivity.this,
                                 "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                         resetNextButton();
                     }
@@ -209,7 +210,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
             @Override
             public void onFail(TossPaymentResult.Fail fail) {
                 Log.w(TAG, "결제 정보 입력 안내: " + fail.getErrorMessage());
-                Toast.makeText(TicketPurchaseActivity.this,
+                ToastUtil.makeText(TicketPurchaseActivity.this,
                         fail.getErrorMessage(), Toast.LENGTH_SHORT).show();
             }
         };
@@ -235,7 +236,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
 
     private void requestTossPayment() {
         if (paymentWidget == null || preparedOrderId == null) {
-            Toast.makeText(this, "결제 정보를 다시 불러와주세요.", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "결제 정보를 다시 불러와주세요.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -255,7 +256,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
                 public void onPaymentFailed(TossPaymentResult.Fail fail) {
                     binding.btnNext.setEnabled(true);
                     if (!"USER_CANCEL".equals(fail.getErrorCode())) {
-                        Toast.makeText(TicketPurchaseActivity.this,
+                        ToastUtil.makeText(TicketPurchaseActivity.this,
                                 fail.getErrorMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -263,7 +264,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
         } catch (IllegalAccessException illegalAccessException) {
 
             Log.e(TAG, "결제위젯 미렌더링 상태에서 결제 요청됨: " + illegalAccessException.getMessage());
-            Toast.makeText(this, "결제 화면을 다시 불러와주세요.", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "결제 화면을 다시 불러와주세요.", Toast.LENGTH_SHORT).show();
             binding.btnNext.setEnabled(true);
         }
     }
@@ -298,7 +299,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
                                 && response.body().getData() != null) {
 
                             int purchasedTicketCount = response.body().getData().getTicket_count();
-                            Toast.makeText(TicketPurchaseActivity.this,
+                            ToastUtil.makeText(TicketPurchaseActivity.this,
                                     "등록권 " + purchasedTicketCount + "개가 충전되었습니다!",
                                     Toast.LENGTH_SHORT).show();
 
@@ -308,7 +309,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
                         } else {
                             String message = response.body() != null
                                     ? response.body().getMessage() : "결제 승인에 실패했습니다.";
-                            Toast.makeText(TicketPurchaseActivity.this, message, Toast.LENGTH_SHORT).show();
+                            ToastUtil.makeText(TicketPurchaseActivity.this, message, Toast.LENGTH_SHORT).show();
                             showRetryConfirmButton();
                         }
                     }
@@ -316,7 +317,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ApiResponse<ConfirmPaymentResponse>> call, Throwable throwable) {
                         Log.e(TAG, "결제 승인 네트워크 오류: " + throwable.getMessage());
-                        Toast.makeText(TicketPurchaseActivity.this,
+                        ToastUtil.makeText(TicketPurchaseActivity.this,
                                 "네트워크 오류로 결제 승인에 실패했습니다. 다시 시도해주세요.",
                                 Toast.LENGTH_SHORT).show();
                         showRetryConfirmButton();
@@ -331,7 +332,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
 
     private void retryConfirmPayment() {
         if (lastPaymentKey == null || lastConfirmOrderId == null) {
-            Toast.makeText(this, "재시도할 결제 정보가 없습니다.", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "재시도할 결제 정보가 없습니다.", Toast.LENGTH_SHORT).show();
             return;
         }
         binding.btnRetryConfirm.setEnabled(false);

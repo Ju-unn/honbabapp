@@ -23,6 +23,7 @@ import com.example.honbabapp.api.data.request.meeting.QrGenerateRequest;
 import com.example.honbabapp.api.data.request.meeting.QrScanRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.DialogMeetingQrBinding;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -140,7 +141,7 @@ public class MeetingQrHelper {
 
     public void onQrButtonClicked() {
         if (cachedQrStatus == null) {
-            Toast.makeText(activity, "잠시 후 다시 시도해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(activity, "잠시 후 다시 시도해주세요", Toast.LENGTH_SHORT).show();
             loadQrStatus();
             return;
         }
@@ -161,7 +162,7 @@ public class MeetingQrHelper {
 
         switch (state) {
             case "before_window":
-                Toast.makeText(activity,
+                ToastUtil.makeText(activity,
                         "모임 24시간 전부터 QR을 생성할 수 있습니다",
                         Toast.LENGTH_LONG).show();
                 break;
@@ -179,11 +180,11 @@ public class MeetingQrHelper {
                 break;
 
             case "expired":
-                Toast.makeText(activity, "종료된 모임입니다", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(activity, "종료된 모임입니다", Toast.LENGTH_SHORT).show();
                 break;
 
             default:
-                Toast.makeText(activity, "알 수 없는 상태입니다", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(activity, "알 수 없는 상태입니다", Toast.LENGTH_SHORT).show();
                 break;
         }
     }
@@ -216,13 +217,13 @@ public class MeetingQrHelper {
                             String errorMessage = (response.body() != null)
                                     ? response.body().getMessage()
                                     : "QR 생성에 실패했습니다";
-                            Toast.makeText(activity, errorMessage, Toast.LENGTH_LONG).show();
+                            ToastUtil.makeText(activity, errorMessage, Toast.LENGTH_LONG).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ApiResponse<QrCodeData>> call, Throwable throwable) {
-                        Toast.makeText(activity,
+                        ToastUtil.makeText(activity,
                                 "네트워크 오류: " + throwable.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
@@ -232,7 +233,7 @@ public class MeetingQrHelper {
     private void showQrDialog(String codeToken, String expiresAt, boolean isNewlyCreated) {
         Bitmap qrBitmap = generateQrBitmap(codeToken);
         if (qrBitmap == null) {
-            Toast.makeText(activity, "QR 이미지 생성에 실패했습니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(activity, "QR 이미지 생성에 실패했습니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -324,11 +325,11 @@ public class MeetingQrHelper {
     private void requestCurrentLocationAndSubmit() {
         if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(activity, "위치 권한이 필요합니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(activity, "위치 권한이 필요합니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Toast.makeText(activity, "위치를 확인하는 중...", Toast.LENGTH_SHORT).show();
+        ToastUtil.makeText(activity, "위치를 확인하는 중...", Toast.LENGTH_SHORT).show();
 
         LocationRequest locationRequest = new LocationRequest.Builder(
                 Priority.PRIORITY_HIGH_ACCURACY, 5000)
@@ -344,7 +345,7 @@ public class MeetingQrHelper {
 
                         if (locationResult.getLastLocation() == null) {
                             activity.runOnUiThread(() ->
-                                    Toast.makeText(activity,
+                                    ToastUtil.makeText(activity,
                                             "위치를 가져올 수 없습니다. 다시 시도해주세요",
                                             Toast.LENGTH_SHORT).show()
                             );
@@ -382,7 +383,7 @@ public class MeetingQrHelper {
                                     ? response.body().getMessage()
                                     : "출석 인증에 실패했습니다";
                             activity.runOnUiThread(() ->
-                                    Toast.makeText(activity, errorMessage, Toast.LENGTH_LONG).show()
+                                    ToastUtil.makeText(activity, errorMessage, Toast.LENGTH_LONG).show()
                             );
                         }
                     }
@@ -390,7 +391,7 @@ public class MeetingQrHelper {
                     @Override
                     public void onFailure(Call<ApiResponse<QrScanResultData>> call, Throwable throwable) {
                         activity.runOnUiThread(() ->
-                                Toast.makeText(activity,
+                                ToastUtil.makeText(activity,
                                         "네트워크 오류: " + throwable.getMessage(),
                                         Toast.LENGTH_SHORT).show()
                         );

@@ -16,6 +16,7 @@ import com.example.honbabapp.api.data.request.FindEmailRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.ActivityFindEmailBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -57,7 +58,7 @@ public class FindEmailActivity extends AppCompatActivity {
         String phoneNumber = binding.etPhone.getText().toString().trim();
 
         if (phoneNumber.isEmpty()) {
-            Toast.makeText(this, "휴대폰 번호를 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "휴대폰 번호를 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -82,7 +83,7 @@ public class FindEmailActivity extends AppCompatActivity {
                     binding.layoutResult.setVisibility(View.GONE);
                     String message = response.body() != null
                             ? response.body().getMessage() : "아이디 찾기에 실패했습니다";
-                    Toast.makeText(FindEmailActivity.this, message, Toast.LENGTH_SHORT).show();
+                    ToastUtil.makeText(FindEmailActivity.this, message, Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -91,7 +92,7 @@ public class FindEmailActivity extends AppCompatActivity {
                 if (binding == null) return;
                 binding.btnFindEmail.setEnabled(true);
                 Log.e(TAG, "아이디 찾기 네트워크 오류: " + t.getMessage());
-                Toast.makeText(FindEmailActivity.this,
+                ToastUtil.makeText(FindEmailActivity.this,
                         "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
             }
         });

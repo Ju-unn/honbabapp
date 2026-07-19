@@ -19,6 +19,7 @@ import com.example.honbabapp.api.data.response.naver.NaverLocalSearchResponse;
 import com.example.honbabapp.databinding.ActivityPlaceSearchBinding;
 import com.example.honbabapp.ui.adapter.PlaceSearchAdapter;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -124,7 +125,7 @@ public class PlaceSearchActivity extends AppCompatActivity {
         String query = binding.etSearch.getText().toString().trim();
 
         if (query.isEmpty()) {
-            Toast.makeText(this, "검색어를 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "검색어를 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -170,7 +171,7 @@ public class PlaceSearchActivity extends AppCompatActivity {
                 }  else {
                     Log.e(TAG, "API 오류: " + response.code());
                     showEmptyState("검색에 실패했습니다");
-                    Toast.makeText(PlaceSearchActivity.this,
+                    ToastUtil.makeText(PlaceSearchActivity.this,
                             "검색에 실패했습니다",
                             Toast.LENGTH_SHORT).show();
                 }
@@ -181,7 +182,7 @@ public class PlaceSearchActivity extends AppCompatActivity {
                 binding.progressBar.setVisibility(View.GONE);
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
                 showEmptyState("네트워크 오류가 발생했습니다");
-                Toast.makeText(PlaceSearchActivity.this,
+                ToastUtil.makeText(PlaceSearchActivity.this,
                         "네트워크 오류가 발생했습니다",
                         Toast.LENGTH_SHORT).show();
             }

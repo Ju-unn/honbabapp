@@ -15,6 +15,7 @@ import com.example.honbabapp.api.data.request.SendPasswordResetRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.ActivityForgotPasswordBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -59,7 +60,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         String email = binding.etEmail.getText().toString().trim();
 
         if (email.isEmpty()) {
-            Toast.makeText(this, "이메일을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "이메일을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -77,7 +78,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                         && response.body() != null
                         && response.body().isSuccess()) {
 
-                    Toast.makeText(ForgotPasswordActivity.this,
+                    ToastUtil.makeText(ForgotPasswordActivity.this,
                             "인증 코드가 발송되었습니다\n메일함을 확인해주세요",
                             Toast.LENGTH_LONG).show();
 
@@ -88,7 +89,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 } else {
                     String message = response.body() != null
                             ? response.body().getMessage() : "인증코드 발송에 실패했습니다";
-                    Toast.makeText(ForgotPasswordActivity.this, message, Toast.LENGTH_SHORT).show();
+                    ToastUtil.makeText(ForgotPasswordActivity.this, message, Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -97,7 +98,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 if (binding == null) return;
                 binding.btnSendCode.setEnabled(true);
                 Log.e(TAG, "인증코드 발송 네트워크 오류: " + t.getMessage());
-                Toast.makeText(ForgotPasswordActivity.this,
+                ToastUtil.makeText(ForgotPasswordActivity.this,
                         "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
             }
         });
@@ -111,7 +112,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         String code = binding.etCode.getText().toString().trim();
 
         if (code.isEmpty()) {
-            Toast.makeText(this, "인증코드를 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "인증코드를 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -128,7 +129,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                         && response.body() != null
                         && response.body().isSuccess()) {
 
-                    Toast.makeText(ForgotPasswordActivity.this,
+                    ToastUtil.makeText(ForgotPasswordActivity.this,
                             "임시 비밀번호가 이메일로 발송되었습니다\n로그인 후 비밀번호를 변경해주세요",
                             Toast.LENGTH_LONG).show();
                     finish();
@@ -136,7 +137,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                     binding.btnResetPassword.setEnabled(true);
                     String message = response.body() != null
                             ? response.body().getMessage() : "임시 비밀번호 발급에 실패했습니다";
-                    Toast.makeText(ForgotPasswordActivity.this, message, Toast.LENGTH_SHORT).show();
+                    ToastUtil.makeText(ForgotPasswordActivity.this, message, Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -145,7 +146,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 if (binding == null) return;
                 binding.btnResetPassword.setEnabled(true);
                 Log.e(TAG, "임시 비밀번호 발급 네트워크 오류: " + t.getMessage());
-                Toast.makeText(ForgotPasswordActivity.this,
+                ToastUtil.makeText(ForgotPasswordActivity.this,
                         "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
             }
         });

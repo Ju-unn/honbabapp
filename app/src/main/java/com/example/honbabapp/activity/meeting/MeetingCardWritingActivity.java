@@ -29,6 +29,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.MeetingCreateResponse;
 import com.example.honbabapp.databinding.PageMeetingCardWritingBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.material.slider.RangeSlider;
 
 import java.io.File;
@@ -278,7 +279,7 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
                                     || (hour == currentHour && minute <= currentMinute);
 
                             if (isPastTime) {
-                                Toast.makeText(this,
+                                ToastUtil.makeText(this,
                                         "현재 시간 이후를 선택해주세요",
                                         Toast.LENGTH_SHORT).show();
                                 return; // selectedTime 설정 안 함
@@ -358,36 +359,36 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
     private void validateAndCreateMeeting() {
         String title = binding.etMeetingTitle.getText().toString().trim();
         if (title.isEmpty()) {
-            Toast.makeText(this, "모임명을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "모임명을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
         if (title.length() < 5 || title.length() > 30) {
-            Toast.makeText(this, "모임 제목은 5~30자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "모임 제목은 5~30자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String description = binding.etMeetingDescription.getText().toString().trim();
         if (description.isEmpty()) {
-            Toast.makeText(this, "모임 설명을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "모임 설명을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
         if (description.length() < 10 || description.length() > 100) {
-            Toast.makeText(this, "모임 설명은 10~100자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "모임 설명은 10~100자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (selectedDate.isEmpty()) {
-            Toast.makeText(this, "날짜를 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "날짜를 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (selectedTime.isEmpty()) {
-            Toast.makeText(this, "시간을 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "시간을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (selectedPlaceName.isEmpty()) {
-            Toast.makeText(this, "장소를 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "장소를 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -479,7 +480,7 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
 
     private void onUploadFailed() {
         runOnUiThread(() -> {
-            Toast.makeText(this, "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
+            ToastUtil.makeText(this, "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
                     Toast.LENGTH_SHORT).show();
             resetCreateButton();
         });
@@ -514,7 +515,7 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
                         int meetingId = apiResponse.getData().getMeeting_id();
                         Log.i(TAG, "모임 생성 성공: meeting_id=" + meetingId);
 
-                        Toast.makeText(MeetingCardWritingActivity.this,
+                        ToastUtil.makeText(MeetingCardWritingActivity.this,
                                 "모임이 생성되었습니다!", Toast.LENGTH_SHORT).show();
 
                         Intent intent = new Intent(MeetingCardWritingActivity.this, MainActivity.class);
@@ -525,12 +526,12 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
                         startActivity(intent);
                         finish();
                     } else {
-                        Toast.makeText(MeetingCardWritingActivity.this,
+                        ToastUtil.makeText(MeetingCardWritingActivity.this,
                                 apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
                         resetCreateButton();
                     }
                 } else {
-                    Toast.makeText(MeetingCardWritingActivity.this,
+                    ToastUtil.makeText(MeetingCardWritingActivity.this,
                             "생성에 실패했습니다.", Toast.LENGTH_SHORT).show();
                     resetCreateButton();
                 }
@@ -539,7 +540,7 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<MeetingCreateResponse>> call, Throwable throwable) {
                 Log.e(TAG, "네트워크 오류: " + throwable.getMessage());
-                Toast.makeText(MeetingCardWritingActivity.this,
+                ToastUtil.makeText(MeetingCardWritingActivity.this,
                         "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                 resetCreateButton();
             }

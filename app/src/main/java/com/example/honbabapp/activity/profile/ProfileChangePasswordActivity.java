@@ -19,6 +19,7 @@ import com.example.honbabapp.api.data.request.user.CheckCurrentPasswordRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageProfileChangePasswordBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -182,7 +183,7 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
         String confirmPw = binding.etConfirmPassword.getText().toString().trim();
 
         if (currentPw.equals(newPw)) {
-            Toast.makeText(this, "현재 비밀번호와 동일 합니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "현재 비밀번호와 동일 합니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -193,7 +194,7 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
 
         // 현재 비밀번호 검증 완료 여부 체크
         if (!isCurrentPasswordVerified) {
-            Toast.makeText(this, "현재 비밀번호를 먼저 확인해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "현재 비밀번호를 먼저 확인해주세요", Toast.LENGTH_SHORT).show();
             binding.etCurrentPassword.requestFocus(); // 현재 비밀번호 칸으로 포커스 이동
             return;
         }
@@ -217,7 +218,7 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
                     public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                         binding.btnChangePassword.setEnabled(true);
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            Toast.makeText(ProfileChangePasswordActivity.this, "비밀번호가 변경되었습니다", Toast.LENGTH_SHORT).show();
+                            ToastUtil.makeText(ProfileChangePasswordActivity.this, "비밀번호가 변경되었습니다", Toast.LENGTH_SHORT).show();
                             finish();
                         } else {
                             // 현재 비밀번호 틀림 등 서버 에러 메시지 표시
@@ -231,7 +232,7 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
                     public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                         binding.btnChangePassword.setEnabled(true);
                         Log.e(TAG, "비밀번호 변경 실패: " + t.getMessage());
-                        Toast.makeText(ProfileChangePasswordActivity.this,
+                        ToastUtil.makeText(ProfileChangePasswordActivity.this,
                                 "네트워크 오류", Toast.LENGTH_SHORT).show();
                     }
                 });

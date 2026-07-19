@@ -18,6 +18,7 @@ import com.example.honbabapp.api.data.request.user.DeleteAccountRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageProfileDeleteAccountBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -99,7 +100,7 @@ public class ProfileDeleteAccountActivity extends AppCompatActivity {
                                     .clear()
                                     .apply();
 
-                            Toast.makeText(ProfileDeleteAccountActivity.this,
+                            ToastUtil.makeText(ProfileDeleteAccountActivity.this,
                                     "계정이 삭제되었습니다", Toast.LENGTH_SHORT).show();
 
                             // LoginActivity로 이동 모든 스택 클리어
@@ -110,7 +111,7 @@ public class ProfileDeleteAccountActivity extends AppCompatActivity {
                             binding.btnDeleteAccount.setEnabled(true);
                             String msg = response.body() != null
                                     ? response.body().getMessage() : "탈퇴 실패";
-                            Toast.makeText(ProfileDeleteAccountActivity.this,
+                            ToastUtil.makeText(ProfileDeleteAccountActivity.this,
                                     msg, Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -119,7 +120,7 @@ public class ProfileDeleteAccountActivity extends AppCompatActivity {
                     public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                         binding.btnDeleteAccount.setEnabled(true);
                         Log.e(TAG, "탈퇴 실패: " + t.getMessage());
-                        Toast.makeText(ProfileDeleteAccountActivity.this,
+                        ToastUtil.makeText(ProfileDeleteAccountActivity.this,
                                 "네트워크 오류", Toast.LENGTH_SHORT).show();
                     }
                 });

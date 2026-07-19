@@ -35,6 +35,7 @@ import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.ui.adapter.ChatParticipantAdapter;
 import com.example.honbabapp.ui.adapter.ChatPhotoPreviewAdapter;
 import com.example.honbabapp.ui.dialog.ChatParticipantActionBottomSheetDialog;
+import com.example.honbabapp.util.ToastUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
         meetingId = getIntent().getIntExtra("meeting_id", -1);
 
         if (roomId == -1) {
-            Toast.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -429,7 +430,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
             // 1:1 방은 멤버 2명, 본인 제외하면 상대방
             // (참가자 리스트가 비어있으므로 별도 API 또는 ChatRoomData 전달 필요)
             if (otherUserId == -1) {
-                Toast.makeText(this, "상대방 정보를 불러올 수 없습니다", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(this, "상대방 정보를 불러올 수 없습니다", Toast.LENGTH_SHORT).show();
                 return;
             }
             Intent intent = new Intent(this, ChatRoomParticipantDetailActivity.class);
@@ -559,7 +560,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                                         "채팅방을 나갔습니다. (매너점수 -%.1f)",
                                         data.getPenalty_applied());
                             }
-                            Toast.makeText(ChatRoomDetailActivity.this, msg, Toast.LENGTH_SHORT).show();
+                            ToastUtil.makeText(ChatRoomDetailActivity.this, msg, Toast.LENGTH_SHORT).show();
 
                             // ChatRoomActivity 로 결과 전달 → 그쪽도 finish 하도록
                             Intent result = new Intent();
@@ -571,7 +572,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                             String errMsg = (response.body() != null)
                                     ? response.body().getMessage()
                                     : "나가기에 실패했습니다";
-                            Toast.makeText(ChatRoomDetailActivity.this, errMsg, Toast.LENGTH_SHORT).show();
+                            ToastUtil.makeText(ChatRoomDetailActivity.this, errMsg, Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -579,7 +580,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                     public void onFailure(@NonNull Call<ApiResponse<LeaveRoomResponse>> call,
                                           @NonNull Throwable t) {
                         Log.e(TAG, "leaveRoom 네트워크 오류: " + t.getMessage());
-                        Toast.makeText(ChatRoomDetailActivity.this,
+                        ToastUtil.makeText(ChatRoomDetailActivity.this,
                                 "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -633,7 +634,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                                 && response.body() != null
                                 && response.body().isSuccess()) {
 
-                            Toast.makeText(ChatRoomDetailActivity.this,
+                            ToastUtil.makeText(ChatRoomDetailActivity.this,
                                     participant.getUser_nickname() + "님을 강퇴했습니다.",
                                     Toast.LENGTH_SHORT).show();
 
@@ -644,7 +645,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                             String errMsg = (response.body() != null)
                                     ? response.body().getMessage()
                                     : "강퇴에 실패했습니다";
-                            Toast.makeText(ChatRoomDetailActivity.this,
+                            ToastUtil.makeText(ChatRoomDetailActivity.this,
                                     errMsg, Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -653,7 +654,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                     public void onFailure(@NonNull Call<ApiResponse<KickMemberResponse>> call,
                                           @NonNull Throwable t) {
                         Log.e(TAG, "kickMember 네트워크 오류: " + t.getMessage());
-                        Toast.makeText(ChatRoomDetailActivity.this,
+                        ToastUtil.makeText(ChatRoomDetailActivity.this,
                                 "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
                     }
                 });

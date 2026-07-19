@@ -47,6 +47,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.naver.NaverReverseGeoResponse;
 import com.example.honbabapp.databinding.PageRegisterBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
@@ -165,9 +166,9 @@ public class RegisterActivity extends AppCompatActivity {
                         boolean showRationale = shouldShowRequestPermissionRationale(
                                 Manifest.permission.ACCESS_FINE_LOCATION);
                         if (!showRationale) {
-                            Toast.makeText(this, "설정에서 위치 권한을 허용해주세요.", Toast.LENGTH_LONG).show();
+                            ToastUtil.makeText(this, "설정에서 위치 권한을 허용해주세요.", Toast.LENGTH_LONG).show();
                         } else {
-                            Toast.makeText(this, "위치 권한을 허용해주세요.\n다시 클릭해서 진행해 주세요.", Toast.LENGTH_LONG).show();
+                            ToastUtil.makeText(this, "위치 권한을 허용해주세요.\n다시 클릭해서 진행해 주세요.", Toast.LENGTH_LONG).show();
                         }
                     }
                 }
@@ -296,14 +297,14 @@ public class RegisterActivity extends AppCompatActivity {
                         fetchAddressFromCoords(location.getLongitude(), location.getLatitude());
                     } else {
                         registerBinding.tvSelectedLocation.setText("위치를 가져오지 못했습니다");
-                        Toast.makeText(this,
+                        ToastUtil.makeText(this,
                                 "위치를 가져오지 못했습니다. 다시 시도해주세요.",
                                 Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
                     registerBinding.tvSelectedLocation.setText("위치를 가져오지 못했습니다");
-                    Toast.makeText(this, "위치를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+                    ToastUtil.makeText(this, "위치를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -330,16 +331,16 @@ public class RegisterActivity extends AppCompatActivity {
                     if (address != null && !address.isEmpty()) {
                         selectedLocation = address;
                         registerBinding.tvSelectedLocation.setText(address);
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 "동네 설정 완료: " + address, Toast.LENGTH_SHORT).show();
                     } else {
                         registerBinding.tvSelectedLocation.setText("주소를 가져오지 못했습니다");
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 "위치를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     registerBinding.tvSelectedLocation.setText("주소를 가져오지 못했습니다");
-                    Toast.makeText(RegisterActivity.this,
+                    ToastUtil.makeText(RegisterActivity.this,
                             "위치를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -348,7 +349,7 @@ public class RegisterActivity extends AppCompatActivity {
             public void onFailure(Call<NaverReverseGeoResponse> call, Throwable t) {
                 Log.e(TAG, "API 실패: " + t.getMessage());
                 registerBinding.tvSelectedLocation.setText("네트워크 오류");
-                Toast.makeText(RegisterActivity.this,
+                ToastUtil.makeText(RegisterActivity.this,
                         "위치를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
             }
         });
@@ -375,7 +376,7 @@ public class RegisterActivity extends AppCompatActivity {
                    registerBinding.ivProfilePreview.setImageBitmap(bitmap);
                    selectedProfileBitmap = bitmap;
 
-                   Toast.makeText(RegisterActivity.this,
+                   ToastUtil.makeText(RegisterActivity.this,
                            "이미지가 선택되었습니다",
                            Toast.LENGTH_SHORT).show();
 
@@ -510,12 +511,12 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 이메일 형식 검증
         if (email.isEmpty()) {
-            Toast.makeText(this, "이메일을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "이메일을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "올바른 이메일 형식이 아닙니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "올바른 이메일 형식이 아닙니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -551,14 +552,14 @@ public class RegisterActivity extends AppCompatActivity {
                             // 복원 다이얼로그로 숨겼던 필드가 있으면 복구
                             registerBinding.layoutBirthday.setVisibility(View.VISIBLE);
                             registerBinding.layoutGender.setVisibility(View.VISIBLE);
-                            Toast.makeText(RegisterActivity.this,
+                            ToastUtil.makeText(RegisterActivity.this,
                                     "사용 가능한 이메일입니다",
                                     Toast.LENGTH_SHORT).show();
                         }
                         isEmailChecked = true;
                         registerBinding.btnSendVerification.setText("코드 전송");
                     } else {
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
@@ -568,7 +569,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<AvailabilityData>> call, Throwable t) {
                 isSendVerificationRequesting = false;
-                Toast.makeText(RegisterActivity.this,
+                ToastUtil.makeText(RegisterActivity.this,
                         "네트워크 오류: " + t.getMessage(),
                         Toast.LENGTH_SHORT).show();
             }
@@ -594,7 +595,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                         // 인증코드는 이메일로 발송됨 (응답에 포함되지 않음)
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 "인증 코드가 발송되었습니다\n메일함을 확인해주세요",
                                 Toast.LENGTH_LONG).show();
 
@@ -602,7 +603,7 @@ public class RegisterActivity extends AppCompatActivity {
                         registerBinding.etVerificationCode.setEnabled(true);
                         registerBinding.btnVerifyCode.setEnabled(true);
                     } else {
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
@@ -613,7 +614,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<VerificationData>> call, Throwable t) {
                 isSendVerificationRequesting = false;
-                Toast.makeText(RegisterActivity.this,
+                ToastUtil.makeText(RegisterActivity.this,
                         "네트워크 오류: " + t.getMessage(),
                         Toast.LENGTH_SHORT).show();
             }
@@ -640,7 +641,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                     if (apiResponse.isSuccess() && apiResponse.getData() != null
                             && apiResponse.getData().isVerified()) {
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 "이메일 인증이 완료되었습니다",
                                 Toast.LENGTH_SHORT).show();
 
@@ -648,7 +649,7 @@ public class RegisterActivity extends AppCompatActivity {
                         registerBinding.etVerificationCode.setEnabled(false);
                         registerBinding.btnVerifyCode.setEnabled(false);
                     } else {
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
@@ -658,7 +659,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<VerifiedData>> call, Throwable t) {
                 isVerifyCodeRequesting = false;
-                Toast.makeText(RegisterActivity.this,
+                ToastUtil.makeText(RegisterActivity.this,
                         "네트워크 오류: " + t.getMessage(),
                         Toast.LENGTH_SHORT).show();
             }
@@ -752,10 +753,10 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 비밀번호 일치 여부만 확인
         if (password.equals(passwordConfirm)) {
-            Toast.makeText(this, "비밀번호가 일치합니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "비밀번호가 일치합니다", Toast.LENGTH_SHORT).show();
             isPasswordConfirmed = true;
         } else {
-            Toast.makeText(this, "비밀번호가 일치하지 않습니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "비밀번호가 일치하지 않습니다", Toast.LENGTH_SHORT).show();
             isPasswordConfirmed = false;
         }
     }
@@ -775,13 +776,13 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 1. 전화번호 입력 확인
         if (phone.isEmpty()) {
-            Toast.makeText(this, "전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // 2. 전화번호 형식 검증 (010-1234-5678)
         if (!phone.matches("^010-\\d{4}-\\d{4}$")) {
-            Toast.makeText(this, "올바른 전화번호 형식이 아닙니다 (010-1234-5678)", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "올바른 전화번호 형식이 아닙니다 (010-1234-5678)", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -805,10 +806,10 @@ public class RegisterActivity extends AppCompatActivity {
                             // 여기서 건드리면 "복원 이메일 확인 → 새 전화번호 확인" 순서일 때
                             // isRestored가 false로 덮여 숨겨진 생년월일 입력을 요구하게 됨
                             isPhoneChecked = true;
-                            Toast.makeText(RegisterActivity.this, apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                            ToastUtil.makeText(RegisterActivity.this, apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
                         } else {
                             // 이미 사용중인 전화번호
-                            Toast.makeText(RegisterActivity.this,
+                            ToastUtil.makeText(RegisterActivity.this,
                                     apiResponse.getMessage(), // "이미 가입된 전화번호입니다"
                                     Toast.LENGTH_SHORT).show();
                             isPhoneChecked = false;
@@ -816,7 +817,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                     } else {
                         // API 처리 실패
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                         isPhoneChecked = false;
@@ -824,7 +825,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                 } else {
                     // 서버 응답 실패
-                    Toast.makeText(RegisterActivity.this,
+                    ToastUtil.makeText(RegisterActivity.this,
                             "서버 응답 오류: " + response.code(),
                             Toast.LENGTH_SHORT).show();
                     isPhoneChecked = false;
@@ -833,7 +834,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse<AvailabilityData>> call, Throwable t) {
-                Toast.makeText(RegisterActivity.this,
+                ToastUtil.makeText(RegisterActivity.this,
                         "네트워크 오류: " + t.getMessage(),
                         Toast.LENGTH_SHORT).show();
                 isPhoneChecked = false;
@@ -906,7 +907,7 @@ public class RegisterActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ApiResponse<AvailabilityData>> call, Throwable t) {
                         Log.e(TAG, "닉네임 중복확인 실패: " + t.getMessage());
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 "네트워크 오류", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -932,23 +933,23 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 모든 검증 완료 확인
         if (!isEmailVerified) {
-            Toast.makeText(this, "이메일 인증이 필요합니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "이메일 인증이 필요합니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!isPasswordConfirmed) {
-            Toast.makeText(this, "비밀번호 확인이 필요합니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "비밀번호 확인이 필요합니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!isNicknameChecked) {
-            Toast.makeText(this, "닉네임 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "닉네임 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // 전화번호 중복확인 체크
         if (!isPhoneChecked) {
-            Toast.makeText(this, "전화번호 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "전화번호 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -962,39 +963,39 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 필수 입력 확인
         if (nickname.isEmpty()) {
-            Toast.makeText(this, "닉네임을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "닉네임을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (email.isEmpty()) {
-            Toast.makeText(this, "이메일을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "이메일을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (password.isEmpty()) {
-            Toast.makeText(this, "비밀번호를 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "비밀번호를 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (phoneNumber.isEmpty()) {
-            Toast.makeText(this, "전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (location.isEmpty()) {
-            Toast.makeText(this, "활동 지역을 설정해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "활동 지역을 설정해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!isRestored) {
             // birthday 검증
             if (birthday == null || birthday.isEmpty()) {
-                Toast.makeText(this, "생년월일을 입력해주세요", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(this, "생년월일을 입력해주세요", Toast.LENGTH_SHORT).show();
                 return;
             }
             // gender 검증
             if (selectedGender == null) {
-                Toast.makeText(this, "성별을 선택해주세요", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(this, "성별을 선택해주세요", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
@@ -1004,7 +1005,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 프로필 이미지가 있으면 먼저 업로드!
         if (selectedProfileBitmap != null && uploadedImageUrl == null) {
-            Toast.makeText(this, "프로필 이미지 업로드 중...", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "프로필 이미지 업로드 중...", Toast.LENGTH_SHORT).show();
             uploadProfileImageThenRegister(nickname, email, password, phoneNumber, birthday, location);
         } else {
             // 이미지 없거나 이미 업로드됨 → 바로 회원가입
@@ -1078,13 +1079,13 @@ public class RegisterActivity extends AppCompatActivity {
                             registerWithData(nickname, email, password, phoneNumber, birthday, location, uploadedImageUrl);
 
                         } else {
-                            Toast.makeText(RegisterActivity.this,
+                            ToastUtil.makeText(RegisterActivity.this,
                                     "이미지 업로드 실패: " + apiResponse.getMessage(),
                                     Toast.LENGTH_SHORT).show();
                             finishRegisterSubmission();
                         }
                     } else {
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 "이미지 업로드 실패: " + response.code(),
                                 Toast.LENGTH_SHORT).show();
                         finishRegisterSubmission();
@@ -1095,7 +1096,7 @@ public class RegisterActivity extends AppCompatActivity {
                 public void onFailure(Call<ApiResponse<ImageUploadData>> call, Throwable t) {
                     isImageUploading = false;
                     Log.e(TAG, "이미지 업로드 오류: " + t.getMessage());
-                    Toast.makeText(RegisterActivity.this,
+                    ToastUtil.makeText(RegisterActivity.this,
                             "네트워크 오류: " + t.getMessage(),
                             Toast.LENGTH_LONG).show();
                     finishRegisterSubmission();
@@ -1105,7 +1106,7 @@ public class RegisterActivity extends AppCompatActivity {
         } catch (IOException e) {
             isImageUploading = false;
             Log.e(TAG, "파일 변환 오류: " + e.getMessage());
-            Toast.makeText(this, "이미지 처리 오류", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "이미지 처리 오류", Toast.LENGTH_SHORT).show();
             finishRegisterSubmission();
         }
     }
@@ -1141,20 +1142,20 @@ public class RegisterActivity extends AppCompatActivity {
                     ApiResponse<Void> apiResponse = response.body();
 
                     if (apiResponse.isSuccess()) {
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 "회원가입이 완료되었습니다!",
                                 Toast.LENGTH_SHORT).show();
 
                         // LoginActivity로 돌아가기
                         finish();
                     } else {
-                        Toast.makeText(RegisterActivity.this,
+                        ToastUtil.makeText(RegisterActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                         finishRegisterSubmission();
                     }
                 } else {
-                    Toast.makeText(RegisterActivity.this,
+                    ToastUtil.makeText(RegisterActivity.this,
                             "서버 응답 오류: " + response.code(),
                             Toast.LENGTH_SHORT).show();
                     finishRegisterSubmission();
@@ -1164,7 +1165,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 Log.e(TAG, "회원가입 실패: " + t.getMessage());
-                Toast.makeText(RegisterActivity.this,
+                ToastUtil.makeText(RegisterActivity.this,
                         "네트워크 오류: " + t.getMessage(),
                         Toast.LENGTH_LONG).show();
                 finishRegisterSubmission();

@@ -28,6 +28,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.user.OnboardingStatusResponse;
 import com.example.honbabapp.databinding.ActivityLoginBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -247,7 +248,7 @@ public class LoginActivity extends AppCompatActivity {
 
                         Log.e(TAG, "구글 로그인 실패", e);
                         runOnUiThread(() ->
-                                Toast.makeText(LoginActivity.this, "구글 로그인에 실패했습니다", Toast.LENGTH_SHORT).show()
+                                ToastUtil.makeText(LoginActivity.this, "구글 로그인에 실패했습니다", Toast.LENGTH_SHORT).show()
                         );
                     }
                 }
@@ -277,7 +278,7 @@ public class LoginActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     Log.e(TAG, "구글 id_token 파싱 실패", e);
                     runOnUiThread(() ->
-                            Toast.makeText(this, "구글 로그인에 실패했습니다", Toast.LENGTH_SHORT).show()
+                            ToastUtil.makeText(this, "구글 로그인에 실패했습니다", Toast.LENGTH_SHORT).show()
                     );
                 }
             } else {
@@ -299,7 +300,7 @@ public class LoginActivity extends AppCompatActivity {
         Function2<OAuthToken, Throwable, Unit> accountCallback = (token, error) -> {
             if (error != null) {
                 Log.e(TAG, "카카오계정으로 로그인 실패", error);
-                Toast.makeText(this, "카카오 로그인에 실패했습니다", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(this, "카카오 로그인에 실패했습니다", Toast.LENGTH_SHORT).show();
                 return Unit.INSTANCE;
             }
 
@@ -358,13 +359,13 @@ public class LoginActivity extends AppCompatActivity {
                     if (apiResponse.isSuccess()) {
                         handleSocialLoginSuccess(apiResponse.getData());
                     } else {
-                        Toast.makeText(LoginActivity.this,
+                        ToastUtil.makeText(LoginActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                         Log.e(TAG, "dd소셜 로그인 실패: " + apiResponse.getMessage());
                     }
                 } else {
-                    Toast.makeText(LoginActivity.this,
+                    ToastUtil.makeText(LoginActivity.this,
                             "소셜 로그인에 실패했습니다. 다시 시도해주세요.",
                             Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "HTTP 오류: " + response.code());
@@ -373,7 +374,7 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse<SocialLoginData>> call, Throwable t) {
-                Toast.makeText(LoginActivity.this,
+                ToastUtil.makeText(LoginActivity.this,
                         "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.",
                         Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "네트워크 오류: " + t.getMessage(), t);
@@ -417,12 +418,12 @@ public class LoginActivity extends AppCompatActivity {
 
         if (socialLoginData.isNeeds_onboarding()) {
             // 추가 정보(닉네임/위치 등)가 필요 - 온보딩 화면으로 이동
-            Toast.makeText(this, "추가 정보를 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "추가 정보를 입력해주세요", Toast.LENGTH_SHORT).show();
             goToOnboardingActivity(user);
         } else {
             // 모든 정보가 있는 기존 회원 - 바로 메인으로
             String nickname = user.getUser_nickname() != null ? user.getUser_nickname() : "회원";
-            Toast.makeText(this, nickname + "님 환영합니다!", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, nickname + "님 환영합니다!", Toast.LENGTH_SHORT).show();
             goToMainActivity();
         }
     }
@@ -471,7 +472,7 @@ public class LoginActivity extends AppCompatActivity {
                         handleLoginSuccess(apiResponse.getData());
                     } else {
                         // 로그인 실패 (서버에서 success: false)
-                        Toast.makeText(LoginActivity.this,
+                        ToastUtil.makeText(LoginActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                         Log.e(TAG, "로그인 실패: " + apiResponse.getMessage());
@@ -479,7 +480,7 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     ApiResponse<LoginData> apiResponse = response.body();
                     // HTTP 오류
-                    Toast.makeText(LoginActivity.this,
+                    ToastUtil.makeText(LoginActivity.this,
                             "로그인에 실패했습니다. 다시 시도해주세요.",
                             Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "HTTP 오류: " + response.code());
@@ -488,7 +489,7 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse<LoginData>> call, Throwable t) {
-                Toast.makeText(LoginActivity.this,
+                ToastUtil.makeText(LoginActivity.this,
                         "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.",
                         Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "네트워크 오류: " + t.getMessage(), t);
@@ -560,7 +561,7 @@ public class LoginActivity extends AppCompatActivity {
         registerFcmToken(loginData.getUser_id());
 
         // 환영 메시지 (서버에서 받은 데이터로 표시)
-        Toast.makeText(this,
+        ToastUtil.makeText(this,
                 loginData.getUser_nickname() + "님 환영합니다!",
                 Toast.LENGTH_SHORT).show();
 

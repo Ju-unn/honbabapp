@@ -26,6 +26,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageProfileProfilesettingBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -178,16 +179,16 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
         String blogId        = binding.etBlogId.getText().toString().trim();
 
         if (!isNicknameChecked) {
-            Toast.makeText(this, "닉네임 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "닉네임 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (instagramId.length() > 50) {
-            Toast.makeText(this, "인스타그램 ID는 50자 이하로 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "인스타그램 ID는 50자 이하로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
         if (blogId.length() > 50) {
-            Toast.makeText(this, "블로그 ID는 50자 이하로 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "블로그 ID는 50자 이하로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -213,7 +214,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                         if (response.isSuccessful()
                                 && response.body() != null
                                 && response.body().isSuccess()) {
-                            Toast.makeText(ProfileProfileSettingActivity.this,
+                            ToastUtil.makeText(ProfileProfileSettingActivity.this,
                                     "프로필이 수정되었습니다", Toast.LENGTH_SHORT).show();
 
                             setResult(RESULT_OK);
@@ -221,7 +222,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                         } else {
                             String message = response.body() != null
                                     ? response.body().getMessage() : "수정 실패";
-                            Toast.makeText(ProfileProfileSettingActivity.this,
+                            ToastUtil.makeText(ProfileProfileSettingActivity.this,
                                     message, Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -230,7 +231,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                     public void onFailure(Call<ApiResponse<Void>> call, Throwable throwable) {
                         binding.btnEditProfile.setEnabled(true);
                         Log.e(TAG, "프로필 수정 실패: " + throwable.getMessage());
-                        Toast.makeText(ProfileProfileSettingActivity.this,
+                        ToastUtil.makeText(ProfileProfileSettingActivity.this,
                                 "네트워크 오류", Toast.LENGTH_SHORT).show();
                     }
                 });

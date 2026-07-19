@@ -22,6 +22,7 @@ import com.example.honbabapp.api.data.review.ReceivedReviewsData;
 import com.example.honbabapp.databinding.PageChatParticipantDetailBinding;
 import com.example.honbabapp.ui.adapter.ReceivedReviewAdapter;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import java.util.List;
 
@@ -64,7 +65,7 @@ public class ChatRoomParticipantDetailActivity extends AppCompatActivity {
         // ── Intent extra ──
         userId = getIntent().getIntExtra("user_id", -1);
         if (userId == -1) {
-            Toast.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -113,7 +114,7 @@ public class ChatRoomParticipantDetailActivity extends AppCompatActivity {
                             String message = (response.body() != null)
                                     ? response.body().getMessage()
                                     : "프로필을 불러올 수 없습니다";
-                            Toast.makeText(ChatRoomParticipantDetailActivity.this,
+                            ToastUtil.makeText(ChatRoomParticipantDetailActivity.this,
                                     message, Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -122,7 +123,7 @@ public class ChatRoomParticipantDetailActivity extends AppCompatActivity {
                     public void onFailure(@NonNull Call<ApiResponse<UserProfileResponse>> call,
                                           @NonNull Throwable throwable) {
                         Log.e(TAG, "프로필 로드 실패: " + throwable.getMessage());
-                        Toast.makeText(ChatRoomParticipantDetailActivity.this,
+                        ToastUtil.makeText(ChatRoomParticipantDetailActivity.this,
                                 "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
                     }
                 });

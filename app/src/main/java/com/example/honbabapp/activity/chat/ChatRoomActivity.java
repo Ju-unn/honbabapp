@@ -47,6 +47,7 @@ import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.MessageAdapter;
 import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.ui.dialog.ChatAttachBottomSheetDialog;
+import com.example.honbabapp.util.ToastUtil;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
@@ -136,7 +137,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                                 launchCamera();
                             }
                         } else {
-                            Toast.makeText(this, "카메라 권한이 필요합니다", Toast.LENGTH_SHORT).show();
+                            ToastUtil.makeText(this, "카메라 권한이 필요합니다", Toast.LENGTH_SHORT).show();
                         }
                     }
             );
@@ -237,7 +238,7 @@ public class ChatRoomActivity extends AppCompatActivity {
             public void onHostChanged(int newHostId) {
                 runOnUiThread(() -> {
                     if (newHostId == myUserId) {
-                        Toast.makeText(ChatRoomActivity.this,
+                        ToastUtil.makeText(ChatRoomActivity.this,
                                 "방장으로 위임되었습니다", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -246,7 +247,7 @@ public class ChatRoomActivity extends AppCompatActivity {
             @Override
             public void onKicked() {
                 runOnUiThread(() -> {
-                    Toast.makeText(ChatRoomActivity.this,
+                    ToastUtil.makeText(ChatRoomActivity.this,
                             "방장에 의해 강퇴되었습니다", Toast.LENGTH_LONG).show();
                     finish();
                 });
@@ -377,7 +378,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                                         + " 는 myUserId=" + myUserId + " 의 방 목록에 없음");
 
                         runOnUiThread(() -> {
-                            Toast.makeText(ChatRoomActivity.this,
+                            ToastUtil.makeText(ChatRoomActivity.this,
                                     "접근할 수 없는 채팅방입니다",
                                     Toast.LENGTH_SHORT).show();
                             finish();
@@ -582,7 +583,7 @@ public class ChatRoomActivity extends AppCompatActivity {
 
         binding.btnAttach.setOnClickListener(v -> {
             if (uploadHelper.isUploading()) {
-                Toast.makeText(this, "사진 전송 중입니다", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(this, "사진 전송 중입니다", Toast.LENGTH_SHORT).show();
                 return;
             }
             showAttachBottomSheet();
@@ -622,7 +623,7 @@ public class ChatRoomActivity extends AppCompatActivity {
             File dir = new File(getCacheDir(), "chat_images");
             if (!dir.exists() && !dir.mkdirs()) {
                 Log.e("CHAT_UPLOAD", "chat_images 디렉토리 생성 실패");
-                Toast.makeText(this, "카메라 준비 실패", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(this, "카메라 준비 실패", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -638,7 +639,7 @@ public class ChatRoomActivity extends AppCompatActivity {
 
         } catch (Exception e) {
             Log.e("CHAT_UPLOAD", "카메라 실행 실패: " + e.getMessage());
-            Toast.makeText(this, "카메라 실행 실패", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "카메라 실행 실패", Toast.LENGTH_SHORT).show();
             pendingCameraUri = null;
         }
     }

@@ -22,6 +22,7 @@ import com.example.honbabapp.databinding.PageChatPhotosBinding;
 import com.example.honbabapp.repository.ChatRepository;
 import com.example.honbabapp.ui.adapter.ChatPhotoGridAdapter;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import java.util.ArrayList;
 
@@ -84,7 +85,7 @@ public class ChatRoomPhotosActivity extends AppCompatActivity {
 
         roomId = getIntent().getIntExtra("room_id", -1);
         if (roomId == -1) {
-            Toast.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }

@@ -30,6 +30,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.MeetingCreateResponse;
 import com.example.honbabapp.databinding.PageCampaignWritingBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.material.slider.RangeSlider;
 
 import java.io.File;
@@ -334,26 +335,26 @@ public class CampaignWritingActivity extends AppCompatActivity {
     private void validateAndRegisterCampaign() {
         String campaignTitle = binding.etCampaignTitle.getText().toString().trim();
         if (campaignTitle.isEmpty()) {
-            Toast.makeText(this, "체험단 제목을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "체험단 제목을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
         if (campaignTitle.length() < 2 || campaignTitle.length() > 50) {
-            Toast.makeText(this, "체험단 제목은 2~50자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "체험단 제목은 2~50자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (selectedPlaceName.isEmpty()) {
-            Toast.makeText(this, "가게를 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "가게를 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String campaignDescription = binding.etCampaignDescription.getText().toString().trim();
         if (campaignDescription.isEmpty()) {
-            Toast.makeText(this, "체험단 설명을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "체험단 설명을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
         if (campaignDescription.length() < 10 || campaignDescription.length() > 500) {
-            Toast.makeText(this, "체험단 설명은 10~500자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "체험단 설명은 10~500자 이내로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -362,20 +363,20 @@ public class CampaignWritingActivity extends AppCompatActivity {
         boolean isYoutubeChecked   = binding.checkboxChannelYoutube.isChecked();
 
         if (!isBlogChecked && !isInstagramChecked && !isYoutubeChecked) {
-            Toast.makeText(this, "홍보 채널을 하나 이상 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "홍보 채널을 하나 이상 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String campaignProvided = binding.etCampaignProvided.getText().toString().trim();
         if (campaignProvided.isEmpty()) {
-            Toast.makeText(this, "제공 내역을 입력해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "제공 내역을 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
 
         String campaignDeadline = binding.etCampaignDeadline.getText().toString().trim();
         if (campaignDeadline.isEmpty()) {
-            Toast.makeText(this, "모집 마감일을 선택해주세요", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "모집 마감일을 선택해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -489,7 +490,7 @@ public class CampaignWritingActivity extends AppCompatActivity {
 
     private void onUploadFailed() {
         runOnUiThread(() -> {
-            Toast.makeText(this, "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
+            ToastUtil.makeText(this, "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
                     Toast.LENGTH_SHORT).show();
             resetRegisterButton();
         });
@@ -538,7 +539,7 @@ public class CampaignWritingActivity extends AppCompatActivity {
                             int meetingId = response.body().getData().getMeeting_id();
                             Log.i(TAG, "체험단 등록 성공: meeting_id=" + meetingId);
 
-                            Toast.makeText(CampaignWritingActivity.this,
+                            ToastUtil.makeText(CampaignWritingActivity.this,
                                     "체험단이 등록되었습니다!", Toast.LENGTH_SHORT).show();
 
                             Intent intent = new Intent(CampaignWritingActivity.this, MainActivity.class);
@@ -553,7 +554,7 @@ public class CampaignWritingActivity extends AppCompatActivity {
                                     ? response.body().getMessage() : "등록에 실패했습니다.";
 
                             if ("NO_TICKET".equals(message)) {
-                                Toast.makeText(CampaignWritingActivity.this,
+                                ToastUtil.makeText(CampaignWritingActivity.this,
                                         "체험단 등록권이 없어요. 등록권을 구매해주세요.",
                                         Toast.LENGTH_SHORT).show();
                                 resetRegisterButton();
@@ -563,7 +564,7 @@ public class CampaignWritingActivity extends AppCompatActivity {
                                 return;
                             }
 
-                            Toast.makeText(CampaignWritingActivity.this,
+                            ToastUtil.makeText(CampaignWritingActivity.this,
                                     message, Toast.LENGTH_SHORT).show();
                             resetRegisterButton();
                         }
@@ -573,7 +574,7 @@ public class CampaignWritingActivity extends AppCompatActivity {
                     public void onFailure(Call<ApiResponse<MeetingCreateResponse>> call,
                                           Throwable throwable) {
                         Log.e(TAG, "네트워크 오류: " + throwable.getMessage());
-                        Toast.makeText(CampaignWritingActivity.this,
+                        ToastUtil.makeText(CampaignWritingActivity.this,
                                 "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                         resetRegisterButton();
                     }

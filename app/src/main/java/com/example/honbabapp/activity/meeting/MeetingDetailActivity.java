@@ -34,6 +34,7 @@ import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
 import com.example.honbabapp.databinding.PageMeetingDetailBinding;
 import com.example.honbabapp.ui.adapter.ParticipantListAdapter;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -78,7 +79,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
         meetingId = getIntent().getIntExtra("meeting_id" , -1);
 
         if (meetingId == -1) {
-            Toast.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "잘못된 접근입니다", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -130,13 +131,13 @@ public class MeetingDetailActivity extends AppCompatActivity {
                         setupJoinButton();
                     } else {
                         Log.e(TAG, "API 실패: " + apiResponse.getMessage());
-                        Toast.makeText(MeetingDetailActivity.this,
+                        ToastUtil.makeText(MeetingDetailActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     Log.e(TAG, "HTTP 오류: " + response.code());
-                    Toast.makeText(MeetingDetailActivity.this,
+                    ToastUtil.makeText(MeetingDetailActivity.this,
                             "모임 정보를 불러오는데 실패했습니다.",
                             Toast.LENGTH_SHORT).show();
                 }
@@ -145,7 +146,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<Meeting>> call, Throwable t) {
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
-                Toast.makeText(MeetingDetailActivity.this,
+                ToastUtil.makeText(MeetingDetailActivity.this,
                         "네트워크 오류가 발생했습니다.",
                         Toast.LENGTH_SHORT).show();
             }
@@ -423,7 +424,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
      */
     private void joinMeeting() {
         if (currentUserId == -1) {
-            Toast.makeText(this, "로그인이 필요합니다", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "로그인이 필요합니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -453,7 +454,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
                         binding.btnJoinMeeting.setEnabled(false);
 
                         // 성공 메세지
-                        Toast.makeText(MeetingDetailActivity.this,
+                        ToastUtil.makeText(MeetingDetailActivity.this,
                                 "참여 신청이 완료되었습니다.\n호스트의 승인을 기다려주세요.",
                                 Toast.LENGTH_LONG).show();
 
@@ -462,7 +463,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
                     } else {
                         // API 실패
                         Log.e(TAG, "참여 신청 실패: " + apiResponse.getMessage());
-                        Toast.makeText(MeetingDetailActivity.this,
+                        ToastUtil.makeText(MeetingDetailActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
 
@@ -472,7 +473,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
                     }
                 } else {
                     Log.e(TAG, "HTTP 오류: " + response.code());
-                    Toast.makeText(MeetingDetailActivity.this,
+                    ToastUtil.makeText(MeetingDetailActivity.this,
                             "참여 신청에 실패했습니다.",
                             Toast.LENGTH_SHORT).show();
 
@@ -485,7 +486,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<ParticipantResponse>> call, Throwable t) {
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
-                Toast.makeText(MeetingDetailActivity.this,
+                ToastUtil.makeText(MeetingDetailActivity.this,
                         "네트워크 오류가 발생했습니다.",
                         Toast.LENGTH_SHORT).show();
 
@@ -583,7 +584,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
                 if (binding == null) return;
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Toast.makeText(MeetingDetailActivity.this, "모임이 삭제되었습니다.", Toast.LENGTH_SHORT).show();
+                    ToastUtil.makeText(MeetingDetailActivity.this, "모임이 삭제되었습니다.", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(MeetingDetailActivity.this , MainActivity.class);
                     intent.putExtra("refresh_home" ,true);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -591,13 +592,13 @@ public class MeetingDetailActivity extends AppCompatActivity {
                     finish();
                 } else {
                     String msg = (response.body() != null) ? response.body().getMessage() : "삭제에 실패했습니다.";
-                    Toast.makeText(MeetingDetailActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    ToastUtil.makeText(MeetingDetailActivity.this, msg, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                Toast.makeText(MeetingDetailActivity.this, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(MeetingDetailActivity.this, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
 
         });

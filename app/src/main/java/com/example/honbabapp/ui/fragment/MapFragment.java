@@ -27,6 +27,7 @@ import com.example.honbabapp.ui.adapter.MapAllMeetingListAdapter;
 import com.example.honbabapp.ui.dialog.MapClusterBottomSheetDialog;
 import com.example.honbabapp.ui.dialog.MapFilterBottomSheetDialog;
 import com.example.honbabapp.ui.dialog.MapSortBottomSheetDialog;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -516,7 +517,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 if (binding == null) return;
                 if (call.isCanceled()) return; // 새 요청으로 대체된 취소 — 오류 아님
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
-                Toast.makeText(getContext(), "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(getContext(), "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
         });
     }

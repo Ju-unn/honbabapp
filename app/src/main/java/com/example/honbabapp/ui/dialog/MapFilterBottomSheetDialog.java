@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 
 import com.example.honbabapp.R;
 import com.example.honbabapp.databinding.BottomsheetMapFilterBinding;
+import com.example.honbabapp.util.ToastUtil;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -517,7 +518,7 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
 //                                    || (hour == currentHour && minute <= currentMinute);
 //
 //                            if (isPastTime) {
-//                                Toast.makeText(requireContext(),
+//                                ToastUtil.makeText(requireContext(),
 //                                        "현재 시간 이후를 선택해주세요",
 //                                        Toast.LENGTH_SHORT).show();
 //                                return; // selectedTime 설정 안 함

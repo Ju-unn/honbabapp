@@ -17,6 +17,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.payment.MyTicketsResponse;
 import com.example.honbabapp.databinding.PageProfileTicketBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -83,7 +84,7 @@ public class ProfileTicketActivity extends AppCompatActivity {
                     binding.tvTicketCount.setText(ticketBalance + "장");
                 } else {
                     Log.e(TAG, "등록권 잔액 로드 실패");
-                    Toast.makeText(ProfileTicketActivity.this,
+                    ToastUtil.makeText(ProfileTicketActivity.this,
                             "등록권 확인에 실패했습니다. 잠시 후 다시 시도해주세요",
                             Toast.LENGTH_SHORT).show();
                 }
@@ -93,7 +94,7 @@ public class ProfileTicketActivity extends AppCompatActivity {
             public void onFailure(Call<ApiResponse<MyTicketsResponse>> call, Throwable t) {
                 if (binding == null) return;
                 Log.e(TAG, "등록권 잔액 로드 네트워크 오류: " + t.getMessage());
-                Toast.makeText(ProfileTicketActivity.this,
+                ToastUtil.makeText(ProfileTicketActivity.this,
                         "등록권 확인에 실패했습니다. 잠시 후 다시 시도해주세요",
                         Toast.LENGTH_SHORT).show();
             }
