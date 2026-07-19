@@ -211,10 +211,10 @@ public class ChatRoomActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onMemberJoined() {
+            public void onMemberJoined(int remaining) {
                 runOnUiThread(() -> {
                     loadMessageHistory();
-                    memberCount++;
+                    memberCount = (remaining >= 0) ? remaining : memberCount + 1;
                     if ("group".equals(roomType)) {
                         binding.tvChatStatus.setVisibility(View.VISIBLE);
                         binding.tvChatStatus.setText(memberCount + "명");

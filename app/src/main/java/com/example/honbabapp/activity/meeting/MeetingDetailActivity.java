@@ -21,6 +21,7 @@ import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.overlay.Marker;
+import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.UiSettings;
 import com.example.honbabapp.R;
 import com.example.honbabapp.activity.MainActivity;
@@ -233,19 +234,22 @@ public class MeetingDetailActivity extends AppCompatActivity {
                     LatLng position = new LatLng(lat, lng);
                     Marker marker = new Marker();
                     marker.setPosition(position);
+                    marker.setIcon(OverlayImage.fromResource(R.drawable.orange_pin));
                     marker.setMap(naverMap);
 
                     // 카메라 이동
                     naverMap.moveCamera(CameraUpdate.scrollAndZoomTo(position, 15));
                 });
 
-                // 클릭 시 MapFragment로 이동 (기존 로직 유지)
-                binding.miniMap.setOnClickListener(v -> {
+                // 클릭 시 MapFragment로 이동
+                // MapView 자체는 내부 제스처 처리기가 터치를 먼저 소비해 클릭이 거의 발동하지 않으므로
+                // 지도 위에 얹은 투명 오버레이(mini_map_click_overlay)가 클릭을 대신 받는다
+                binding.miniMapClickOverlay.setOnClickListener(v -> {
                     Intent intent = new Intent(this, MainActivity.class);
                     intent.putExtra("move_to_map", true);
                     intent.putExtra("map_lat", lat);
                     intent.putExtra("map_lng", lng);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                 });
             } catch (NumberFormatException e) {

@@ -288,6 +288,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             double lng = pendingLng;
             pendingLat = null;
             pendingLng = null;
+            // Follow 모드면 GPS 갱신마다 카메라가 내 위치로 다시 스냅되어
+            // 지정 좌표 이동이 무효화되므로 추적을 끈다
+            naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
             // 카메라 이동이 끝나면 CameraIdleListener가 화면 범위로 조회한다
             moveCameraTo(lat , lng);
             return;
@@ -634,6 +637,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             return;
         }
 
+        // Follow 모드면 GPS 갱신마다 카메라가 내 위치로 다시 스냅되어
+        // 지정 좌표 이동이 무효화되므로 추적을 끈다
+        naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
+
         // 카메라 이동이 끝나면 CameraIdleListener가 화면 범위로 조회한다
         moveCameraTo(lat , lng);
     }
@@ -818,5 +825,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         mapView.onLowMemory();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // locationSource가 권한 결과를 전달받아야 내 위치 버튼/추적 상태가 갱신된다
+        // (최초 진입 시 권한 다이얼로그 응답 직후 버튼이 안 보이던 원인)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            locationSource.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
 
 }

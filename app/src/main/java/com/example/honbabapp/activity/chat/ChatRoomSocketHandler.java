@@ -22,8 +22,8 @@ public class ChatRoomSocketHandler {
         void onMessageReceived(MessageData message, String clientMsgId);
         /** 읽음 갱신 — 방금 읽힌 message_id 집합. */
         void onReadUpdate(Set<Integer> newlyReadMessageIds);
-        /** 멤버 입장. */
-        void onMemberJoined();
+        /** 멤버 입장 (remaining: 입장 후 총 인원수; -1 이면 미상 → 호출부에서 증가 폴백). */
+        void onMemberJoined(int remaining);
         /** 멤버 퇴장 (leftUserId, 남은 인원 remaining; remaining < 0 이면 미상). */
         void onMemberLeft(int leftUserId, int remaining);
         /** 방장 위임 (새 방장 user_id). */
@@ -113,7 +113,8 @@ public class ChatRoomSocketHandler {
         memberJoinedListener = arguments -> {
             JSONObject payload = ChatSocketEvents.asJsonObject(arguments);
             if (!ChatSocketEvents.isForRoom(payload, roomId)) return;
-            callbacks.onMemberJoined();
+            int remaining = ChatSocketEvents.getInt(payload, "remaining", -1);
+            callbacks.onMemberJoined(remaining);
         };
 
         // ── 멤버 나감 수신 ──

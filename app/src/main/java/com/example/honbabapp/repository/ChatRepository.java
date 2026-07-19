@@ -10,6 +10,7 @@ import com.example.honbabapp.api.data.request.chat.KickMemberRequest;
 import com.example.honbabapp.api.data.request.chat.LeaveRoomRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
+import com.example.honbabapp.api.data.response.chat.ChatRoomMembersResponse;
 import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
 import com.example.honbabapp.api.data.response.chat.KickMemberResponse;
 import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
@@ -148,6 +149,22 @@ public class ChatRepository {
     public void leaveRoom(int roomId, int userId, Callback<ApiResponse<LeaveRoomResponse>> chatRoomDb) {
         LeaveRoomRequest request = new LeaveRoomRequest(roomId);
         apiService.leaveRoom(request).enqueue(chatRoomDb);
+    }
+
+    // ─────────────────────────────────────────
+    // 채팅방 멤버(참가자) 조회 — chat_room_members 기준
+    // ChatRoomDetailActivity 에서 direct/group 방 공통으로 호출
+    // ─────────────────────────────────────────
+
+    /**
+     * 채팅방의 현재 멤버 목록을 가져온다 (chat_room_members 기준)
+     *
+     * @param roomId     채팅방 ID
+     * @param chatRoomDb 성공 시 ChatRoomMembersResponse (owner_id, participants) 반환
+     */
+    public void getChatRoomMembers(int roomId,
+                                   Callback<ApiResponse<ChatRoomMembersResponse>> chatRoomDb) {
+        apiService.getChatRoomMembers(roomId).enqueue(chatRoomDb);
     }
 
     // ─────────────────────────────────────────

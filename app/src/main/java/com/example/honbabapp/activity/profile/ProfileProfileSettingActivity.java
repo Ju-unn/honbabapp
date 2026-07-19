@@ -268,6 +268,10 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
             showNicknameResult(false, "특수문자는 사용할 수 없습니다");
             return;
         }
+        if (nickname.matches("^[0-9]+$")) {
+            showNicknameResult(false, "닉네임은 숫자로만 만들 수 없습니다");
+            return;
+        }
         if (nickname.equals(originalNickname)) {
             isNicknameChecked = true;
             showNicknameResult(true, "현재 닉네임입니다");
@@ -285,7 +289,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                             boolean available = response.body().getData().isAvailable();
                             isNicknameChecked = available;
                             showNicknameResult(available,
-                                    available ? "사용 가능한 닉네임입니다" : "이미 사용 중인 닉네임입니다");
+                                    available ? "사용 가능한 닉네임입니다" : "이미 사용중인 닉네임입니다");
                         }
                     }
                     @Override

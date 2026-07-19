@@ -563,6 +563,18 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
+            <!-- MapView는 자체 터치 제스처가 클릭을 먼저 소비해 OnClickListener가 거의 발동하지 않음 -->
+            <!-- 지도 위 투명 오버레이로 클릭을 대신 받는다 -->
+            <View
+                android:id="@+id/mini_map_click_overlay"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="?attr/selectableItemBackground"
+                app:layout_constraintTop_toTopOf="@id/mini_map"
+                app:layout_constraintBottom_toBottomOf="@id/mini_map"
+                app:layout_constraintStart_toStartOf="@id/mini_map"
+                app:layout_constraintEnd_toEndOf="@id/mini_map" />
+
             <!-- 구분선 5 -->
             <View
                 android:id="@+id/divider_5"

@@ -22,11 +22,11 @@ import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.chat.ChatMemberData;
 import com.example.honbabapp.api.data.chat.ChatPhotoData;
-import com.example.honbabapp.api.data.chat.ChatRoomData;
 import com.example.honbabapp.api.data.meeting.Meeting;
 import com.example.honbabapp.api.data.meeting.MeetingParticipant;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
+import com.example.honbabapp.api.data.response.chat.ChatRoomMembersResponse;
 import com.example.honbabapp.api.data.response.chat.KickMemberResponse;
 import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
 import com.example.honbabapp.databinding.PageChatRoomDetailBinding;
@@ -100,6 +100,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
     private int    myUserId    = -1;
     private Meeting meeting;             // getMeetingDetail 응답
     private int    otherUserId = -1;     // direct 방 상대방 user_id
+    private int    hostId      = -1;     // 채팅방 방장 user_id (chat_rooms.owner_id 기준, direct 방은 -1)
 
     // 화면 흐름 결과 플래그
     public static final String EXTRA_LEFT = "left";
@@ -143,12 +144,14 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
         setupClickListeners();
 
         // ── API 호출 ──
+        // 참가자 "타이틀+리스트"는 room_type 관계없이 항상 chat_room_members 기준
+        // (loadChatRoomMembers)으로 채운다 — meeting_participants 기반으로 채우면
+        // 탈퇴 후 복귀한 유저의 과거 모임 참여 이력 때문에 인원수/닉네임이
+        // ChatRoomActivity 툴바의 실제 인원수와 어긋나는 문제가 있었음.
         if ("group".equals(roomType) && meetingId != -1) {
-            loadMeetingDetail();
-        } else {
-            // direct 방: 채팅방 멤버 정보 조회 → 참가자 섹션 표시
-            loadChatRoomMembers();
+            loadMeetingDetail();   // 모임 부제/위치/"N/M명" 헤더 등 모임 고유 정보용
         }
+        loadChatRoomMembers();
 
         loadChatPhotos();
     }
@@ -282,53 +285,44 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                 });
     }
     /**
-     * 1:1 (direct) 방의 멤버 정보 조회 (참가자 섹션 표시용)
+     * 채팅방 멤버 조회 (참가자 타이틀+리스트 표시용, direct/group 공통)
      *
-     * 별도 API 없이 ChatRepository.getChatRooms() 응답에서 현재 room 을 필터링한다.
-     *  - 방장 뱃지는 direct 방에선 의미 없음 → hostId = -1
+     * chat_room_members 기준(=실제 현재 채팅방 참가자)의 단일 진실의 원천인
+     * api/chat/members.php 를 사용한다. meeting_participants 기반(getMeetingDetail)
+     * 데이터는 모임 참여 이력용이라 탈퇴 후 복귀한 유저가 잘못 남아있을 수 있어
+     * 참가자 리스트/카운트 용도로는 쓰지 않는다.
      */
     private void loadChatRoomMembers() {
-        ChatRepository.getInstance().getChatRooms(myUserId,
-                new Callback<ApiResponse<List<ChatRoomData>>>() {
+        ChatRepository.getInstance().getChatRoomMembers(roomId,
+                new Callback<ApiResponse<ChatRoomMembersResponse>>() {
                     @Override
-                    public void onResponse(@NonNull Call<ApiResponse<List<ChatRoomData>>> call,
-                                           @NonNull Response<ApiResponse<List<ChatRoomData>>> response) {
+                    public void onResponse(@NonNull Call<ApiResponse<ChatRoomMembersResponse>> call,
+                                           @NonNull Response<ApiResponse<ChatRoomMembersResponse>> response) {
                         if (!response.isSuccessful()
                                 || response.body() == null
                                 || !response.body().isSuccess()
                                 || response.body().getData() == null) {
-                            Log.e(TAG, "채팅방 목록 조회 실패");
+                            Log.e(TAG, "채팅방 멤버 조회 실패");
                             return;
                         }
 
-                        // 응답에서 현재 room 찾기
-                        ChatRoomData currentRoom = null;
-                        for (ChatRoomData r : response.body().getData()) {
-                            if (r.getRoom_id() == roomId) {
-                                currentRoom = r;
-                                break;
-                            }
-                        }
-
-                        if (currentRoom == null
-                                || currentRoom.getParticipants() == null
-                                || currentRoom.getParticipants().isEmpty()) {
-                            Log.w(TAG, "현재 채팅방 또는 참가자 정보 없음");
-                            return;
-                        }
+                        ChatRoomMembersResponse data = response.body().getData();
+                        List<ChatMemberData> members = data.getParticipants();
+                        if (members == null) members = new ArrayList<>();
 
                         // ChatMemberData → MeetingParticipant 변환
                         List<MeetingParticipant> participants = new ArrayList<>();
-                        for (ChatMemberData m : currentRoom.getParticipants()) {
+                        for (ChatMemberData m : members) {
                             participants.add(toMeetingParticipant(m));
-                            // 상대방 user_id 저장 (헤더 카드 클릭 시 사용)
+                            // 상대방 user_id 저장 (헤더 카드 클릭 시 사용, direct 방)
                             if (m.getUser_id() != myUserId) {
                                 otherUserId = m.getUser_id();
                             }
                         }
 
-                        // 어댑터에 주입
-                        participantAdapter.setHostId(-1);  // direct 방은 방장 없음
+                        // 방장 뱃지: chat_rooms.owner_id 기준 (direct 방은 방장 없음)
+                        hostId = "group".equals(roomType) ? data.getOwner_id() : -1;
+                        participantAdapter.setHostId(hostId);
                         participantAdapter.setItems(participants);
 
                         // 헤더 "참가자 (N)"
@@ -338,7 +332,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(@NonNull Call<ApiResponse<List<ChatRoomData>>> call,
+                    public void onFailure(@NonNull Call<ApiResponse<ChatRoomMembersResponse>> call,
                                           @NonNull Throwable t) {
                         Log.e(TAG, "채팅방 멤버 조회 네트워크 오류: " + t.getMessage());
                     }
@@ -365,23 +359,12 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
         }
         binding.tvRoomSubtitle.setText(subtitle);
 
-        // 인원수 (group 전용)
+        // 인원수 (group 전용, 모임 정원 기준 "N/M명" — 참가자 리스트/타이틀은
+        // loadChatRoomMembers() 가 chat_room_members 기준으로 별도로 채움)
         String count = meeting.getMeeting_current_participants() + "/"
                 + meeting.getMeeting_max_participants() + "명";
         binding.tvMemberCount.setText(count);
         binding.tvMemberCount.setVisibility(View.VISIBLE);
-
-        // 참가자 리스트
-        List<MeetingParticipant> participants = meeting.getParticipants();
-        if (participants != null) {
-            // 호스트 ID 주입 → 어댑터가 방장 뱃지 표시
-            int hostId = (meeting.getHost() != null) ? meeting.getHost().getUser_id() : -1;
-            participantAdapter.setHostId(hostId);
-            participantAdapter.setItems(participants);
-
-            // 헤더 "참가자 (N)"
-            binding.tvParticipantsTitle.setText("참가자 (" + participants.size() + ")");
-        }
     }
 
     /** 사진 응답을 미리보기 RecyclerView 에 반영 */
@@ -638,8 +621,11 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                                     participant.getUser_nickname() + "님을 강퇴했습니다.",
                                     Toast.LENGTH_SHORT).show();
 
-                            // 참가자 리스트 + 인원수 갱신
-                            loadMeetingDetail();
+                            // 참가자 리스트 갱신 (chat_room_members 기준) + 모임 "N/M명" 헤더 갱신
+                            loadChatRoomMembers();
+                            if ("group".equals(roomType)) {
+                                loadMeetingDetail();
+                            }
 
                         } else {
                             String errMsg = (response.body() != null)

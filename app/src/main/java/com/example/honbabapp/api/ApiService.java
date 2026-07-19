@@ -31,6 +31,7 @@ import com.example.honbabapp.api.data.request.user.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.MyMeetingItem;
 import com.example.honbabapp.api.data.response.RefreshTokenResponse;
 import com.example.honbabapp.api.data.response.chat.ChatPhotosResponse;
+import com.example.honbabapp.api.data.response.chat.ChatRoomMembersResponse;
 import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
 import com.example.honbabapp.api.data.response.chat.KickMemberResponse;
 import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
@@ -511,6 +512,20 @@ public interface ApiService {
             @Query("page")    int page,
             @Query("limit")   int limit
     );
+
+    /**
+     * 7-1. 채팅방 멤버(참가자) 목록 조회
+     *
+     * chat_room_members 기준(=실제 현재 채팅방 참가자)의 단일 진실의 원천.
+     * ChatRoomDetailActivity 의 "참가자" 타이틀/리스트를 direct/group 방 공통으로
+     * 이 API 하나로 채운다 (meeting_participants 기반 조회는 사용하지 않음 —
+     * 탈퇴 후 복귀한 유저가 과거 모임 참여 이력 때문에 잘못 노출되는 문제 방지).
+     *
+     * @param roomId 채팅방 ID
+     * @return ApiResponse<ChatRoomMembersResponse> - owner_id, participants
+     */
+    @GET("api/chat/members.php")
+    Call<ApiResponse<ChatRoomMembersResponse>> getChatRoomMembers(@Query("room_id") int roomId);
 
     /**
      * 8. 채팅방 멤버 강퇴 (방장 전용)
