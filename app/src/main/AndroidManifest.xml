@@ -75,7 +75,7 @@
             android:resource="@drawable/app_logo2" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="general" />
+            android:value="general_v2" />
 
         <meta-data
             android:name="com.naver.maps.map.NCP_KEY_ID"

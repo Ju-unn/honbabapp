@@ -26,6 +26,7 @@ import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageCampaignDetailBinding;
+import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.ui.adapter.ParticipantListAdapter;
 import com.example.honbabapp.util.ToastUtil;
@@ -36,9 +37,14 @@ import com.naver.maps.map.UiSettings;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.OverlayImage;
 
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -59,6 +65,22 @@ public class CampaignDetailActivity extends AppCompatActivity {
     private int campaignId;
     private int currentUserId;
     private Meeting campaign;
+    private Marker miniMapMarker;
+
+    // 호스트가 내 신청을 승인/거절하면 서버(approve.php)가 user_{id} 채널로
+    // participation_updated를 emit → 열려있는 이 화면의 버튼을 즉시 갱신
+    private final Emitter.Listener participationUpdatedListener = args -> {
+        try {
+            JSONObject data = (JSONObject) args[0];
+            if (data.optInt("meeting_id", -1) == campaignId) {
+                runOnUiThread(() -> {
+                    if (binding != null) loadCampaignDetail();
+                });
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "participation_updated 파싱 실패: " + e.getMessage());
+        }
+    };
 
     // ─────────────────────────────────────────────────────────────
     // ActivityResultLauncher
@@ -115,7 +137,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
         currentUserId = prefs.getInt("user_id", -1);
 
         binding.btnBack.setOnClickListener(v -> finish());
-        loadCampaignDetail();
+        // 상세 로드는 onResume에서 수행 (복귀 시마다 참여 상태 재조회)
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -440,10 +462,12 @@ public class CampaignDetailActivity extends AppCompatActivity {
                 uiSettings.setLogoClickEnabled(false);
 
                 LatLng position = new LatLng(lat, lng);
-                Marker marker = new Marker();
-                marker.setPosition(position);
-                marker.setIcon(OverlayImage.fromResource(R.drawable.blue_pin));
-                marker.setMap(naverMap);
+                if (miniMapMarker == null) {
+                    miniMapMarker = new Marker();
+                    miniMapMarker.setIcon(OverlayImage.fromResource(R.drawable.blue_pin));
+                }
+                miniMapMarker.setPosition(position);
+                miniMapMarker.setMap(naverMap);
                 naverMap.moveCamera(CameraUpdate.scrollAndZoomTo(position, 15));
             });
 
@@ -495,10 +519,28 @@ public class CampaignDetailActivity extends AppCompatActivity {
     // 생명주기 위임
     // ─────────────────────────────────────────────────────────────
 
-    @Override protected void onStart()   { super.onStart();   binding.miniMap.onStart(); }
-    @Override protected void onResume()  { super.onResume();  binding.miniMap.onResume(); }
+    @Override protected void onStart() {
+        super.onStart();
+        binding.miniMap.onStart();
+        Socket socket = SocketManager.getInstance().getSocket();
+        if (socket != null) socket.on("participation_updated", participationUpdatedListener);
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        binding.miniMap.onResume();
+        // 승인/거절이 화면 밖에서 처리됐을 때의 폴백 — 복귀 시마다 재조회
+        loadCampaignDetail();
+    }
+
     @Override protected void onPause()   { super.onPause();   binding.miniMap.onPause(); }
-    @Override protected void onStop()    { super.onStop();    binding.miniMap.onStop(); }
+
+    @Override protected void onStop() {
+        super.onStop();
+        binding.miniMap.onStop();
+        Socket socket = SocketManager.getInstance().getSocket();
+        if (socket != null) socket.off("participation_updated", participationUpdatedListener);
+    }
     @Override protected void onDestroy() { super.onDestroy(); binding.miniMap.onDestroy(); binding = null; }
     @Override public void onLowMemory() { super.onLowMemory(); binding.miniMap.onLowMemory(); }
     @Override public void onSaveInstanceState(@Nullable android.os.Bundle outState) {

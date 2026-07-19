@@ -10,6 +10,7 @@ import com.example.honbabapp.R;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
 import com.example.honbabapp.databinding.RvApplicantListBinding;
@@ -119,11 +120,15 @@ public class ApplicantListAdapter extends RecyclerView.Adapter<ApplicantListAdap
      */
     private String formatApplyTime(String appliedAt) {
         try {
-           SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+            // 서버는 항상 KST(Asia/Seoul) 문자열을 내려주므로, 기기 타임존이 달라도
+            // 항상 KST로 해석하도록 명시한다 (안 하면 기기 기본 타임존으로 파싱되어 시간이 어긋남)
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
             Date applyDate = sdf.parse(appliedAt);
             long diffMs = System.currentTimeMillis() - applyDate.getTime();
             long diffMin = diffMs / 60000;
 
+            if (diffMin < 1) return "방금";
             if (diffMin < 60) return diffMin + "분 전";
             long diffHour = diffMin / 60;
             if (diffHour < 24) return diffHour + "시간 전";

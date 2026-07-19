@@ -58,7 +58,11 @@ public class FirebaseInstanceIdService extends FirebaseMessagingService {
     private static final String KEY_FCM_TOKEN = "fcm_token";
 
     public static final String CHANNEL_ID_CHAT = "chat";
-    public static final String CHANNEL_ID_GENERAL = "general";
+    // 채널 설정(중요도)은 최초 생성 시점 값으로 고정되므로,
+    // IMPORTANCE_DEFAULT로 이미 생성된 구 "general" 채널을 버리고
+    // HIGH로 새 채널을 만들기 위해 ID를 v2로 올렸다 (구 채널은 생성 시 삭제)
+    public static final String CHANNEL_ID_GENERAL = "general_v2";
+    private static final String CHANNEL_ID_GENERAL_LEGACY = "general";
 
     @Override
     public void onNewToken(@NonNull String token) {
@@ -226,15 +230,20 @@ public class FirebaseInstanceIdService extends FirebaseMessagingService {
         );
         chatChannel.setDescription("새 채팅 메시지 및 후기 작성 요청 알림");
 
+        // 헤드업 팝업이 뜨려면 채널 중요도가 HIGH 이상이어야 한다
+        // (setPriority(PRIORITY_HIGH)는 Android 8.0+에서 무시됨 — 채널 중요도가 전부)
         NotificationChannel generalChannel = new NotificationChannel(
                 CHANNEL_ID_GENERAL,
                 "일반 알림",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH
         );
         generalChannel.setDescription("모임 승인/거절/초대/강퇴, 후기 수신 등 일반 알림");
 
         notificationManager.createNotificationChannel(chatChannel);
         notificationManager.createNotificationChannel(generalChannel);
+
+        // 구버전에서 IMPORTANCE_DEFAULT로 생성된 채널 정리
+        notificationManager.deleteNotificationChannel(CHANNEL_ID_GENERAL_LEGACY);
     }
 
     private int parseIntSafely(String value, int defaultValue) {

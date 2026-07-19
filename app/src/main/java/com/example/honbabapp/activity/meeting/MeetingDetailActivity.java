@@ -33,9 +33,15 @@ import com.example.honbabapp.api.data.request.meeting.JoinMeetingRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.ParticipantResponse;
 import com.example.honbabapp.databinding.PageMeetingDetailBinding;
+import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.ui.adapter.ParticipantListAdapter;
 import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.util.ToastUtil;
+
+import org.json.JSONObject;
+
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -60,6 +66,22 @@ public class MeetingDetailActivity extends AppCompatActivity {
     private int currentUserId;
     private Meeting meeting;
     private NaverMap miniNaverMap;
+    private Marker miniMapMarker;
+
+    // 호스트가 내 신청을 승인/거절하면 서버(approve.php)가 user_{id} 채널로
+    // participation_updated를 emit → 열려있는 이 화면의 버튼을 즉시 갱신
+    private final Emitter.Listener participationUpdatedListener = args -> {
+        try {
+            JSONObject data = (JSONObject) args[0];
+            if (data.optInt("meeting_id", -1) == meetingId) {
+                runOnUiThread(() -> {
+                    if (binding != null) loadMeetingDetail();
+                });
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "participation_updated 파싱 실패: " + e.getMessage());
+        }
+    };
 
 
     @Override
@@ -92,8 +114,8 @@ public class MeetingDetailActivity extends AppCompatActivity {
         // 뒤로가기 버튼
         setupBackButton();
 
-        // 모임 상세 정보 로드
-        loadMeetingDetail();
+        // 모임 상세 정보 로드는 onResume에서 수행
+        // (다른 화면에서 돌아올 때마다 참여 상태를 재조회하기 위함)
     }
 
     /**
@@ -230,12 +252,14 @@ public class MeetingDetailActivity extends AppCompatActivity {
                     ui.setTiltGesturesEnabled(false);
                     ui.setLogoClickEnabled(false);
 
-                    // 마커 추가
+                    // 마커 추가 (재조회 시 중복 생성 방지 — 기존 마커 재사용)
                     LatLng position = new LatLng(lat, lng);
-                    Marker marker = new Marker();
-                    marker.setPosition(position);
-                    marker.setIcon(OverlayImage.fromResource(R.drawable.orange_pin));
-                    marker.setMap(naverMap);
+                    if (miniMapMarker == null) {
+                        miniMapMarker = new Marker();
+                        miniMapMarker.setIcon(OverlayImage.fromResource(R.drawable.orange_pin));
+                    }
+                    miniMapMarker.setPosition(position);
+                    miniMapMarker.setMap(naverMap);
 
                     // 카메라 이동
                     naverMap.moveCamera(CameraUpdate.scrollAndZoomTo(position, 15));
@@ -612,12 +636,21 @@ public class MeetingDetailActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         binding.miniMap.onStart();
+
+        Socket socket = SocketManager.getInstance().getSocket();
+        if (socket != null) {
+            socket.on("participation_updated", participationUpdatedListener);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         binding.miniMap.onResume();
+
+        // 승인/거절이 화면 밖(백그라운드, 다른 화면)에서 처리됐을 때의
+        // 폴백 — 복귀할 때마다 참여 상태를 재조회
+        loadMeetingDetail();
     }
 
     @Override
@@ -630,6 +663,11 @@ public class MeetingDetailActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         binding.miniMap.onStop();
+
+        Socket socket = SocketManager.getInstance().getSocket();
+        if (socket != null) {
+            socket.off("participation_updated", participationUpdatedListener);
+        }
     }
 
     @Override

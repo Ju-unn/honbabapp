@@ -789,7 +789,8 @@ public class ChatRoomActivity extends AppCompatActivity {
         ChatRepository.getInstance().getMessages(roomId, myUserId, nextPage,
                 new Callback<ApiResponse<MessageListResponse>>() {
                     @Override
-                    public void onResponse(Call<ApiResponse<MessageListResponse>> call,
+                    public void onResponse(Call<ApiResponse<MessageListResponse>>
+                                                   call,
                                            Response<ApiResponse<MessageListResponse>> response) {
                         if (response.isSuccessful()
                                 && response.body() != null
