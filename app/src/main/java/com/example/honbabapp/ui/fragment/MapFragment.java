@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.honbabapp.R;
 import com.example.honbabapp.activity.MainActivity;
 import com.example.honbabapp.activity.SearchViewActivity;
 import com.example.honbabapp.activity.campaign.CampaignDetailActivity;
@@ -49,7 +50,6 @@ import android.os.Looper;
 
 import com.naver.maps.map.clustering.Clusterer;
 import com.naver.maps.map.clustering.ClusteringKey;
-import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.util.FusedLocationSource;
 
@@ -220,11 +220,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 .leafMarkerUpdater((info , marker) -> {
                     Meeting meeting = ((MeetingKey) info.getKey()).getMeeting();
 
-                    // 체험단이면 전용 색상 핀, 일반이면 기본 아이콘
+                    // 체험단이면 blue_pin, 일반 모임이면 orange_pin
                     if (meeting.isCampaign()) {
-                        marker.setIcon(OverlayImage.fromBitmap(makeLeafIcon(true)));
+                        marker.setIcon(OverlayImage.fromResource(R.drawable.blue_pin));
                     } else {
-                        marker.setIcon(Marker.DEFAULT_ICON);
+                        marker.setIcon(OverlayImage.fromResource(R.drawable.orange_pin));
                     }
 
                     marker.setCaptionText(meeting.getMeeting_title());
@@ -587,28 +587,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         textPaint.setTextAlign(Paint.Align.CENTER);
         float textY = sizePx / 2f - (textPaint.descent() + textPaint.ascent()) / 2f;
         canvas.drawText(String.valueOf(count), sizePx / 2f, textY, textPaint);
-
-        return bmp;
-    }
-
-    /**
-     * 개별(leaf) 마커 전용 아이콘 생성 — 체험단 전용 핀
-     */
-    private Bitmap makeLeafIcon(boolean isCampaign) {
-        int sizePx = 64;
-        Bitmap bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bmp);
-
-        String fillColor = isCampaign ? "#3B82F6" : "#FF6B35";
-        Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        circlePaint.setColor(Color.parseColor(fillColor));
-        canvas.drawCircle(sizePx / 2f, sizePx / 2f, sizePx / 2.4f, circlePaint);
-
-        Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        borderPaint.setColor(Color.WHITE);
-        borderPaint.setStyle(Paint.Style.STROKE);
-        borderPaint.setStrokeWidth(4f);
-        canvas.drawCircle(sizePx / 2f, sizePx / 2f, (sizePx / 2.4f) - 2f, borderPaint);
 
         return bmp;
     }
