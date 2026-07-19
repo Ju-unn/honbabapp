@@ -191,6 +191,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         // ── Clusterer 초기화 ──────────────────────────────
         clusterer = new Clusterer.Builder<MeetingKey>()
+                // 화면상 20dp 이내로 겹칠 때만 클러스터로 묶음 (SDK 기본 70dp)
+                .screenDistance(20)
                 // 클러스트 마커 (여러 개 묶인 상태) 스타일
                 // 클러스터 안에 체험단이 하나라도 포함되면 체험단 색으로 표시
                 .clusterMarkerUpdater((info , marker) -> {
