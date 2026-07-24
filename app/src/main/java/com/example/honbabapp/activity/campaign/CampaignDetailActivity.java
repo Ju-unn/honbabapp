@@ -326,7 +326,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
     private void showDeleteConfirmDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("체험단 삭제")
-                .setMessage("체험단을 삭제하시겠습니까?\n대기 중인 신청은 모두 취소되며, 채팅방도 함께 삭제됩니다.\n(승인된 참여자가 있으면 삭제할 수 없습니다)")
+                .setMessage("체험단을 삭제하시겠습니까?\n대기 중인 신청은 모두 취소되며, 채팅방도 함께 삭제됩니다.\n삭제 시 사용한 등록권 환불이 어려울 수 있습니다.\n(승인된 참여자가 있으면 삭제할 수 없습니다)")
                 .setPositiveButton("삭제", (dialog, which) -> deleteCampaign())
                 .setNegativeButton("취소", null)
                 .show();

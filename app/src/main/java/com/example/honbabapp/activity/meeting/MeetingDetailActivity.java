@@ -395,6 +395,11 @@ public class MeetingDetailActivity extends AppCompatActivity {
             } else if (participationStatus.equals("거절")) {
                 binding.btnJoinMeeting.setText("참여 거절됨");
                 binding.btnJoinMeeting.setEnabled(false);
+            } else if (participationStatus.equals("강퇴")) {
+                // 강퇴된 사용자는 재신청 불가 (join.php에서도 차단됨)
+                binding.btnJoinMeeting.setText("강퇴로 인해 재신청 불가입니다");
+                binding.btnJoinMeeting.setEnabled(false);
+                binding.btnJoinMeeting.setBackgroundResource(R.drawable.button_disabled_background);
             }
         } else if (meeting.getMeeting_status().equals("모집완료")) {
             binding.btnJoinMeeting.setText("모집 완료");

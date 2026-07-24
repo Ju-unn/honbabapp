@@ -83,8 +83,7 @@ public class ApplicantListAdapter extends RecyclerView.Adapter<ApplicantListAdap
             binding.tvApplicantName.setText(applicant.getUser_nickname());
 
             //성별 표시 (한 줄 소개 대신)
-            String gender = applicant.getUser_gender();
-            binding.tvApplicantIntro.setText(gender + " • 매너점수 " +
+            binding.tvApplicantIntro.setText("매너점수 " +
                     String.format("%.1f°C", applicant.getUser_manner_score()));
 
             // 신청 시간

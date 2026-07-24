@@ -116,6 +116,12 @@ public class TicketPurchaseActivity extends AppCompatActivity {
      * @param productCode 선택된 상품 코드 (PRODUCT_CODE_TICKET_1/5/10 중 하나)
      */
     private void selectTicketProduct(String productCode) {
+        // 이미 결제 준비가 끝난 뒤 상품을 바꾸면, 이전 주문(order_id/amount)이
+        // 그대로 결제되는 것을 막기 위해 준비 상태를 무효화하고 처음부터 다시 진행
+        if (preparedOrderId != null && !productCode.equals(selectedProductCode)) {
+            invalidatePreparedOrder();
+        }
+
         selectedProductCode = productCode;
 
         boolean isTicket1Selected = PRODUCT_CODE_TICKET_1.equals(productCode);
@@ -129,6 +135,21 @@ public class TicketPurchaseActivity extends AppCompatActivity {
         updateCardStrokeColor(binding.cardTicket1, isTicket1Selected);
         updateCardStrokeColor(binding.cardTicket5, isTicket5Selected);
         updateCardStrokeColor(binding.cardTicket10, isTicket10Selected);
+    }
+
+    /**
+     * 준비된 주문 정보를 버리고 화면을 "다음"(결제 준비) 단계로 되돌린다.
+     */
+    private void invalidatePreparedOrder() {
+        preparedOrderId = null;
+        preparedOrderName = null;
+        preparedAmount = 0;
+
+        binding.layoutPaymentSection.setVisibility(View.GONE);
+        binding.btnRetryConfirm.setVisibility(View.GONE);
+        binding.btnNext.setText("다음");
+        binding.btnNext.setEnabled(true);
+        binding.btnNext.setOnClickListener(view -> onNextButtonClicked());
     }
 
     /**
