@@ -55,6 +55,13 @@ public class HomeFragment extends Fragment {
     // 모임 데이터
     private List<Meeting> allMeetings = new ArrayList<>();
 
+    // 페이지네이션 (무한 스크롤)
+    private static final int PAGE_SIZE = 30;
+    private static final int LOAD_MORE_TRIGGER_PX = 300;
+    private int currentPage = 1;
+    private boolean isLoading = false;
+    private boolean hasMore = true;
+
     // 위치 관련
     private FusedLocationProviderClient fusedClient;
     private String currentSigungu = "관악구"; // 위치 로드 전 기본값
@@ -94,6 +101,9 @@ public class HomeFragment extends Fragment {
 
         // recyclerViews 설정
         initRecyclerViews();
+
+        // 스크롤 하단 근접 시 다음 페이지 로드 (무한 스크롤)
+        initInfiniteScroll();
 
         // GPS 위치 먼저 가져온뒤 API 호출
         loadCurrentLocationAndMeetings();
@@ -152,22 +162,40 @@ public class HomeFragment extends Fragment {
     }
 
     /**
-     * 실제 API 호출해서 모임 목록 가져오기
+     * 모임 목록 첫 페이지부터 다시 로드
+     * (위치 변경, onResume, 새로고침 등 기존 호출부는 전부 이 메서드를 사용)
      */
     private void loadMeetings() {
+        currentPage = 1;
+        hasMore = true;
+        loadMeetings(1, true);
+    }
+
+    /**
+     * 실제 API 호출해서 모임 목록 가져오기
+     *
+     * @param page    요청할 페이지 (1부터)
+     * @param isFirst true면 목록 전체 교체(첫 페이지), false면 뒤에 append
+     */
+    private void loadMeetings(int page, boolean isFirst) {
+        if (isLoading) return;
+        isLoading = true;
 
         // API 호출 (currentSigungu는 loadCurrentLocationAndMeetings에서 설정됨)
         Call<ApiResponse<MeetingListResponse>> call = apiService.getMeetingList(
                 currentSigungu ,
                 null ,   // categories: null = 전체 (서버에 '전체' 특례 없음 — MapFragment와 동일 규약)
                 "모집중" ,
-                1 ,
-                30
+                page ,
+                PAGE_SIZE
         );
 
         call.enqueue(new Callback<ApiResponse<MeetingListResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<MeetingListResponse>> call, Response<ApiResponse<MeetingListResponse>> response) {
+                isLoading = false;
+                if (binding == null) return;
+
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<MeetingListResponse> apiResponse = response.body();
 
@@ -178,17 +206,28 @@ public class HomeFragment extends Fragment {
                         List<Meeting> rawMeetings = data.getMeetings();
 
                         // 만료된 미팅 클라이언트 필터링 (백엔드 이중 안전망)
-                        allMeetings = new ArrayList<>();
+                        List<Meeting> filteredMeetings = new ArrayList<>();
                         for (Meeting m : rawMeetings) {
                             if (!m.isExpired()) {
-                                allMeetings.add(m);
+                                filteredMeetings.add(m);
                             }
                         }
 
-                        Log.i(TAG, "모임 목록 로드 성공: " + allMeetings.size() + "개");
+                        currentPage = page;
+                        hasMore = page < data.getTotal_pages();
 
-                        // Adapter에 데이터 전달
-                        updateAdapters();
+                        if (isFirst) {
+                            allMeetings = filteredMeetings;
+                            // 핫 모임 top-5는 1페이지 기준으로만 산출
+                            updateAdapters();
+                        } else {
+                            allMeetings.addAll(filteredMeetings);
+                            allMeetingListAdapter.addMeetings(filteredMeetings);
+                        }
+
+                        Log.i(TAG, "모임 목록 로드 성공: page=" + page
+                                + ", 추가 " + filteredMeetings.size() + "개, 누적 " + allMeetings.size() + "개"
+                                + ", hasMore=" + hasMore);
                     } else {
                         Log.e(TAG , "API 실패: " + apiResponse.getMessage());
                         Toast.makeText(getContext() ,
@@ -205,12 +244,35 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponse<MeetingListResponse>> call, Throwable t) {
+                isLoading = false;
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
                 Toast.makeText(getContext(),
                         "네트워크 오류가 발생했습니다.",
                         Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /**
+     * NestedScrollView 하단 근접 시 다음 페이지 로드
+     * (rv_meetings가 NestedScrollView 내부에 있어 RecyclerView 스크롤 리스너는 동작하지 않음)
+     */
+    private void initInfiniteScroll() {
+        binding.nestedScrollHome.setOnScrollChangeListener(
+                (androidx.core.widget.NestedScrollView.OnScrollChangeListener)
+                        (nsv, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+                            if (scrollY <= oldScrollY) return; // 아래로 스크롤할 때만
+                            if (isLoading || !hasMore) return;
+
+                            View content = nsv.getChildAt(0);
+                            if (content == null) return;
+
+                            int remaining = content.getMeasuredHeight()
+                                    - nsv.getMeasuredHeight() - scrollY;
+                            if (remaining <= LOAD_MORE_TRIGGER_PX) {
+                                loadMeetings(currentPage + 1, false);
+                            }
+                        });
     }
 
     /**

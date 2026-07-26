@@ -114,6 +114,10 @@
             android:name=".activity.payment.TicketPurchaseActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".activity.payment.PaymentHistoryActivity"
+            android:exported="false" />
+
 
         <activity
             android:name=".activity.campaign.CampaignApplyActivity"
@@ -179,6 +183,12 @@
             android:exported="false" />
         <activity
             android:name=".activity.profile.ProfileTicketActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.profile.ProfileReviewsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.profile.PolicyActivity"
             android:exported="false" />
         <activity
             android:name=".activity.SearchViewActivity"

@@ -57,6 +57,13 @@ public class CampaignFragment extends Fragment {
     private String currentSido = null;
     private String currentSigungu = null;
 
+    // 페이지네이션 (무한 스크롤)
+    private static final int PAGE_SIZE = 30;
+    private static final int LOAD_MORE_THRESHOLD = 5;
+    private int currentPage = 1;
+    private boolean isLoading = false;
+    private boolean hasMore = true;
+
     // ─────────────────────────────────────────────────────────────
     // 생명주기
     // ─────────────────────────────────────────────────────────────
@@ -114,6 +121,29 @@ public class CampaignFragment extends Fragment {
     private void initRecyclerView() {
         campaignListAdapter = new CampaignListAdapter();
         binding.rvCampaignList.setAdapter(campaignListAdapter);
+
+        // 무한 스크롤 리스너 (ChatRoomPhotosActivity 동일 패턴)
+        binding.rvCampaignList.addOnScrollListener(new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull androidx.recyclerview.widget.RecyclerView rv, int dx, int dy) {
+                super.onScrolled(rv, dx, dy);
+
+                // 스크롤 아래 방향일 때만 검사 (dy > 0)
+                if (dy <= 0) return;
+
+                androidx.recyclerview.widget.LinearLayoutManager llm =
+                        (androidx.recyclerview.widget.LinearLayoutManager) rv.getLayoutManager();
+                if (llm == null) return;
+
+                int total = llm.getItemCount();
+                int lastVisible = llm.findLastVisibleItemPosition();
+
+                // 마지막 LOAD_MORE_THRESHOLD 개 안에 도달 + 추가 로드 가능
+                if (!isLoading && hasMore && lastVisible >= total - LOAD_MORE_THRESHOLD) {
+                    loadCampaignList(currentPage + 1, false);
+                }
+            }
+        });
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -121,7 +151,24 @@ public class CampaignFragment extends Fragment {
     // HomeFragment.loadMeetings() / MapFragment.loadMeetingsOnMap() 동일 패턴
     // ─────────────────────────────────────────────────────────────
 
+    /**
+     * 체험단 목록 첫 페이지부터 다시 로드
+     * (정렬/필터 변경, onResume, 새로고침 등 기존 호출부는 전부 이 메서드를 사용)
+     */
     private void loadCampaignList() {
+        currentPage = 1;
+        hasMore = true;
+        loadCampaignList(1, true);
+    }
+
+    /**
+     * @param page    요청할 페이지 (1부터)
+     * @param isFirst true면 목록 전체 교체(첫 페이지), false면 뒤에 append
+     */
+    private void loadCampaignList(int page, boolean isFirst) {
+        if (isLoading) return;
+        isLoading = true;
+
         // 정렬 옵션 변환 (서버 파라미터)
         String orderBy = convertSortOption(currentSortOption);
 
@@ -142,8 +189,8 @@ public class CampaignFragment extends Fragment {
         Call<ApiResponse<MeetingListResponse>> call = apiService.getCampaignList(
                 "체험단",
                 "모집중",
-                1,
-                30,
+                page,
+                PAGE_SIZE,
                 orderBy,
                 channels,
                 categories,
@@ -157,13 +204,15 @@ public class CampaignFragment extends Fragment {
             @Override
             public void onResponse(Call<ApiResponse<MeetingListResponse>> call,
                                    Response<ApiResponse<MeetingListResponse>> response) {
+                isLoading = false;
                 if (binding == null) return;
 
                 if (response.isSuccessful()
                         && response.body() != null
                         && response.body().isSuccess()) {
 
-                    List<Meeting> rawList = response.body().getData().getMeetings();
+                    MeetingListResponse data = response.body().getData();
+                    List<Meeting> rawList = data.getMeetings();
 
                     // 만료된 체험단 클라이언트 필터링
                     List<Meeting> campaignList = new ArrayList<>();
@@ -173,14 +222,23 @@ public class CampaignFragment extends Fragment {
                         }
                     }
 
-                    Log.i(TAG, "체험단 목록 로드 성공: " + campaignList.size() + "개");
-                    campaignListAdapter.updateCampaignList(campaignList);
-                    showEmptyState(campaignList.isEmpty());
+                    currentPage = page;
+                    hasMore = page < data.getTotal_pages();
+
+                    Log.i(TAG, "체험단 목록 로드 성공: page=" + page
+                            + ", " + campaignList.size() + "개, hasMore=" + hasMore);
+
+                    if (isFirst) {
+                        campaignListAdapter.updateCampaignList(campaignList);
+                        showEmptyState(campaignList.isEmpty());
+                    } else {
+                        campaignListAdapter.addCampaignList(campaignList);
+                    }
 
                 } else {
                     Log.e(TAG, "API 실패: " + (response.body() != null
                             ? response.body().getMessage() : response.code()));
-                    showEmptyState(true);
+                    if (isFirst) showEmptyState(true);
                     Toast.makeText(getContext(),
                             "체험단 목록을 불러오지 못했습니다.", Toast.LENGTH_SHORT).show();
                 }
@@ -188,9 +246,10 @@ public class CampaignFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponse<MeetingListResponse>> call, Throwable throwable) {
+                isLoading = false;
                 if (binding == null) return;
                 Log.e(TAG, "네트워크 오류: " + throwable.getMessage());
-                showEmptyState(true);
+                if (isFirst) showEmptyState(true);
                 Toast.makeText(getContext(),
                         "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }

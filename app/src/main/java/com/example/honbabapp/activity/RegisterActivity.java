@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.honbabapp.BuildConfig;
 import com.example.honbabapp.R;
+import com.example.honbabapp.activity.profile.PolicyActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.NaverMapsApiService;
 import com.example.honbabapp.api.NaverMapsRetrofitClient;
@@ -134,6 +135,9 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 닉네임 중복확인
         registerBinding.btnCheckNickname.setOnClickListener(v -> checkNicknameDuplicate());
+
+        // 약관 동의 문구의 "이용약관"/"개인정보처리방침"을 클릭 가능한 링크로 설정
+        setupTermsNoticeLinks();
 
         // 위치 서비스 초기화 (onCreate에서 바로 실행)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -1126,6 +1130,41 @@ public class RegisterActivity extends AppCompatActivity {
         });
 
 
+    }
+
+    /**
+     * 약관 동의 문구의 "이용약관"/"개인정보처리방침"에 클릭 가능한 링크를 걸어
+     * PolicyActivity로 이동시킨다.
+     */
+    private void setupTermsNoticeLinks() {
+        String noticeText = registerBinding.tvTermsNotice.getText().toString();
+        android.text.SpannableString spannable = new android.text.SpannableString(noticeText);
+
+        setPolicyLinkSpan(spannable, noticeText, "이용약관", PolicyActivity.TYPE_TERMS);
+        setPolicyLinkSpan(spannable, noticeText, "개인정보처리방침", PolicyActivity.TYPE_PRIVACY);
+
+        registerBinding.tvTermsNotice.setText(spannable);
+        registerBinding.tvTermsNotice.setMovementMethod(
+                android.text.method.LinkMovementMethod.getInstance());
+    }
+
+    private void setPolicyLinkSpan(android.text.SpannableString spannable,
+                                   String fullText, String keyword, String policyType) {
+        int start = fullText.indexOf(keyword);
+        if (start < 0) return;
+
+        spannable.setSpan(new android.text.style.ClickableSpan() {
+            @Override
+            public void onClick(@androidx.annotation.NonNull View widget) {
+                startActivity(PolicyActivity.newIntent(RegisterActivity.this, policyType));
+            }
+
+            @Override
+            public void updateDrawState(@androidx.annotation.NonNull android.text.TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setUnderlineText(true);
+            }
+        }, start, start + keyword.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
 

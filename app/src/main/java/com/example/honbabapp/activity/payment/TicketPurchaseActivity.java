@@ -226,7 +226,22 @@ public class TicketPurchaseActivity extends AppCompatActivity {
 
         binding.btnNext.setText("결제하기 · " + formatAmount(preparedAmount) + "원");
         binding.btnNext.setEnabled(true);
-        binding.btnNext.setOnClickListener(view -> requestTossPayment());
+        binding.btnNext.setOnClickListener(view -> showRefundConfirmDialog());
+    }
+
+    /**
+     * 결제 직전 환불 불가 안내 다이얼로그 (전자상거래법 고지)
+     * 동의한 경우에만 토스 결제창을 띄운다. 취소해도 버튼은 그대로 사용 가능.
+     */
+    private void showRefundConfirmDialog() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("결제 전 확인")
+                .setMessage(preparedOrderName + " · " + formatAmount(preparedAmount) + "원\n\n"
+                        + "등록권은 구매 즉시 지급되는 디지털 상품으로, 구매 후 환불이 불가능합니다.\n"
+                        + "결제를 진행하시겠습니까?")
+                .setPositiveButton("동의하고 결제", (dialog, which) -> requestTossPayment())
+                .setNegativeButton("취소", null)
+                .show();
     }
 
     private void requestTossPayment() {

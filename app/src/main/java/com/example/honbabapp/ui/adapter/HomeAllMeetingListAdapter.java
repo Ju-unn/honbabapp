@@ -74,6 +74,16 @@ public class HomeAllMeetingListAdapter extends RecyclerView.Adapter<HomeAllMeeti
         Log.i(TAG, "모임 목록 업데이트 완료: " + meetings.size() + "개");
     }
 
+    /**
+     * 다음 페이지 데이터 추가 (무한 스크롤)
+     */
+    public void addMeetings(List<Meeting> meetings) {
+        if (meetings == null || meetings.isEmpty()) return;
+        int startPosition = this.meetingList.size();
+        this.meetingList.addAll(meetings);
+        notifyItemRangeInserted(startPosition, meetings.size());
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         RvMapMeetingCardBinding binding;
         public ViewHolder(RvMapMeetingCardBinding binding) {

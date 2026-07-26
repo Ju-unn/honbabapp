@@ -37,6 +37,7 @@ import com.example.honbabapp.api.data.response.chat.LeaveRoomResponse;
 import com.example.honbabapp.api.data.response.chat.MessageListResponse;
 import com.example.honbabapp.api.data.response.payment.ConfirmPaymentResponse;
 import com.example.honbabapp.api.data.response.payment.MyTicketsResponse;
+import com.example.honbabapp.api.data.response.payment.PaymentHistoryResponse;
 import com.example.honbabapp.api.data.response.payment.PreparePaymentResponse;
 import com.example.honbabapp.api.data.response.user.OnboardingStatusResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
@@ -66,6 +67,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.review.ReceivedReviewsData;
 import com.example.honbabapp.api.data.review.ReviewSubmitData;
 import com.example.honbabapp.api.data.review.ReviewTargetsData;
+import com.example.honbabapp.api.data.review.WrittenReviewsData;
 
 import java.util.List;
 
@@ -606,6 +608,16 @@ public interface ApiService {
     @GET("api/review/received.php")
     Call<ApiResponse<ReceivedReviewsData>> getReceivedReviews(@Query("user_id") int userId);
 
+    /**
+     * 내가 쓴 후기 목록 조회
+     *
+     * 프로필 > 내 리뷰 화면의 "내가 쓴 리뷰" 탭에서 호출.
+     * user_id 파라미터 없이 토큰의 사용자 기준으로만 조회한다.
+     * 응답에는 후기 대상(reviewee)과 모임 정보가 포함된다.
+     */
+    @GET("api/review/written.php")
+    Call<ApiResponse<WrittenReviewsData>> getWrittenReviews();
+
 
     // ==================== Payment API ====================
 
@@ -631,6 +643,15 @@ public interface ApiService {
      */
     @GET("api/payment/my_tickets.php")
     Call<ApiResponse<MyTicketsResponse>> getMyTickets();
+
+    /**
+     * 내 등록권 구매 내역 조회 (전자상거래법상 구매내역 확인 수단)
+     * DONE/FAILED 결제를 최신순으로 반환. READY(미완료 주문)는 제외됨.
+     * @return PaymentHistoryResponse - payments, page, limit, total_count, has_more
+     */
+    @GET("api/payment/history.php")
+    Call<ApiResponse<PaymentHistoryResponse>> getPaymentHistory(@Query("page") int page,
+                                                                @Query("limit") int limit);
 
 
 

@@ -6,6 +6,7 @@
     <string name="map">지도</string>
     <string name="chat">채팅</string>
     <string name="profile">프로필</string>
+    <string name="refund_policy_notice">체험단 등록권은 구매 즉시 지급되는 디지털 상품으로, 구매 후 환불이 불가능합니다.</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

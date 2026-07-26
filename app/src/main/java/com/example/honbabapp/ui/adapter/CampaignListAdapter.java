@@ -67,6 +67,16 @@ public class CampaignListAdapter extends RecyclerView.Adapter<CampaignListAdapte
         Log.i(TAG, "체험단 목록 업데이트 완료: " + meetings.size() + "개");
     }
 
+    /**
+     * 다음 페이지 데이터 추가 (무한 스크롤)
+     */
+    public void addCampaignList(List<Meeting> meetings) {
+        if (meetings == null || meetings.isEmpty()) return;
+        int startPosition = campaignMeetingList.size();
+        campaignMeetingList.addAll(meetings);
+        notifyItemRangeInserted(startPosition, meetings.size());
+    }
+
     // ─────────────────────────────────────────────────────────────
     // ViewHolder
     // ─────────────────────────────────────────────────────────────

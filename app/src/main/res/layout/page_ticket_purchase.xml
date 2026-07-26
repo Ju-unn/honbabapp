@@ -61,6 +61,16 @@
                 android:textColor="@color/text_100"
                 android:textSize="14sp" />
 
+            <!-- 환불 불가 안내 (전자상거래법 고지) -->
+            <TextView
+                android:id="@+id/tv_refund_notice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/refund_policy_notice"
+                android:textColor="@color/text_200"
+                android:textSize="13sp" />
+
             <!-- 상품 선택 옵션 (기존 RadioGroup → LinearLayout으로 교체됨.
                  RadioButton이 MaterialCardView 안쪽에 중첩되어 있어 RadioGroup의
                  상호 배타 처리/콜백이 애초에 동작하지 않았기 때문. 클릭 처리는

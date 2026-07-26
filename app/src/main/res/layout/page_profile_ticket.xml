@@ -115,6 +115,15 @@
             android:textColor="@color/text_200"
             android:textSize="13sp" />
 
+        <!-- 환불 불가 안내 (전자상거래법 고지) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/refund_policy_notice"
+            android:textColor="@color/text_200"
+            android:textSize="13sp" />
+
     </LinearLayout>
 
     <!-- ── 하단 고정 버튼 영역 ─────────────────────────────── -->
@@ -133,6 +142,16 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:text="구매하기" />
+
+        <TextView
+            android:id="@+id/btnPurchaseHistory"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:text="구매내역 보기"
+            android:textColor="@color/text_200"
+            android:textSize="14sp" />
 
     </LinearLayout>
 

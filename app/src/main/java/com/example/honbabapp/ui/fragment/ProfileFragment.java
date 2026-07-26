@@ -18,10 +18,12 @@ import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.R;
+import com.example.honbabapp.activity.profile.PolicyActivity;
 import com.example.honbabapp.activity.profile.ProfileAccountSettingActivity;
 import com.example.honbabapp.activity.profile.ProfileMyMeetingsActivity;
 import com.example.honbabapp.activity.profile.ProfileNotificationSettingActivity;
 import com.example.honbabapp.activity.profile.ProfileProfileSettingActivity;
+import com.example.honbabapp.activity.profile.ProfileReviewsActivity;
 import com.example.honbabapp.activity.profile.ProfileTicketActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
@@ -80,12 +82,16 @@ public class ProfileFragment extends Fragment {
         menuTicketOnClick();
         // 내 모임 관리 클릭 이벤트
         menuMyMeetingsOnClick();
+        // 내 리뷰 클릭 이벤트
+        menuReviewsOnClick();
         // 알림 설정 클릭 이벤트
         menuNotificationOnclikc();
         // 프로필 수정 클릭 이벤트
         menuProfileSettingOnClick();
         // 계정 / 정보 관리 클릭 이벤트
         menuAccountSettingOnClick();
+        // 약관 및 정책 클릭 이벤트
+        menuPoliciesOnClick();
     }
 
     @Override
@@ -209,6 +215,28 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity() , ProfileTicketActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
+    /// 약관 및 정책 — 문서 선택 다이얼로그 후 PolicyActivity 이동
+    public void menuPoliciesOnClick() {
+        binding.menuPolicies.setOnClickListener(v ->
+                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                        .setTitle("약관 및 정책")
+                        .setItems(new CharSequence[]{"이용약관", "개인정보처리방침"}, (dialog, which) ->
+                                startActivity(PolicyActivity.newIntent(requireContext(),
+                                        which == 1 ? PolicyActivity.TYPE_PRIVACY : PolicyActivity.TYPE_TERMS)))
+                        .show());
+    }
+
+    /// 내 리뷰 (받은 리뷰 / 내가 쓴 리뷰)
+    public void menuReviewsOnClick() {
+        binding.menuReviews.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity() , ProfileReviewsActivity.class);
                 startActivity(intent);
             }
         });

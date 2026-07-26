@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    내가 쓴 후기 단건 아이템 레이아웃
+    WrittenReviewAdapter 에서 사용. rv_received_review.xml 과 동일 톤에
+    후기 대상(아바타/닉네임)과 모임명이 추가된 형태.
+-->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="20dp"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="1dp"
+    app:cardBackgroundColor="@color/bg_100">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <!-- 후기 대상 (아바타 + 닉네임) + 날짜 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <ImageView
+                android:id="@+id/iv_reviewee_avatar"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/ic_profile" />
+
+            <TextView
+                android:id="@+id/tv_reviewee_nickname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_100" />
+
+            <TextView
+                android:id="@+id/tv_review_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:textSize="11sp"
+                android:textColor="@color/text_200" />
+
+        </LinearLayout>
+
+        <!-- 모임명 (없으면 gone) -->
+        <TextView
+            android:id="@+id/tv_meeting_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:textSize="12sp"
+            android:textColor="@color/text_200"
+            android:visibility="gone" />
+
+        <!-- 읽기 전용 RatingBar -->
+        <RatingBar
+            android:id="@+id/rating_bar_written"
+            style="?android:attr/ratingBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:numStars="5"
+            android:stepSize="1.0"
+            android:isIndicator="true"
+            android:progressTint="@color/primary_200"
+            android:progressBackgroundTint="@color/bg_300"
+            android:secondaryProgressTint="@color/primary_200" />
+
+        <!-- 후기 내용 (없으면 gone) -->
+        <TextView
+            android:id="@+id/tv_review_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="@color/text_100"
+            android:lineSpacingMultiplier="1.4"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

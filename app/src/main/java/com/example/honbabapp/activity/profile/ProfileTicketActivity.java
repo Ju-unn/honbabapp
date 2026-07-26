@@ -9,6 +9,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.honbabapp.activity.payment.PaymentHistoryActivity;
 import com.example.honbabapp.activity.payment.TicketPurchaseActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
@@ -58,6 +59,10 @@ public class ProfileTicketActivity extends AppCompatActivity {
         // 구매하기 → 토스 결제 화면
         binding.btnBuyTicket.setOnClickListener(v ->
                 ticketPurchaseLauncher.launch(new Intent(this, TicketPurchaseActivity.class)));
+
+        // 구매내역 보기 → 결제 이력 화면
+        binding.btnPurchaseHistory.setOnClickListener(v ->
+                startActivity(new Intent(this, PaymentHistoryActivity.class)));
 
         loadTicketBalance();
     }
