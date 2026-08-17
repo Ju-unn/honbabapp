@@ -283,10 +283,10 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<ApiResponse<AvailabilityData>> call,
                                            Response<ApiResponse<AvailabilityData>> response) {
-                        if (response.isSuccessful()
-                                && response.body() != null
-                                && response.body().isSuccess()) {
-                            boolean available = response.body().getData().isAvailable();
+                        if (response.isSuccessful() && response.body() != null) {
+                            boolean available = response.body().isSuccess()
+                                    && response.body().getData() != null
+                                    && response.body().getData().isAvailable();
                             isNicknameChecked = available;
                             showNicknameResult(available,
                                     available ? "사용 가능한 닉네임입니다" : "이미 사용중인 닉네임입니다");

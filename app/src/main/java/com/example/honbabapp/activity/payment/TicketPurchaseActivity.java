@@ -1,6 +1,7 @@
 package com.example.honbabapp.activity.payment;
 
 import android.content.SharedPreferences;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -102,6 +103,11 @@ public class TicketPurchaseActivity extends AppCompatActivity {
 
         binding.btnNext.setOnClickListener(view -> onNextButtonClicked());
         binding.btnRetryConfirm.setOnClickListener(view -> retryConfirmPayment());
+
+        binding.tvTicket5OriginalPrice.setPaintFlags(
+                binding.tvTicket5OriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        binding.tvTicket10OriginalPrice.setPaintFlags(
+                binding.tvTicket10OriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
     }
 
     // ─────────────────────────────────────────────────────────────

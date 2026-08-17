@@ -178,14 +178,29 @@
                                 android:textSize="13sp" />
                         </LinearLayout>
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="8dp"
-                            android:text="13,500원"
-                            android:textColor="@color/text_100"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
+                            android:orientation="vertical"
+                            android:gravity="end">
+
+                            <TextView
+                                android:id="@+id/tvTicket5OriginalPrice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="15,000원"
+                                android:textColor="@color/error_red"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="13,500원"
+                                android:textColor="@color/text_100"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
 
                         <RadioButton
                             android:id="@+id/radioTicket5"
@@ -239,14 +254,29 @@
                                 android:textSize="13sp" />
                         </LinearLayout>
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="8dp"
-                            android:text="26,000원"
-                            android:textColor="@color/text_100"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
+                            android:orientation="vertical"
+                            android:gravity="end">
+
+                            <TextView
+                                android:id="@+id/tvTicket10OriginalPrice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="30,000원"
+                                android:textColor="@color/error_red"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="26,000원"
+                                android:textColor="@color/text_100"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
 
                         <RadioButton
                             android:id="@+id/radioTicket10"
