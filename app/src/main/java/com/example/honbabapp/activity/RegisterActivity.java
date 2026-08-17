@@ -10,6 +10,7 @@ import android.graphics.ImageDecoder;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.provider.MediaStore;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
@@ -113,6 +114,10 @@ public class RegisterActivity extends AppCompatActivity {
 
     // 이미지 선택 Launcher
     private ActivityResultLauncher<Intent> imagePickerLauncher;
+
+    // 이메일 인증번호 만료 타이머 (3분)
+    private static final long VERIFICATION_TIMEOUT_MS = 3 * 60 * 1000L;
+    private CountDownTimer verificationTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -267,9 +272,6 @@ public class RegisterActivity extends AppCompatActivity {
             }
             verifyEmailCode();
         });
-
-        // 비밀번호 확인 버튼
-        registerBinding.btnVerifyPassword.setOnClickListener(v -> checkPasswordMatch());
 
         // 회원가입 완료 버튼
         registerBinding.btnSignupComplete.setOnClickListener(v -> performRegister());
@@ -602,6 +604,7 @@ public class RegisterActivity extends AppCompatActivity {
                         // 인증 코드 입력란 활성화
                         registerBinding.etVerificationCode.setEnabled(true);
                         registerBinding.btnVerifyCode.setEnabled(true);
+                        startVerificationTimer();
                     } else {
                         ToastUtil.makeText(RegisterActivity.this,
                                 apiResponse.getMessage(),
@@ -648,6 +651,7 @@ public class RegisterActivity extends AppCompatActivity {
                         isEmailVerified = true;
                         registerBinding.etVerificationCode.setEnabled(false);
                         registerBinding.btnVerifyCode.setEnabled(false);
+                        cancelVerificationTimer();
                     } else {
                         ToastUtil.makeText(RegisterActivity.this,
                                 apiResponse.getMessage(),
@@ -668,6 +672,50 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
+     * 인증번호 만료 타이머 시작 (3분, 재전송 시 재시작)
+     */
+    private void startVerificationTimer() {
+        cancelVerificationTimer();
+        registerBinding.tvVerificationTimer.setVisibility(View.VISIBLE);
+        registerBinding.tvVerificationTimer.setTextColor(
+                ContextCompat.getColor(this, R.color.text_200));
+
+        verificationTimer = new CountDownTimer(VERIFICATION_TIMEOUT_MS, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long totalSeconds = millisUntilFinished / 1000;
+                long minutes = totalSeconds / 60;
+                long seconds = totalSeconds % 60;
+                registerBinding.tvVerificationTimer.setText(
+                        String.format("남은 시간 %d:%02d", minutes, seconds));
+            }
+
+            @Override
+            public void onFinish() {
+                registerBinding.tvVerificationTimer.setText("인증번호가 만료되었습니다. 다시 전송해주세요");
+                registerBinding.tvVerificationTimer.setTextColor(
+                        ContextCompat.getColor(RegisterActivity.this, R.color.error_red));
+                registerBinding.etVerificationCode.setEnabled(false);
+                registerBinding.btnVerifyCode.setEnabled(false);
+            }
+        }.start();
+    }
+
+    private void cancelVerificationTimer() {
+        if (verificationTimer != null) {
+            verificationTimer.cancel();
+            verificationTimer = null;
+        }
+        registerBinding.tvVerificationTimer.setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        cancelVerificationTimer();
+    }
+
+    /**
      * 비밀번호 실시간 검증
      */
     private void setupPasswordValidation() {
@@ -679,11 +727,11 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String password = s.toString();
-                isPasswordConfirmed = false;
 
                 if (!password.isEmpty()) {
                     validatePasswordRules(password);
                 }
+                checkPasswordMatch();
             }
 
             @Override
@@ -697,8 +745,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                registerBinding.etPasswordConfirm.setError(null);
-                isPasswordConfirmed = false;
+                checkPasswordMatch();
             }
 
             @Override
@@ -745,18 +792,27 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
-     * 비밀번호 확인
+     * 비밀번호 확인 (버튼 없이 실시간으로 호출됨)
      */
     private void checkPasswordMatch() {
         String password = registerBinding.etPassword.getText().toString();
         String passwordConfirm = registerBinding.etPasswordConfirm.getText().toString();
 
-        // 비밀번호 일치 여부만 확인
+        if (passwordConfirm.isEmpty()) {
+            registerBinding.tvPasswordMatch.setVisibility(View.GONE);
+            isPasswordConfirmed = false;
+            return;
+        }
+
+        registerBinding.tvPasswordMatch.setVisibility(View.VISIBLE);
+
         if (password.equals(passwordConfirm)) {
-            ToastUtil.makeText(this, "비밀번호가 일치합니다", Toast.LENGTH_SHORT).show();
+            registerBinding.tvPasswordMatch.setVisibility(View.GONE);
             isPasswordConfirmed = true;
         } else {
-            ToastUtil.makeText(this, "비밀번호가 일치하지 않습니다", Toast.LENGTH_SHORT).show();
+            registerBinding.tvPasswordMatch.setText("비밀번호가 일치하지 않습니다");
+            registerBinding.tvPasswordMatch.setTextColor(
+                    ContextCompat.getColor(this, R.color.error_red));
             isPasswordConfirmed = false;
         }
     }
@@ -1005,7 +1061,6 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 프로필 이미지가 있으면 먼저 업로드!
         if (selectedProfileBitmap != null && uploadedImageUrl == null) {
-            ToastUtil.makeText(this, "프로필 이미지 업로드 중...", Toast.LENGTH_SHORT).show();
             uploadProfileImageThenRegister(nickname, email, password, phoneNumber, birthday, location);
         } else {
             // 이미지 없거나 이미 업로드됨 → 바로 회원가입

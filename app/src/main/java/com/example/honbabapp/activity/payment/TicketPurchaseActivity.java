@@ -349,6 +349,7 @@ public class TicketPurchaseActivity extends AppCompatActivity {
     private void showRetryConfirmButton() {
         binding.btnNext.setText("결제하기 · " + formatAmount(preparedAmount) + "원");
         binding.btnRetryConfirm.setVisibility(View.VISIBLE);
+        binding.btnRetryConfirm.setEnabled(true);
     }
 
     private void retryConfirmPayment() {
