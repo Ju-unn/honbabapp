@@ -8,10 +8,17 @@ public class VerifyCodeRequest {
 
     private String email;
     private String code;
+    private String purpose;
 
     public VerifyCodeRequest(String email, String code) {
         this.email = email;
         this.code = code;
+    }
+
+    public VerifyCodeRequest(String email, String code, String purpose) {
+        this.email = email;
+        this.code = code;
+        this.purpose = purpose;
     }
 
     public String getEmail() {
@@ -28,5 +35,13 @@ public class VerifyCodeRequest {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getPurpose() {
+        return purpose;
+    }
+
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
     }
 }

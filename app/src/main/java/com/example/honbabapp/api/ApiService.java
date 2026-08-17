@@ -184,11 +184,10 @@ public interface ApiService {
     Call<ApiResponse<VerificationData>> sendPasswordReset(@Body SendPasswordResetRequest request);
 
     /**
-     * 4-4. 임시 비밀번호 발급
-     * 임시 비밀번호는 메일로만 발송된다 (응답 data 없음)
-     * @param request 이메일, 인증 코드
+     * 4-4. 비밀번호 재설정 (인증코드 검증 + 새 비밀번호 직접 설정)
+     * @param request 이메일, 인증 코드, 새 비밀번호
      */
-    @POST("api/auth/reset_password.php")
+    @POST("api/auth/set_new_password.php")
     Call<ApiResponse<Object>> resetPassword(@Body ResetPasswordRequest request);
 
     /**

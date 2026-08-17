@@ -2,16 +2,17 @@ package com.example.honbabapp.api.data.request;
 
 public class ResetPasswordRequest {
     /**
-     * 임시 비밀번호 발급 요청 클래스
-     * PHP reset_password.php로 전송
-     * (임시 비밀번호는 메일로만 발송되며 응답에 포함되지 않는다)
+     * 비밀번호 재설정 요청 클래스
+     * PHP set_new_password.php로 전송
      */
     private String email;
     private String code;
+    private String new_password;
 
-    public ResetPasswordRequest(String email, String code) {
+    public ResetPasswordRequest(String email, String code, String newPassword) {
         this.email = email;
         this.code = code;
+        this.new_password = newPassword;
     }
 
     public String getEmail() {
@@ -28,5 +29,13 @@ public class ResetPasswordRequest {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getNewPassword() {
+        return new_password;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.new_password = newPassword;
     }
 }
