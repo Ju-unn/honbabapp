@@ -226,6 +226,7 @@ public class RegisterActivity extends AppCompatActivity {
                 isEmailChecked = false;
                 isEmailVerified = false;
                 registerBinding.btnSendVerification.setText("중복확인");
+                registerBinding.tvEmailCheckResult.setVisibility(View.GONE);
             }
 
             @Override
@@ -242,6 +243,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 isPhoneChecked = false;
+                registerBinding.tvPhoneCheckResult.setVisibility(View.GONE);
             }
 
             @Override
@@ -378,10 +380,6 @@ public class RegisterActivity extends AppCompatActivity {
                    registerBinding.ivProfilePreview.setImageBitmap(bitmap);
                    selectedProfileBitmap = bitmap;
 
-                   ToastUtil.makeText(RegisterActivity.this,
-                           "이미지가 선택되었습니다",
-                           Toast.LENGTH_SHORT).show();
-
                    Log.d("PhotoPicker" , "Selected URI" + uri);
                } else {
                    Log.d("PhotoPicker" , "No media selected");
@@ -513,12 +511,12 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 이메일 형식 검증
         if (email.isEmpty()) {
-            ToastUtil.makeText(this, "이메일을 입력해주세요", Toast.LENGTH_SHORT).show();
+            showEmailCheckResult(false, "이메일을 입력해주세요");
             return;
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            ToastUtil.makeText(this, "올바른 이메일 형식이 아닙니다", Toast.LENGTH_SHORT).show();
+            showEmailCheckResult(false, "올바른 이메일 형식이 아닙니다");
             return;
         }
 
@@ -526,6 +524,7 @@ public class RegisterActivity extends AppCompatActivity {
         // 전화번호도 함께 전달: 탈퇴 계정의 번호 + 새 이메일 조합이면
         // 서버가 "기존에 사용하던 이메일을 입력해주세요"로 안내해줌
         isSendVerificationRequesting = true;
+        registerBinding.btnSendVerification.setEnabled(false);
         Call<ApiResponse<AvailabilityData>> call = apiService.checkEmail(email,
                 registerBinding.etPhoneNumber.getText().toString().trim());
 
@@ -533,6 +532,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ApiResponse<AvailabilityData>> call, Response<ApiResponse<AvailabilityData>> response) {
                 isSendVerificationRequesting = false;
+                registerBinding.btnSendVerification.setEnabled(true);
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<AvailabilityData> apiResponse = response.body();
 
@@ -554,16 +554,12 @@ public class RegisterActivity extends AppCompatActivity {
                             // 복원 다이얼로그로 숨겼던 필드가 있으면 복구
                             registerBinding.layoutBirthday.setVisibility(View.VISIBLE);
                             registerBinding.layoutGender.setVisibility(View.VISIBLE);
-                            ToastUtil.makeText(RegisterActivity.this,
-                                    "사용 가능한 이메일입니다",
-                                    Toast.LENGTH_SHORT).show();
+                            showEmailCheckResult(true, "사용 가능한 이메일입니다");
                         }
                         isEmailChecked = true;
                         registerBinding.btnSendVerification.setText("코드 전송");
                     } else {
-                        ToastUtil.makeText(RegisterActivity.this,
-                                apiResponse.getMessage(),
-                                Toast.LENGTH_SHORT).show();
+                        showEmailCheckResult(false, apiResponse.getMessage());
                     }
                 }
             }
@@ -571,11 +567,18 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<AvailabilityData>> call, Throwable t) {
                 isSendVerificationRequesting = false;
-                ToastUtil.makeText(RegisterActivity.this,
-                        "네트워크 오류: " + t.getMessage(),
-                        Toast.LENGTH_SHORT).show();
+                registerBinding.btnSendVerification.setEnabled(true);
+                showEmailCheckResult(false, "네트워크 오류: " + t.getMessage());
             }
         });
+    }
+
+    // 이메일 중복확인/코드전송 결과 TextView 표시 헬퍼
+    private void showEmailCheckResult(boolean success, String message) {
+        registerBinding.tvEmailCheckResult.setVisibility(View.VISIBLE);
+        registerBinding.tvEmailCheckResult.setText(message);
+        registerBinding.tvEmailCheckResult.setTextColor(
+                ContextCompat.getColor(this, success ? R.color.success_green : R.color.error_red));
     }
 
     /**
@@ -585,6 +588,7 @@ public class RegisterActivity extends AppCompatActivity {
         String email = registerBinding.etEmail.getText().toString().trim();
 
         isSendVerificationRequesting = true;
+        registerBinding.btnSendVerification.setEnabled(false);
         SendVerificationRequest request = new SendVerificationRequest(email);
         Call<ApiResponse<VerificationData>> call = apiService.sendVerification(request);
 
@@ -592,23 +596,23 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ApiResponse<VerificationData>> call, Response<ApiResponse<VerificationData>> response) {
                 isSendVerificationRequesting = false;
+                registerBinding.btnSendVerification.setEnabled(true);
                 if (response.isSuccessful() && response.body() !=  null) {
                     ApiResponse<VerificationData> apiResponse = response.body();
 
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                         // 인증코드는 이메일로 발송됨 (응답에 포함되지 않음)
-                        ToastUtil.makeText(RegisterActivity.this,
-                                "인증 코드가 발송되었습니다\n메일함을 확인해주세요",
-                                Toast.LENGTH_LONG).show();
+                        showEmailCheckResult(true, "인증 코드가 발송되었습니다.");
 
                         // 인증 코드 입력란 활성화
                         registerBinding.etVerificationCode.setEnabled(true);
                         registerBinding.btnVerifyCode.setEnabled(true);
+                        registerBinding.tvVerifyCodeResult.setVisibility(View.GONE);
+                        // 재전송 버튼은 타이머(3분) 동안 비활성화 — 만료 시 startVerificationTimer의 onFinish에서 재활성화
+                        registerBinding.btnSendVerification.setEnabled(false);
                         startVerificationTimer();
                     } else {
-                        ToastUtil.makeText(RegisterActivity.this,
-                                apiResponse.getMessage(),
-                                Toast.LENGTH_SHORT).show();
+                        showEmailCheckResult(false, apiResponse.getMessage());
                     }
 
                 }
@@ -617,9 +621,8 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<VerificationData>> call, Throwable t) {
                 isSendVerificationRequesting = false;
-                ToastUtil.makeText(RegisterActivity.this,
-                        "네트워크 오류: " + t.getMessage(),
-                        Toast.LENGTH_SHORT).show();
+                registerBinding.btnSendVerification.setEnabled(true);
+                showEmailCheckResult(false, "네트워크 오류: " + t.getMessage());
             }
         });
     }
@@ -644,18 +647,14 @@ public class RegisterActivity extends AppCompatActivity {
 
                     if (apiResponse.isSuccess() && apiResponse.getData() != null
                             && apiResponse.getData().isVerified()) {
-                        ToastUtil.makeText(RegisterActivity.this,
-                                "이메일 인증이 완료되었습니다",
-                                Toast.LENGTH_SHORT).show();
+                        showVerifyCodeResult(true, "이메일 인증이 완료되었습니다");
 
                         isEmailVerified = true;
                         registerBinding.etVerificationCode.setEnabled(false);
                         registerBinding.btnVerifyCode.setEnabled(false);
                         cancelVerificationTimer();
                     } else {
-                        ToastUtil.makeText(RegisterActivity.this,
-                                apiResponse.getMessage(),
-                                Toast.LENGTH_SHORT).show();
+                        showVerifyCodeResult(false, apiResponse.getMessage());
                     }
                 }
             }
@@ -663,12 +662,18 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<VerifiedData>> call, Throwable t) {
                 isVerifyCodeRequesting = false;
-                ToastUtil.makeText(RegisterActivity.this,
-                        "네트워크 오류: " + t.getMessage(),
-                        Toast.LENGTH_SHORT).show();
+                showVerifyCodeResult(false, "네트워크 오류: " + t.getMessage());
             }
         });
 
+    }
+
+    // 인증번호 확인 결과 TextView 표시 헬퍼
+    private void showVerifyCodeResult(boolean success, String message) {
+        registerBinding.tvVerifyCodeResult.setVisibility(View.VISIBLE);
+        registerBinding.tvVerifyCodeResult.setText(message);
+        registerBinding.tvVerifyCodeResult.setTextColor(
+                ContextCompat.getColor(this, success ? R.color.success_green : R.color.error_red));
     }
 
     /**
@@ -678,7 +683,7 @@ public class RegisterActivity extends AppCompatActivity {
         cancelVerificationTimer();
         registerBinding.tvVerificationTimer.setVisibility(View.VISIBLE);
         registerBinding.tvVerificationTimer.setTextColor(
-                ContextCompat.getColor(this, R.color.text_200));
+                ContextCompat.getColor(this, R.color.primary_200));
 
         verificationTimer = new CountDownTimer(VERIFICATION_TIMEOUT_MS, 1000) {
             @Override
@@ -697,6 +702,7 @@ public class RegisterActivity extends AppCompatActivity {
                         ContextCompat.getColor(RegisterActivity.this, R.color.error_red));
                 registerBinding.etVerificationCode.setEnabled(false);
                 registerBinding.btnVerifyCode.setEnabled(false);
+                registerBinding.btnSendVerification.setEnabled(true);
             }
         }.start();
     }
@@ -821,7 +827,9 @@ public class RegisterActivity extends AppCompatActivity {
      * 전화번호 실시간 하이폰 추가
      */
     private void setupPhoneNumberAutoFormat() {
-        registerBinding.etPhoneNumber.addTextChangedListener(new PhoneNumberFormattingTextWatcher());
+        // 국가코드 미지정 시 기기의 SIM/로케일에 따라 "010-1234-5678"이 아닌 다른 포맷으로
+        // 하이픈이 들어가 정규식 검증에 실패할 수 있어 "KR"로 고정
+        registerBinding.etPhoneNumber.addTextChangedListener(new PhoneNumberFormattingTextWatcher("KR"));
     }
 
     /**
@@ -832,13 +840,13 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 1. 전화번호 입력 확인
         if (phone.isEmpty()) {
-            ToastUtil.makeText(this, "전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
+            showPhoneCheckResult(false, "전화번호를 입력해주세요");
             return;
         }
 
         // 2. 전화번호 형식 검증 (010-1234-5678)
         if (!phone.matches("^010-\\d{4}-\\d{4}$")) {
-            ToastUtil.makeText(this, "올바른 전화번호 형식이 아닙니다 (010-1234-5678)", Toast.LENGTH_SHORT).show();
+            showPhoneCheckResult(false, "올바른 전화번호 형식이 아닙니다 (010-1234-5678)");
             return;
         }
 
@@ -862,40 +870,40 @@ public class RegisterActivity extends AppCompatActivity {
                             // 여기서 건드리면 "복원 이메일 확인 → 새 전화번호 확인" 순서일 때
                             // isRestored가 false로 덮여 숨겨진 생년월일 입력을 요구하게 됨
                             isPhoneChecked = true;
-                            ToastUtil.makeText(RegisterActivity.this, apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                            showPhoneCheckResult(true, apiResponse.getMessage());
                         } else {
                             // 이미 사용중인 전화번호
-                            ToastUtil.makeText(RegisterActivity.this,
-                                    apiResponse.getMessage(), // "이미 가입된 전화번호입니다"
-                                    Toast.LENGTH_SHORT).show();
+                            showPhoneCheckResult(false, apiResponse.getMessage()); // "이미 가입된 전화번호입니다"
                             isPhoneChecked = false;
                         }
 
                     } else {
                         // API 처리 실패
-                        ToastUtil.makeText(RegisterActivity.this,
-                                apiResponse.getMessage(),
-                                Toast.LENGTH_SHORT).show();
+                        showPhoneCheckResult(false, apiResponse.getMessage());
                         isPhoneChecked = false;
                     }
 
                 } else {
                     // 서버 응답 실패
-                    ToastUtil.makeText(RegisterActivity.this,
-                            "서버 응답 오류: " + response.code(),
-                            Toast.LENGTH_SHORT).show();
+                    showPhoneCheckResult(false, "서버 응답 오류: " + response.code());
                     isPhoneChecked = false;
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<AvailabilityData>> call, Throwable t) {
-                ToastUtil.makeText(RegisterActivity.this,
-                        "네트워크 오류: " + t.getMessage(),
-                        Toast.LENGTH_SHORT).show();
+                showPhoneCheckResult(false, "네트워크 오류: " + t.getMessage());
                 isPhoneChecked = false;
             }
         });
+    }
+
+    // 전화번호 중복확인 결과 TextView 표시 헬퍼
+    private void showPhoneCheckResult(boolean success, String message) {
+        registerBinding.tvPhoneCheckResult.setVisibility(View.VISIBLE);
+        registerBinding.tvPhoneCheckResult.setText(message);
+        registerBinding.tvPhoneCheckResult.setTextColor(
+                ContextCompat.getColor(this, success ? R.color.success_green : R.color.error_red));
     }
 
     private void showRestoredAccountDialog() {
