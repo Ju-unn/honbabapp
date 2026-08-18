@@ -110,7 +110,6 @@ public class CampaignApplicantAdapter
 
         public void bind(ApplicantsResponse.Applicant applicant) {
             bindBasicInfo(applicant);
-            bindSnsIdBadges(applicant);
             bindButtons(applicant);
         }
 
@@ -126,24 +125,6 @@ public class CampaignApplicantAdapter
                     .placeholder(R.drawable.ic_profile)
                     .circleCrop()
                     .into(binding.ivApplicantAvatar);
-        }
-
-        // ── SNS ID 뱃지 ────────────────────────────────────────
-        private void bindSnsIdBadges(ApplicantsResponse.Applicant applicant) {
-            String instagramId   = applicant.getUser_instagram_id();
-            String blogId        = applicant.getUser_blog_id();
-            boolean hasInstagram = instagramId != null && !instagramId.isEmpty();
-            boolean hasBlog      = blogId != null && !blogId.isEmpty();
-
-            binding.layoutInstagramBadge.setVisibility(hasInstagram ? View.VISIBLE : View.GONE);
-            if (hasInstagram) binding.tvInstagramId.setText("@" + instagramId);
-
-            binding.layoutBlogBadge.setVisibility(hasBlog ? View.VISIBLE : View.GONE);
-            if (hasBlog) binding.tvBlogId.setText(blogId);
-
-            binding.tvNoSns.setVisibility(
-                    (!hasInstagram && !hasBlog) ? View.VISIBLE : View.GONE
-            );
         }
 
         private void bindButtons(ApplicantsResponse.Applicant applicant) {

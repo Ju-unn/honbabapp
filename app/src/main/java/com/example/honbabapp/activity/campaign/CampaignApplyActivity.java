@@ -40,6 +40,7 @@ public class CampaignApplyActivity extends AppCompatActivity {
     public static final String EXTRA_CAMPAIGN_TITLE = "campaign_title";
     public static final String EXTRA_INSTAGRAM_ID   = "instagram_id";
     public static final String EXTRA_BLOG_ID        = "blog_id";
+    public static final String EXTRA_YOUTUBE_ID     = "youtube_id";
 
     private PageCampaignApplyBinding binding;
     private ApiService apiService;
@@ -73,8 +74,9 @@ public class CampaignApplyActivity extends AppCompatActivity {
 
         String instagramId = getIntent().getStringExtra(EXTRA_INSTAGRAM_ID);
         String blogId      = getIntent().getStringExtra(EXTRA_BLOG_ID);
+        String youtubeId   = getIntent().getStringExtra(EXTRA_YOUTUBE_ID);
 
-        setupUI(instagramId, blogId);
+        setupUI(instagramId, blogId, youtubeId);
     }
 
     @Override
@@ -87,15 +89,16 @@ public class CampaignApplyActivity extends AppCompatActivity {
     // UI 초기화
     // ─────────────────────────────────────────────────────────────
 
-    private void setupUI(String instagramId, String blogId) {
+    private void setupUI(String instagramId, String blogId, String youtubeId) {
         binding.btnBack.setOnClickListener(v -> finish());
 
         // SNS ID prefill (읽기 전용 TextView에 표시)
-        bindSnsIdDisplay(instagramId, blogId);
+        bindSnsIdDisplay(instagramId, blogId, youtubeId);
 
         // "프로필에서 수정" 힌트 클릭 → ProfileProfileSettingActivity(focus_sns)
         binding.tvInstagramEditHint.setOnClickListener(v -> navigateToSnsProfileSetting());
         binding.tvBlogEditHint.setOnClickListener(v -> navigateToSnsProfileSetting());
+        binding.tvYoutubeEditHint.setOnClickListener(v -> navigateToSnsProfileSetting());
 
         // 자기소개 글자수 카운터
         setupIntroCharCounter();
@@ -117,7 +120,8 @@ public class CampaignApplyActivity extends AppCompatActivity {
                         && response.body().getData() != null) {
 
                     UserProfileResponse profile = response.body().getData();
-                    bindSnsIdDisplay(profile.getUser_instagram_id(), profile.getUser_blog_id());
+                    bindSnsIdDisplay(profile.getUser_instagram_id(), profile.getUser_blog_id(),
+                            profile.getUser_youtube_id());
                     Log.i(TAG, "SNS ID 갱신 완료");
                 }
             }
@@ -134,7 +138,7 @@ public class CampaignApplyActivity extends AppCompatActivity {
     // SNS ID prefill — tv_instagram_id / tv_blog_id
     // ─────────────────────────────────────────────────────────────
 
-    private void bindSnsIdDisplay(String instagramId, String blogId) {
+    private void bindSnsIdDisplay(String instagramId, String blogId, String youtubeId) {
         if (instagramId != null && !instagramId.isEmpty()) {
             binding.tvInstagramId.setText("@" + instagramId);
         } else {
@@ -145,6 +149,12 @@ public class CampaignApplyActivity extends AppCompatActivity {
             binding.tvBlogId.setText(blogId);
         } else {
             binding.tvBlogId.setText("");
+        }
+
+        if (youtubeId != null && !youtubeId.isEmpty()) {
+            binding.tvYoutubeId.setText(youtubeId);
+        } else {
+            binding.tvYoutubeId.setText("");
         }
     }
 

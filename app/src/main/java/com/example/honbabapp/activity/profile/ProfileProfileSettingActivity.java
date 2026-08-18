@@ -103,6 +103,13 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
         binding.btnChangeAvatar.setOnClickListener(v -> openGallery());
         binding.btnEditProfile.setOnClickListener(v -> saveProfile());
 
+        binding.tvInstagramVisit.setOnClickListener(v ->
+                openSnsUrl(binding.etInstagramId.getText().toString().trim(), "https://www.instagram.com/"));
+        binding.tvBlogVisit.setOnClickListener(v ->
+                openSnsUrl(binding.etBlogId.getText().toString().trim(), "https://blog.naver.com/"));
+        binding.tvYoutubeVisit.setOnClickListener(v ->
+                openSnsUrl(binding.etYoutubeId.getText().toString().trim(), "https://www.youtube.com/@"));
+
         // CampaignApplyActivity에서 "프로필에서 수정" 클릭 시 SNS 섹션으로 포커스
         if (getIntent().getBooleanExtra("focus_sns", false)) {
             binding.etInstagramId.requestFocus();
@@ -154,6 +161,11 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                             binding.etBlogId.setText(
                                     blogId != null ? blogId : ""
                             );
+
+                            String youtubeId = profile.getUser_youtube_id();
+                            binding.etYoutubeId.setText(
+                                    youtubeId != null ? youtubeId : ""
+                            );
                         }
                     }
 
@@ -177,6 +189,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
         String statusMessage = binding.etStatusMessage.getText().toString().trim();
         String instagramId   = binding.etInstagramId.getText().toString().trim();
         String blogId        = binding.etBlogId.getText().toString().trim();
+        String youtubeId     = binding.etYoutubeId.getText().toString().trim();
 
         if (!isNicknameChecked) {
             ToastUtil.makeText(this, "닉네임 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
@@ -191,6 +204,10 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
             ToastUtil.makeText(this, "블로그 ID는 50자 이하로 입력해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
+        if (youtubeId.length() > 50) {
+            ToastUtil.makeText(this, "유튜브 ID는 50자 이하로 입력해주세요", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         UpdateProfileRequest request = new UpdateProfileRequest();
         request.setUser_nickname(nickname);
@@ -202,6 +219,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
 
         request.setUser_instagram_id(instagramId);
         request.setUser_blog_id(blogId);
+        request.setUser_youtube_id(youtubeId);
 
         binding.btnEditProfile.setEnabled(false);
 
@@ -362,6 +380,18 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
         } catch (Exception exception) {
             Log.e(TAG, "이미지 처리 실패: " + exception.getMessage());
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SNS 링크 이동
+    // ─────────────────────────────────────────────────────────────
+
+    private void openSnsUrl(String id, String urlPrefix) {
+        if (id.isEmpty()) {
+            ToastUtil.makeText(this, "아이디를 먼저 입력해주세요", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(urlPrefix + id)));
     }
 
     // ─────────────────────────────────────────────────────────────

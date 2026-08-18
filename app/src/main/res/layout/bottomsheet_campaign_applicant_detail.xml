@@ -140,15 +140,31 @@
                     android:background="@color/bg_200" />
 
                 <!-- ===== SNS 계정 ===== -->
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
-                    android:letterSpacing="0.05"
-                    android:text="SNS 계정"
-                    android:textColor="@color/text_200"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:letterSpacing="0.05"
+                        android:text="SNS 계정"
+                        android:textColor="@color/text_200"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="클릭시 이동합니다"
+                        android:textColor="@color/primary_200"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
 
                 <!-- 인스타그램 -->
                 <LinearLayout
@@ -157,6 +173,9 @@
                     android:layout_height="44dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/readonly_field_background"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingHorizontal="14dp">
@@ -187,8 +206,11 @@
                     android:id="@+id/layout_sheet_blog"
                     android:layout_width="match_parent"
                     android:layout_height="44dp"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="8dp"
                     android:background="@drawable/readonly_field_background"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingHorizontal="14dp">
@@ -204,6 +226,41 @@
 
                     <TextView
                         android:id="@+id/tv_sheet_blog_id"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:text="—"
+                        android:textColor="@color/text_100"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <!-- 유튜브 -->
+                <LinearLayout
+                    android:id="@+id/layout_sheet_youtube"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginBottom="20dp"
+                    android:background="@drawable/readonly_field_background"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="유튜브"
+                        android:textColor="@color/text_200"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tv_sheet_youtube_id"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"

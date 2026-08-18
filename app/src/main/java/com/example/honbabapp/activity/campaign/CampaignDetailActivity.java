@@ -422,6 +422,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
         intent.putExtra(CampaignApplyActivity.EXTRA_CAMPAIGN_TITLE, campaign.getMeeting_title());
         intent.putExtra(CampaignApplyActivity.EXTRA_INSTAGRAM_ID, profile.getUser_instagram_id());
         intent.putExtra(CampaignApplyActivity.EXTRA_BLOG_ID, profile.getUser_blog_id());
+        intent.putExtra(CampaignApplyActivity.EXTRA_YOUTUBE_ID, profile.getUser_youtube_id());
         applyLauncher.launch(intent);
     }
 

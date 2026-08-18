@@ -1,5 +1,7 @@
 package com.example.honbabapp.activity.profile;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +16,9 @@ import com.example.honbabapp.util.InsetsUtils;
  */
 public class ProfileSupportActivity extends AppCompatActivity {
 
+    // ponytail: 고객센터 번호 미정 상태의 임시 하드코딩 — 실제 번호 확정되면 교체
+    private static final String SUPPORT_PHONE_NUMBER = "01000000000";
+
     private PageProfileSupportBinding binding;
 
     @Override
@@ -26,6 +31,10 @@ public class ProfileSupportActivity extends AppCompatActivity {
 
         // 뒤로가기
         binding.btnBack.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+
+        // 고객문의 안내 카드 전체 클릭 시 다이얼러 연결
+        binding.cardSupportPhone.setOnClickListener(v ->
+                startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + SUPPORT_PHONE_NUMBER))));
     }
 
     @Override

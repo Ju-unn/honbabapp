@@ -56,9 +56,13 @@
 
         <!-- 고객문의 안내 카드 -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSupportPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
             app:cardBackgroundColor="@color/bg_300"
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp">

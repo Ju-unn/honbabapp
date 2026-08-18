@@ -16,6 +16,7 @@ public class UpdateProfileRequest {
     // 체험단 전용 (선택적 — null이면 서버가 해당 컬럼 업데이트 안 함)
     private String user_instagram_id;
     private String user_blog_id;
+    private String user_youtube_id;
 
     public UpdateProfileRequest() {
     }
@@ -40,9 +41,14 @@ public class UpdateProfileRequest {
         this.user_blog_id = user_blog_id;
     }
 
+    public void setUser_youtube_id(String user_youtube_id) {
+        this.user_youtube_id = user_youtube_id;
+    }
+
     public String getUser_nickname() { return user_nickname; }
     public String getUser_status_message() { return user_status_message; }
     public String getUser_profile_image() { return user_profile_image; }
     public String getUser_instagram_id() { return user_instagram_id; }
     public String getUser_blog_id() { return user_blog_id; }
+    public String getUser_youtube_id() { return user_youtube_id; }
 }

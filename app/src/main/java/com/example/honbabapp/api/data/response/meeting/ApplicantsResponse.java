@@ -31,6 +31,7 @@ public class ApplicantsResponse {
         // 체험단 전용 필드 (일반 모임은 null)
         private String user_instagram_id;
         private String user_blog_id;
+        private String user_youtube_id;
         private String applicant_intro;
 
         // ── 기존 Getter / Setter─────────────────────────
@@ -67,6 +68,9 @@ public class ApplicantsResponse {
         public String getUser_blog_id() { return user_blog_id; }
         public void setUser_blog_id(String user_blog_id) { this.user_blog_id = user_blog_id; }
 
+        public String getUser_youtube_id() { return user_youtube_id; }
+        public void setUser_youtube_id(String user_youtube_id) { this.user_youtube_id = user_youtube_id; }
+
         public String getApplicant_intro() { return applicant_intro; }
         public void setApplicant_intro(String applicant_intro) { this.applicant_intro = applicant_intro; }
 
@@ -80,6 +84,11 @@ public class ApplicantsResponse {
         /** 블로그 ID 등록 여부 */
         public boolean hasBlogId() {
             return user_blog_id != null && !user_blog_id.isEmpty();
+        }
+
+        /** 유튜브 ID 등록 여부 */
+        public boolean hasYoutubeId() {
+            return user_youtube_id != null && !user_youtube_id.isEmpty();
         }
 
         /** SNS 계정 하나라도 등록 여부 */

@@ -1,5 +1,7 @@
 package com.example.honbabapp.activity.profile;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -12,6 +14,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 
 import com.example.honbabapp.R;
+import com.example.honbabapp.activity.LoginActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.request.user.ChangePasswordRequest;
@@ -218,8 +221,8 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
                     public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                         binding.btnChangePassword.setEnabled(true);
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            ToastUtil.makeText(ProfileChangePasswordActivity.this, "비밀번호가 변경되었습니다", Toast.LENGTH_SHORT).show();
-                            finish();
+                            ToastUtil.makeText(ProfileChangePasswordActivity.this, "비밀번호가 변경되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show();
+                            redirectToLogin();
                         } else {
                             // 현재 비밀번호 틀림 등 서버 에러 메시지 표시
                             String msg = response.body() != null
@@ -237,6 +240,16 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
                     }
                 });
 
+    }
+
+    // 비밀번호 변경 성공 시 세션을 비우고 로그인 화면으로 이동 (변경된 비밀번호로 재로그인 유도)
+    private void redirectToLogin() {
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        prefs.edit().clear().apply();
+
+        Intent loginIntent = new Intent(this, LoginActivity.class);
+        loginIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(loginIntent);
     }
 
     private boolean validateNewPassword(String password) {

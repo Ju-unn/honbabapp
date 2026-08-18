@@ -23,6 +23,7 @@ public class UserProfileResponse {
     // 체험단 전용 필드
     private String user_instagram_id;
     private String user_blog_id;
+    private String user_youtube_id;
 
     // 소셜 로그인 계정이면 'kakao'/'google', 일반 계정이면 null
     private String social_provider;
@@ -44,6 +45,7 @@ public class UserProfileResponse {
 
     public String getUser_instagram_id() { return user_instagram_id; }
     public String getUser_blog_id() { return user_blog_id; }
+    public String getUser_youtube_id() { return user_youtube_id; }
 
     public String getSocial_provider() { return social_provider; }
 
@@ -59,7 +61,12 @@ public class UserProfileResponse {
         return user_blog_id != null && !user_blog_id.isEmpty();
     }
 
-    /** SNS 계정 하나라도 등록 여부 — 체험단 신청 가능 조건 */
+    /** 유튜브 ID 등록 여부 */
+    public boolean hasYoutubeId() {
+        return user_youtube_id != null && !user_youtube_id.isEmpty();
+    }
+
+    /** SNS 계정 하나라도 등록 여부 — 체험단 신청 가능 조건 (유튜브는 신청 요건에서 제외) */
     public boolean hasSnsId() {
         return hasInstagramId() || hasBlogId();
     }

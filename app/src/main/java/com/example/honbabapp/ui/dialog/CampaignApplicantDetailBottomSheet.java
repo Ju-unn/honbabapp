@@ -1,5 +1,7 @@
 package com.example.honbabapp.ui.dialog;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -105,11 +107,27 @@ public class CampaignApplicantDetailBottomSheet extends BottomSheetDialogFragmen
                 (instagramId != null && !instagramId.isEmpty())
                         ? "@" + instagramId : "—"
         );
+        binding.layoutSheetInstagram.setOnClickListener(v ->
+                openSnsUrl(instagramId, "https://www.instagram.com/"));
 
         String blogId = applicant.getUser_blog_id();
         binding.tvSheetBlogId.setText(
                 (blogId != null && !blogId.isEmpty()) ? blogId : "—"
         );
+        binding.layoutSheetBlog.setOnClickListener(v ->
+                openSnsUrl(blogId, "https://blog.naver.com/"));
+
+        String youtubeId = applicant.getUser_youtube_id();
+        binding.tvSheetYoutubeId.setText(
+                (youtubeId != null && !youtubeId.isEmpty()) ? youtubeId : "—"
+        );
+        binding.layoutSheetYoutube.setOnClickListener(v ->
+                openSnsUrl(youtubeId, "https://www.youtube.com/@"));
+    }
+
+    private void openSnsUrl(String id, String urlPrefix) {
+        if (id == null || id.isEmpty()) return;
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(urlPrefix + id)));
     }
 
     // ── 자기소개 — 1단계 applicant_intro 필드 연동 ────────────────
