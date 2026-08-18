@@ -111,6 +111,14 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
     // ═════════════════════════════════════════
 
     @Override
+    public void finish() {
+        super.finish();
+        // 뒤로가기 버튼/시스템 back 제스처/나가기 등 모든 종료 경로가 finish()로 수렴하므로
+        // 여기 한 곳에만 복귀 애니메이션을 걸면 모든 경로에 일괄 적용된다
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = PageChatRoomDetailBinding.inflate(getLayoutInflater());

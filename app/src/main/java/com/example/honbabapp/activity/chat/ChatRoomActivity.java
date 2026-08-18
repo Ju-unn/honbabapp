@@ -482,6 +482,7 @@ public class ChatRoomActivity extends AppCompatActivity {
             intent.putExtra("room_image", roomImage);
             intent.putExtra("meeting_id", meetingId);
             startActivityForResult(intent, REQ_DETAIL);
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         });
 
         binding.btnQr.setOnClickListener(v -> {
