@@ -629,7 +629,24 @@
         android:elevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_pending_applicant_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/unread_badge_background"
+            android:gravity="center"
+            android:minHeight="20dp"
+            android:minWidth="20dp"
+            android:paddingHorizontal="6dp"
+            android:textColor="@color/white"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btn_apply_campaign"

@@ -260,6 +260,15 @@ public class CampaignDetailActivity extends AppCompatActivity {
         if (campaign.getHost() != null && campaign.getHost().getUser_id() == currentUserId) {
             binding.applyButtonContainer.setVisibility(View.VISIBLE);
             binding.btnApplyCampaign.setText("신청자 목록");
+
+            int pendingCount = campaign.getPending_applicant_count();
+            if (pendingCount > 0) {
+                binding.tvPendingApplicantBadge.setText("대기 " + pendingCount + "명");
+                binding.tvPendingApplicantBadge.setVisibility(View.VISIBLE);
+            } else {
+                binding.tvPendingApplicantBadge.setVisibility(View.GONE);
+            }
+
             binding.btnApplyCampaign.setOnClickListener(v -> {
                 Intent intent = new Intent(this, CampaignApplicantListActivity.class);
                 intent.putExtra(CampaignApplicantListActivity.EXTRA_CAMPAIGN_ID, campaignId);
@@ -479,6 +488,7 @@ public class CampaignDetailActivity extends AppCompatActivity {
                 intent.putExtra("move_to_map", true);
                 intent.putExtra("map_lat", lat);
                 intent.putExtra("map_lng", lng);
+                intent.putExtra("map_meeting_id", campaignId);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
             });

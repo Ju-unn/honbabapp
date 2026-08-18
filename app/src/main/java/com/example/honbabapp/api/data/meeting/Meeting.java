@@ -29,6 +29,7 @@ public class Meeting {
     private String meeting_created_at;
     private String meeting_image;
     private String my_participation_status;
+    private int pending_applicant_count;
 
     // ─── 체험단 전용 필드 ───────────────────────────────────────
     private String meeting_type;           // "일반" | "체험단"
@@ -98,6 +99,14 @@ public class Meeting {
 
     public void setMeeting_current_participants(int meeting_current_participants) {
         this.meeting_current_participants = meeting_current_participants;
+    }
+
+    public int getPending_applicant_count() {
+        return pending_applicant_count;
+    }
+
+    public void setPending_applicant_count(int pending_applicant_count) {
+        this.pending_applicant_count = pending_applicant_count;
     }
 
     public String getMeeting_price_range() {

@@ -273,6 +273,7 @@ public class MeetingDetailActivity extends AppCompatActivity {
                     intent.putExtra("move_to_map", true);
                     intent.putExtra("map_lat", lat);
                     intent.putExtra("map_lng", lng);
+                    intent.putExtra("map_meeting_id", meetingId);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                 });
@@ -568,6 +569,15 @@ public class MeetingDetailActivity extends AppCompatActivity {
         // 버튼 텍스트 변경
         binding.btnJoinMeeting.setText("신청자 목록");
         binding.btnJoinMeeting.setEnabled(true);
+
+        // 대기 중인 신청자 수 배지
+        int pendingCount = meeting.getPending_applicant_count();
+        if (pendingCount > 0) {
+            binding.tvPendingApplicantBadge.setText("대기 " + pendingCount + "명");
+            binding.tvPendingApplicantBadge.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvPendingApplicantBadge.setVisibility(View.GONE);
+        }
 
         // 클릭 이벤트
         binding.btnJoinMeeting.setOnClickListener(v -> {

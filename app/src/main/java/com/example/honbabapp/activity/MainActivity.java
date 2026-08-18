@@ -154,11 +154,13 @@ public class MainActivity extends AppCompatActivity {
         if (intent.getBooleanExtra("move_to_map", false)) {
             double latitude = intent.getDoubleExtra("map_lat", 37.5665);
             double longitude = intent.getDoubleExtra("map_lng", 126.9780);
+            int focusMeetingId = intent.getIntExtra("map_meeting_id", -1);
 
             binding.viewPager.setCurrentItem(1, false); // 지도 탭 = index 1 (불변)
             MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("f1");
             if (mapFragment != null) {
-                mapFragment.moveToLocation(latitude, longitude);
+                mapFragment.moveToLocation(latitude, longitude,
+                        focusMeetingId != -1 ? focusMeetingId : null);
             }
         }
     }

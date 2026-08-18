@@ -88,6 +88,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private double currentLng = 126.9780;
     private Double pendingLat = null;
     private Double pendingLng = null;
+    private Integer pendingFocusMeetingId = null;
+    // 미니지도 클릭으로 진입 시 최초 1회만 해당 모임 핀으로 필터링하기 위한 값.
+    // loadMeetingsOnMap()이 소비하는 즉시 null로 리셋되므로, 이후 사용자가 카메라를
+    // 움직여 발생하는 모든 재조회는 자연히 필터 없이 전체 핀을 로드한다.
+    private Integer focusMeetingId = null;
 
     // onMapReady에서 호출 , map 초기화 안 될 수도 있으니 바로 호출하면 에러 날 확률방지
     private String pendingCategory = null;
@@ -290,6 +295,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             double lng = pendingLng;
             pendingLat = null;
             pendingLng = null;
+            focusMeetingId = pendingFocusMeetingId;
+            pendingFocusMeetingId = null;
             // Follow 모드면 GPS 갱신마다 카메라가 내 위치로 다시 스냅되어
             // 지정 좌표 이동이 무효화되므로 추적을 끈다
             naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
@@ -418,6 +425,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
      */
 
     private void loadMeetingsOnMap () {
+        // 최초 1회만 소비 — 이후 호출(사용자가 카메라를 움직여 발생)은 필터 없이 전체 로드
+        final Integer focusIdForThisLoad = focusMeetingId;
+        focusMeetingId = null;
+
         String categories = null;
         if (!currentFilterCategories.isEmpty()) {
             categories = String.join(",", currentFilterCategories);
@@ -504,6 +515,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                     // 인기순
                     if ("인기순".equals(currentSortOption)) {
                         meetings.sort((a , b) -> b.getMeeting_view_count() - a.getMeeting_view_count());
+                    }
+
+                    // 미니지도에서 넘어온 경우 최초 1회만 해당 모임 핀 하나로 필터링
+                    if (focusIdForThisLoad != null) {
+                        List<Meeting> focused = new ArrayList<>();
+                        for (Meeting m : meetings) {
+                            if (m.getMeeting_id() == focusIdForThisLoad) {
+                                focused.add(m);
+                            }
+                        }
+                        meetings = focused;
                     }
 
                     // 마커 업데이트
@@ -628,7 +650,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     // 외부에서 호출 (HomeFragment → MainActivity → 여기)
     // ──────────────────────────────────────────────
 
-    public void moveToLocation(double lat , double lng) {
+    public void moveToLocation(double lat, double lng, Integer meetingId) {
         currentLat = lat;
         currentLng = lng;
 
@@ -636,8 +658,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             // 지도 아직 준비 안 됐으면 pending 처리
             pendingLat = lat;
             pendingLng = lng;
+            pendingFocusMeetingId = meetingId;
             return;
         }
+
+        focusMeetingId = meetingId;
 
         // Follow 모드면 GPS 갱신마다 카메라가 내 위치로 다시 스냅되어
         // 지정 좌표 이동이 무효화되므로 추적을 끈다
