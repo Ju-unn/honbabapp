@@ -22,8 +22,10 @@ import com.example.honbabapp.activity.profile.ProfileProfileSettingActivity;
 import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.meeting.Meeting;
+import com.example.honbabapp.api.data.request.campaign.CancelCampaignRequest;
 import com.example.honbabapp.api.data.request.meeting.DeleteMeetingRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
+import com.example.honbabapp.api.data.response.campaign.CampaignCancelResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageCampaignDetailBinding;
 import com.example.honbabapp.network.SocketManager;
@@ -280,17 +282,25 @@ public class CampaignDetailActivity extends AppCompatActivity {
         }
 
         String participationStatus = campaign.getMy_participation_status();
+
+        if ("취소".equals(participationStatus) && campaign.isMy_noshow_blocked()) {
+            binding.btnApplyCampaign.setText("재신청 불가");
+            binding.btnApplyCampaign.setEnabled(false);
+            return;
+        }
         if ("취소".equals(participationStatus)) participationStatus = null;
 
         if (participationStatus != null) {
             switch (participationStatus) {
                 case "승인":
-                    binding.btnApplyCampaign.setText("신청 완료");
-                    binding.btnApplyCampaign.setEnabled(false);
+                    binding.btnApplyCampaign.setText("신청 취소하기");
+                    binding.btnApplyCampaign.setEnabled(true);
+                    binding.btnApplyCampaign.setOnClickListener(v -> showCancelConfirmDialog(true));
                     break;
                 case "대기":
-                    binding.btnApplyCampaign.setText("승인 대기 중");
-                    binding.btnApplyCampaign.setEnabled(false);
+                    binding.btnApplyCampaign.setText("신청 취소하기");
+                    binding.btnApplyCampaign.setEnabled(true);
+                    binding.btnApplyCampaign.setOnClickListener(v -> showCancelConfirmDialog(false));
                     break;
                 case "거절":
                     binding.btnApplyCampaign.setText("신청 거절됨");
@@ -301,6 +311,8 @@ public class CampaignDetailActivity extends AppCompatActivity {
             binding.btnApplyCampaign.setText("모집 완료");
             binding.btnApplyCampaign.setEnabled(false);
         } else {
+            binding.btnApplyCampaign.setText("체험단 신청하기");
+            binding.btnApplyCampaign.setEnabled(true);
             binding.btnApplyCampaign.setOnClickListener(v -> checkSnsAndNavigateToApply());
         }
     }
@@ -370,6 +382,58 @@ public class CampaignDetailActivity extends AppCompatActivity {
                         "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 참가자 자기 취소
+    // ─────────────────────────────────────────────────────────────
+
+    private void showCancelConfirmDialog(boolean wasApproved) {
+        String message = wasApproved
+                ? "지금 취소하면 매너점수 -5.0이 차감돼요.\n취소하시겠어요?"
+                : "신청을 취소하시겠어요?\n매너점수 차감은 없어요.";
+
+        new AlertDialog.Builder(this)
+                .setTitle("신청 취소")
+                .setMessage(message)
+                .setPositiveButton("취소하기", (dialog, which) -> cancelParticipation())
+                .setNegativeButton("닫기", null)
+                .show();
+    }
+
+    private void cancelParticipation() {
+        binding.btnApplyCampaign.setEnabled(false);
+
+        apiService.cancelCampaignParticipation(new CancelCampaignRequest(campaignId))
+                .enqueue(new Callback<ApiResponse<CampaignCancelResponse>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<CampaignCancelResponse>> call,
+                                           Response<ApiResponse<CampaignCancelResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess()) {
+                            CampaignCancelResponse data = response.body().getData();
+                            String toastMessage = data != null && data.getPenalty_applied() > 0
+                                    ? "신청이 취소됐어요. 매너점수 -" + data.getPenalty_applied() + "점"
+                                    : "신청이 취소됐어요.";
+                            ToastUtil.makeText(CampaignDetailActivity.this,
+                                    toastMessage, Toast.LENGTH_SHORT).show();
+                            loadCampaignDetail();
+                        } else {
+                            binding.btnApplyCampaign.setEnabled(true);
+                            String message = response.body() != null
+                                    ? response.body().getMessage() : "취소에 실패했습니다.";
+                            ToastUtil.makeText(CampaignDetailActivity.this, message, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<CampaignCancelResponse>> call, Throwable throwable) {
+                        binding.btnApplyCampaign.setEnabled(true);
+                        Log.e(TAG, "취소 네트워크 오류: " + throwable.getMessage());
+                        ToastUtil.makeText(CampaignDetailActivity.this,
+                                "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     // ─────────────────────────────────────────────────────────────

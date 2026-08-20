@@ -9,6 +9,8 @@ import com.example.honbabapp.api.data.request.LogoutRequest;
 import com.example.honbabapp.api.data.request.RefreshTokenRequest;
 import com.example.honbabapp.api.data.request.SocialLoginRequest;
 import com.example.honbabapp.api.data.request.campaign.CampaignUpdateRequest;
+import com.example.honbabapp.api.data.request.campaign.CancelCampaignRequest;
+import com.example.honbabapp.api.data.response.campaign.CampaignCancelResponse;
 import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
 import com.example.honbabapp.api.data.request.chat.InviteUserRequest;
 import com.example.honbabapp.api.data.request.chat.KickMemberRequest;
@@ -386,6 +388,15 @@ public interface ApiService {
     @POST("api/campaign/campaign_update.php")
     Call<ApiResponse<Void>> updateCampaign(@Body CampaignUpdateRequest request);
 
+    /**
+     * 체험단 참가자 자기 취소
+     *
+     * 대기 상태에서 취소 → 페널티 없음
+     * 승인 상태에서 취소 → 매너점수 -5.0 고정 차감
+     */
+    @POST("api/campaign/campaign_cancel.php")
+    Call<ApiResponse<CampaignCancelResponse>> cancelCampaignParticipation(@Body CancelCampaignRequest request);
+
     // ==================== User API (Profile)====================
 
     /**
@@ -619,6 +630,18 @@ public interface ApiService {
      */
     @GET("api/review/received.php")
     Call<ApiResponse<ReceivedReviewsData>> getReceivedReviews(@Query("user_id") int userId);
+
+    /**
+     * 받은 후기 목록 조회 (페이징)
+     * page/limit을 지정하면 서버가 LIMIT/OFFSET으로 잘라서 반환하고
+     * total_count/has_more를 함께 내려준다.
+     */
+    @GET("api/review/received.php")
+    Call<ApiResponse<ReceivedReviewsData>> getReceivedReviewsPaged(
+            @Query("user_id") int userId,
+            @Query("page") int page,
+            @Query("limit") int limit
+    );
 
 
     // ==================== Payment API ====================

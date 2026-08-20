@@ -42,6 +42,10 @@ public class CampaignApplicantAdapter
         void onDetailClick(ApplicantsResponse.Applicant applicant);
     }
 
+    public interface OnReviewClickListener {
+        void onReviewClick(ApplicantsResponse.Applicant applicant);
+    }
+
     // ─────────────────────────────────────────────────────────────
     // 상태
     // ─────────────────────────────────────────────────────────────
@@ -52,17 +56,20 @@ public class CampaignApplicantAdapter
     private final OnRejectClickListener rejectClickListener;
     private final OnChatClickListener chatClickListener;
     private final OnDetailClickListener detailClickListener;
+    private final OnReviewClickListener reviewClickListener;
 
     public CampaignApplicantAdapter(
             OnApproveClickListener approveClickListener,
             OnRejectClickListener rejectClickListener,
             OnChatClickListener chatClickListener,
-            OnDetailClickListener detailClickListener
+            OnDetailClickListener detailClickListener,
+            OnReviewClickListener reviewClickListener
     ) {
         this.approveClickListener = approveClickListener;
         this.rejectClickListener  = rejectClickListener;
         this.chatClickListener    = chatClickListener;
         this.detailClickListener  = detailClickListener;
+        this.reviewClickListener  = reviewClickListener;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -129,12 +136,12 @@ public class CampaignApplicantAdapter
 
         private void bindButtons(ApplicantsResponse.Applicant applicant) {
             String status = applicant.getParticipation_status();
-            boolean isApproved = "승인".equals(status);
+            boolean isWaiting = "대기".equals(status);
 
-            // 승인/거절 버튼 — 승인된 신청자에게는 표시하지 않음
-            binding.layoutActionButtons.setVisibility(isApproved ? View.INVISIBLE : View.VISIBLE);
+            // 승인/거절 버튼 — 대기 상태에서만 표시 (승인/취소된 신청자는 숨김)
+            binding.layoutActionButtons.setVisibility(isWaiting ? View.VISIBLE : View.INVISIBLE);
 
-            if (!isApproved) {
+            if (isWaiting) {
                 binding.btnApprove.setOnClickListener(view -> {
                     if (approveClickListener != null) {
                         approveClickListener.onApproveClick(applicant);
@@ -154,6 +161,16 @@ public class CampaignApplicantAdapter
             binding.btnViewDetail.setOnClickListener(view -> {
                 if (detailClickListener != null) detailClickListener.onDetailClick(applicant);
             });
+
+            // 리뷰작성 — 취소 탭에서, 승인 후 취소(노쇼)인 경우에만 노출
+            // (approved_at이 있으면 한때 승인됐다가 취소된 것 = 대기 중 자진 취소와 구분)
+            boolean isNoShowCancel = "취소".equals(status) && applicant.getApproved_at() != null;
+            binding.btnWriteReview.setVisibility(isNoShowCancel ? View.VISIBLE : View.GONE);
+            if (isNoShowCancel) {
+                binding.btnWriteReview.setOnClickListener(view -> {
+                    if (reviewClickListener != null) reviewClickListener.onReviewClick(applicant);
+                });
+            }
         }
     }
 

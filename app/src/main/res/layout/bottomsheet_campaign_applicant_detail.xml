@@ -302,6 +302,48 @@
 
                 </LinearLayout>
 
+                <!-- ===== 받은 리뷰 ===== -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:letterSpacing="0.05"
+                    android:text="받은 리뷰"
+                    android:textColor="@color/text_200"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_sheet_reviews"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                <TextView
+                    android:id="@+id/tv_sheet_no_reviews"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/readonly_field_background"
+                    android:gravity="center"
+                    android:padding="14dp"
+                    android:text="아직 받은 리뷰가 없어요"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btn_sheet_load_more_reviews"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:minHeight="0dp"
+                    android:text="더보기"
+                    android:textSize="13sp"
+                    android:textAllCaps="false"
+                    android:visibility="gone" />
+
                 <!-- 승인/거절 버튼 제거됨 — 아이템의 버튼으로 처리 -->
 
             </LinearLayout>

@@ -29,6 +29,7 @@ public class Meeting {
     private String meeting_created_at;
     private String meeting_image;
     private String my_participation_status;
+    private boolean my_noshow_blocked;
     private int pending_applicant_count;
 
     // ─── 체험단 전용 필드 ───────────────────────────────────────
@@ -163,6 +164,14 @@ public class Meeting {
 
     public void setMy_participation_status(String my_participation_status) {
         this.my_participation_status = my_participation_status;
+    }
+
+    public boolean isMy_noshow_blocked() {
+        return my_noshow_blocked;
+    }
+
+    public void setMy_noshow_blocked(boolean my_noshow_blocked) {
+        this.my_noshow_blocked = my_noshow_blocked;
     }
 
     public Location getLocation() {

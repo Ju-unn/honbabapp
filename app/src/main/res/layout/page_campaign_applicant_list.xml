@@ -114,6 +114,20 @@
                 android:textColor="@drawable/tab_text_color_selector"
                 android:background="@drawable/chip_button_background"
                 android:paddingHorizontal="16dp"
+                android:layout_marginEnd="8dp"
+                app:backgroundTint="@null" />
+
+            <Button
+                android:id="@+id/btn_filter_canceled"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:minWidth="64dp"
+                android:text="취소"
+                android:textSize="13sp"
+                android:textColor="@drawable/tab_text_color_selector"
+                android:background="@drawable/chip_button_background"
+                android:paddingHorizontal="16dp"
                 app:backgroundTint="@null" />
 
         </LinearLayout>

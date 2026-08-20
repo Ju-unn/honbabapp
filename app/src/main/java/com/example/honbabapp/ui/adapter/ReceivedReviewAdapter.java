@@ -41,6 +41,16 @@ public class ReceivedReviewAdapter extends RecyclerView.Adapter<ReceivedReviewAd
         notifyDataSetChanged();
     }
 
+    /**
+     * 페이징 "더보기" — 기존 목록 뒤에 이어붙임.
+     */
+    public void addReviewList(List<ReceivedReview> moreReviews) {
+        if (moreReviews == null || moreReviews.isEmpty()) return;
+        int startPosition = reviewList.size();
+        reviewList.addAll(moreReviews);
+        notifyItemRangeInserted(startPosition, moreReviews.size());
+    }
+
     @NonNull
     @Override
     public ReviewViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

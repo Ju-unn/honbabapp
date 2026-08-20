@@ -27,6 +27,7 @@ public class ApplicantsResponse {
         private String user_gender;
         private String participation_status;
         private String applied_at;
+        private String approved_at; // 승인 후 취소(노쇼) 판별용 — null이면 대기 중 자진 취소
 
         // 체험단 전용 필드 (일반 모임은 null)
         private String user_instagram_id;
@@ -59,6 +60,9 @@ public class ApplicantsResponse {
 
         public String getApplied_at() { return applied_at; }
         public void setApplied_at(String applied_at) { this.applied_at = applied_at; }
+
+        public String getApproved_at() { return approved_at; }
+        public void setApproved_at(String approved_at) { this.approved_at = approved_at; }
 
         // ── 체험단 전용 Getter / Setter ────────────────────────────
 

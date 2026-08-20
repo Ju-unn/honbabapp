@@ -24,6 +24,12 @@ public class ReceivedReviewsData {
 
     private List<ReceivedReview> reviews;
 
+    // page/limit으로 호출했을 때만 서버가 채워줌 (기본값 0/false)
+    private int page;
+    private int limit;
+    private int total_count;
+    private boolean has_more;
+
     public ReceivedReviewsData() {}
 
     public List<ReceivedReview> getReviews() {
@@ -33,4 +39,16 @@ public class ReceivedReviewsData {
     public void setReviews(List<ReceivedReview> reviews) {
         this.reviews = reviews;
     }
+
+    public int getPage() { return page; }
+    public void setPage(int page) { this.page = page; }
+
+    public int getLimit() { return limit; }
+    public void setLimit(int limit) { this.limit = limit; }
+
+    public int getTotal_count() { return total_count; }
+    public void setTotal_count(int total_count) { this.total_count = total_count; }
+
+    public boolean isHas_more() { return has_more; }
+    public void setHas_more(boolean has_more) { this.has_more = has_more; }
 }

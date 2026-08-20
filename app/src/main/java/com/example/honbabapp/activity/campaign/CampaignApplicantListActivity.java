@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -15,11 +17,14 @@ import com.example.honbabapp.api.ApiService;
 import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.request.meeting.ApproveMeetingRequest;
 import com.example.honbabapp.api.data.request.chat.CreateRoomRequest;
+import com.example.honbabapp.api.data.request.review.ReviewSubmitRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.chat.CreateRoomResponse;
 import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
 import com.example.honbabapp.api.data.response.meeting.ApproveResponse;
+import com.example.honbabapp.api.data.review.ReviewSubmitData;
 import com.example.honbabapp.activity.chat.ChatRoomActivity;
+import com.example.honbabapp.databinding.DialogReviewBinding;
 import com.example.honbabapp.databinding.PageCampaignApplicantListBinding;
 import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.ui.adapter.CampaignApplicantAdapter;
@@ -91,7 +96,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 필터 탭 (대기 / 승인)
+    // 필터 탭 (대기 / 승인 / 취소)
     // ─────────────────────────────────────────────────────────────
 
     private void setupFilterTabs() {
@@ -112,11 +117,20 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                 loadApplicants("승인");
             }
         });
+
+        binding.btnFilterCanceled.setOnClickListener(v -> {
+            if (!"취소".equals(currentStatusFilter)) {
+                currentStatusFilter = "취소";
+                updateTabStyle("취소");
+                loadApplicants("취소");
+            }
+        });
     }
 
     private void updateTabStyle(String activeStatus) {
         binding.btnFilterWaiting.setSelected("대기".equals(activeStatus));
         binding.btnFilterApproved.setSelected("승인".equals(activeStatus));
+        binding.btnFilterCanceled.setSelected("취소".equals(activeStatus));
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -128,7 +142,8 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                 this::onApproveClick,
                 this::onRejectClick,
                 this::onChatClick,
-                this::onDetailClick
+                this::onDetailClick,
+                this::onReviewClick
         );
         binding.rvCampaignApplicants.setAdapter(campaignApplicantAdapter);
     }
@@ -291,5 +306,81 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     private void onDetailClick(ApplicantsResponse.Applicant applicant) {
         new CampaignApplicantDetailBottomSheet(applicant)
                 .show(getSupportFragmentManager(), "applicant_detail");
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 노쇼(승인 후 취소) 리뷰작성
+    //
+    // ReviewDialogHelper(채팅방용)는 QR 인증 대상자 중에서 고르는 선택형
+    // 다이얼로그라 이 화면(대상이 이미 확정된 단건)에는 맞지 않는다.
+    // 같은 dialog_review.xml 레이아웃을 재사용하되 대상 선택 목록은 숨기고
+    // 바로 별점 입력 영역을 보여준다.
+    // ─────────────────────────────────────────────────────────────
+
+    private void onReviewClick(ApplicantsResponse.Applicant applicant) {
+        DialogReviewBinding dialogBinding = DialogReviewBinding.inflate(LayoutInflater.from(this));
+
+        dialogBinding.tvReviewDialogTitle.setText("노쇼 리뷰 작성");
+        dialogBinding.tvReviewDialogDescription.setText(
+                applicant.getUser_nickname() + "님에 대한 별점과 후기를 남겨주세요");
+        dialogBinding.rvReviewTargets.setVisibility(View.GONE);
+        dialogBinding.layoutReviewInput.setVisibility(View.VISIBLE);
+        dialogBinding.tvSelectedNickname.setText(applicant.getUser_nickname());
+
+        AlertDialog reviewDialog = new AlertDialog.Builder(this)
+                .setView(dialogBinding.getRoot())
+                .setCancelable(true)
+                .create();
+
+        dialogBinding.btnReviewSubmit.setOnClickListener(v -> {
+            int rating = (int) dialogBinding.ratingBar.getRating();
+            if (rating == 0) {
+                ToastUtil.makeText(this, "별점을 선택해주세요", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            dialogBinding.btnReviewSubmit.setEnabled(false);
+            String content = dialogBinding.etReviewContent.getText().toString().trim();
+            submitNoShowReview(applicant, rating, content, reviewDialog, dialogBinding.btnReviewSubmit);
+        });
+
+        dialogBinding.btnReviewDialogClose.setOnClickListener(v -> reviewDialog.dismiss());
+
+        reviewDialog.show();
+    }
+
+    private void submitNoShowReview(ApplicantsResponse.Applicant applicant, int rating,
+                                    String content, AlertDialog reviewDialog, Button submitButton) {
+        ReviewSubmitRequest request = new ReviewSubmitRequest(
+                campaignId, applicant.getUser_id(), rating, content
+        );
+
+        apiService.submitReview(request)
+                .enqueue(new Callback<ApiResponse<ReviewSubmitData>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<ReviewSubmitData>> call,
+                                           Response<ApiResponse<ReviewSubmitData>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess()) {
+                            ToastUtil.makeText(CampaignApplicantListActivity.this,
+                                    "리뷰가 등록되었습니다.", Toast.LENGTH_SHORT).show();
+                            reviewDialog.dismiss();
+                            loadApplicants(currentStatusFilter);
+                        } else {
+                            submitButton.setEnabled(true);
+                            String message = response.body() != null
+                                    ? response.body().getMessage() : "리뷰 등록에 실패했습니다.";
+                            ToastUtil.makeText(CampaignApplicantListActivity.this,
+                                    message, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<ReviewSubmitData>> call, Throwable throwable) {
+                        submitButton.setEnabled(true);
+                        Log.e(TAG, "리뷰 등록 오류: " + throwable.getMessage());
+                        ToastUtil.makeText(CampaignApplicantListActivity.this,
+                                "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }

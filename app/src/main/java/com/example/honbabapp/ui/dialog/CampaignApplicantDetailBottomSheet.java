@@ -9,12 +9,22 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.example.honbabapp.R;
+import com.example.honbabapp.api.ApiService;
+import com.example.honbabapp.api.RetrofitClient;
+import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.meeting.ApplicantsResponse;
+import com.example.honbabapp.api.data.review.ReceivedReviewsData;
 import com.example.honbabapp.databinding.BottomsheetCampaignApplicantDetailBinding;
+import com.example.honbabapp.ui.adapter.ReceivedReviewAdapter;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * 체험단 신청자 상세보기 바텀시트 (조회 전용)
@@ -47,6 +57,13 @@ public class CampaignApplicantDetailBottomSheet extends BottomSheetDialogFragmen
 
     private BottomsheetCampaignApplicantDetailBinding binding;
 
+    private static final int REVIEW_PAGE_SIZE = 5;
+    private ApiService apiService;
+    private ReceivedReviewAdapter reviewAdapter;
+    private int reviewPage = 1;
+    private boolean reviewHasMore = false;
+    private boolean isLoadingReviews = false;
+
     // ─────────────────────────────────────────
     // 생명주기
     // ─────────────────────────────────────────
@@ -69,8 +86,12 @@ public class CampaignApplicantDetailBottomSheet extends BottomSheetDialogFragmen
             return;
         }
 
+        apiService = RetrofitClient.getClient().create(ApiService.class);
+
         bindApplicantData();
         setupCloseButton();
+        setupReviewsList();
+        loadReviews(true);
     }
 
     // ─────────────────────────────────────────
@@ -144,6 +165,68 @@ public class CampaignApplicantDetailBottomSheet extends BottomSheetDialogFragmen
 
     private void setupCloseButton() {
         binding.btnClose.setOnClickListener(v -> dismiss());
+    }
+
+    // ─────────────────────────────────────────
+    // 받은 리뷰 — 5개씩 페이징
+    // ─────────────────────────────────────────
+
+    private void setupReviewsList() {
+        reviewAdapter = new ReceivedReviewAdapter();
+        binding.rvSheetReviews.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.rvSheetReviews.setAdapter(reviewAdapter);
+        binding.rvSheetReviews.setNestedScrollingEnabled(false);
+        binding.btnSheetLoadMoreReviews.setOnClickListener(v -> loadReviews(false));
+    }
+
+    private void loadReviews(boolean isFirst) {
+        if (isLoadingReviews) return;
+        isLoadingReviews = true;
+
+        int page = isFirst ? 1 : reviewPage + 1;
+
+        apiService.getReceivedReviewsPaged(applicant.getUser_id(), page, REVIEW_PAGE_SIZE)
+                .enqueue(new Callback<ApiResponse<ReceivedReviewsData>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<ReceivedReviewsData>> call,
+                                           Response<ApiResponse<ReceivedReviewsData>> response) {
+                        isLoadingReviews = false;
+
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess() && response.body().getData() != null) {
+                            ReceivedReviewsData data = response.body().getData();
+
+                            if (isFirst) {
+                                reviewAdapter.submitReviewList(data.getReviews());
+                            } else {
+                                reviewAdapter.addReviewList(data.getReviews());
+                            }
+                            reviewPage = data.getPage();
+                            reviewHasMore = data.isHas_more();
+
+                            boolean isEmpty = isFirst
+                                    && (data.getReviews() == null || data.getReviews().isEmpty());
+                            binding.tvSheetNoReviews.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                            binding.rvSheetReviews.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+                            binding.btnSheetLoadMoreReviews.setVisibility(
+                                    reviewHasMore ? View.VISIBLE : View.GONE);
+                        } else if (isFirst) {
+                            binding.tvSheetNoReviews.setVisibility(View.VISIBLE);
+                            binding.rvSheetReviews.setVisibility(View.GONE);
+                            binding.btnSheetLoadMoreReviews.setVisibility(View.GONE);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<ReceivedReviewsData>> call, Throwable throwable) {
+                        isLoadingReviews = false;
+                        if (isFirst) {
+                            binding.tvSheetNoReviews.setVisibility(View.VISIBLE);
+                            binding.rvSheetReviews.setVisibility(View.GONE);
+                            binding.btnSheetLoadMoreReviews.setVisibility(View.GONE);
+                        }
+                    }
+                });
     }
 
     // ─────────────────────────────────────────
