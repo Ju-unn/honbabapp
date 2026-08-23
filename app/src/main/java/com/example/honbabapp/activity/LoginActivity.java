@@ -362,7 +362,7 @@ public class LoginActivity extends AppCompatActivity {
                         ToastUtil.makeText(LoginActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
-                        Log.e(TAG, "dd소셜 로그인 실패: " + apiResponse.getMessage());
+                        Log.e(TAG, "소셜 로그인 실패: " + apiResponse.getMessage());
                     }
                 } else {
                     ToastUtil.makeText(LoginActivity.this,

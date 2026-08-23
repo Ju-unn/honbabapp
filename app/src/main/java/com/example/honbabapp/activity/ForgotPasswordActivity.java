@@ -5,6 +5,7 @@ import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -21,6 +22,7 @@ import com.example.honbabapp.api.data.request.VerifyCodeRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.ActivityForgotPasswordBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.ToastUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -353,6 +355,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     showResetResult(true, "비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요");
+                    ToastUtil.makeText(ForgotPasswordActivity.this,
+                            "비밀번호가 변경되었습니다", Toast.LENGTH_SHORT).show();
                     binding.etCode.postDelayed(ForgotPasswordActivity.this::finish, 1200);
                 } else {
                     binding.btnResetPassword.setEnabled(true);
