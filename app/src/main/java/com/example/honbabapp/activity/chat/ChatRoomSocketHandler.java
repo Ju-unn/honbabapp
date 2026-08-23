@@ -30,6 +30,8 @@ public class ChatRoomSocketHandler {
         void onHostChanged(int newHostId);
         /** 본인이 강퇴됨. */
         void onKicked();
+        /** 내가 보낸 메시지가 서버에서 거부됨 (탈퇴/권한 없음 등). 타임아웃 기다리지 않고 즉시 실패 처리용. */
+        void onMessageError(String clientMsgId, String content);
     }
 
     private final int roomId;
@@ -42,6 +44,7 @@ public class ChatRoomSocketHandler {
     private Emitter.Listener memberLeftListener;
     private Emitter.Listener hostChangedListener;
     private Emitter.Listener kickedListener;
+    private Emitter.Listener messageErrorListener;
 
     public ChatRoomSocketHandler(int roomId, int myUserId, Callbacks callbacks) {
         this.roomId = roomId;
@@ -143,12 +146,22 @@ public class ChatRoomSocketHandler {
             callbacks.onKicked();
         };
 
+        // ── 내 메시지가 서버에서 거부됨 ──
+        messageErrorListener = arguments -> {
+            JSONObject payload = ChatSocketEvents.asJsonObject(arguments);
+            if (!ChatSocketEvents.isForRoom(payload, roomId)) return;
+            String clientMsgId = payload.optString("client_msg_id", null);
+            String content = ChatSocketEvents.getString(payload, "content");
+            callbacks.onMessageError(clientMsgId, content);
+        };
+
         socket.on("message", messageListener);
         socket.on("read_update", readUpdateListener);
         socket.on("member_joined", memberJoinedListener);
         socket.on("member_left", memberLeftListener);
         socket.on("host_changed", hostChangedListener);
         socket.on("kicked", kickedListener);
+        socket.on("message_error", messageErrorListener);
     }
 
     /**
@@ -165,5 +178,6 @@ public class ChatRoomSocketHandler {
         if (memberLeftListener != null) socket.off("member_left", memberLeftListener);
         if (hostChangedListener != null) socket.off("host_changed", hostChangedListener);
         if (kickedListener != null) socket.off("kicked", kickedListener);
+        if (messageErrorListener != null) socket.off("message_error", messageErrorListener);
     }
 }

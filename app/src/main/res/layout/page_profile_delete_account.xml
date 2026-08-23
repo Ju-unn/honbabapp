@@ -94,7 +94,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="계정을 탈퇴하면 아래 정보가 모두 삭제되며,\n복구가 불가능합니다."
+                        android:text="탈퇴하면 닉네임, 프로필 사진등 프로필 정보가 삭제되고\n채팅방에서 제외됩니다.\n승인된 모임에 참여 중이거나 \n모집 중인 모임의 호스트라면 먼저 모임을 나가거나 삭제해야 탈퇴할 수 있어요."
                         android:textColor="@color/text_100"
                         android:textSize="14sp"
                         android:lineSpacingExtra="4dp" />
@@ -150,53 +150,7 @@
 
                     </LinearLayout>
 
-                    <!-- 모임 기록 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
-
-                        <View
-                            android:layout_width="6dp"
-                            android:layout_height="6dp"
-                            android:background="@color/error_red"
-                            android:layout_marginEnd="12dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="참여한 모임 기록"
-                            android:textColor="@color/text_100"
-                            android:textSize="14sp" />
-
-                    </LinearLayout>
-
-                    <!-- 채팅 내역 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
-
-                        <View
-                            android:layout_width="6dp"
-                            android:layout_height="6dp"
-                            android:background="@color/error_red"
-                            android:layout_marginEnd="12dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="채팅 내역"
-                            android:textColor="@color/text_100"
-                            android:textSize="14sp" />
-
-                    </LinearLayout>
-
-                    <!-- 리뷰 및 평가 -->
+                    <!-- 대기 중인 모임 참여 신청 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -212,7 +166,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="리뷰 및 평가 기록"
+                            android:text="승인 대기 중인 모임 참여 신청 (자동 취소)"
                             android:textColor="@color/text_100"
                             android:textSize="14sp" />
 
@@ -222,12 +176,83 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- 개인정보 보관 안내 -->
+            <!-- 유지되는 정보 목록 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="유지되는 정보"
+                android:textColor="@color/text_200"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="@color/bg_100">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <View
+                            android:layout_width="6dp"
+                            android:layout_height="6dp"
+                            android:background="@color/text_200"
+                            android:layout_marginEnd="12dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="매너 점수 및 완료된 모임 참여·리뷰 이력"
+                            android:textColor="@color/text_100"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <View
+                            android:layout_width="6dp"
+                            android:layout_height="6dp"
+                            android:background="@color/text_200"
+                            android:layout_marginEnd="12dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="전화번호, 성별, 생년월일, 지역 정보"
+                            android:textColor="@color/text_100"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- 재가입 시 복구 안내 -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:layout_marginBottom="24dp"
-                android:text="개인정보는 3년간 유지되며 3년 후 폐기됩니다."
+                android:text="탈퇴 후 동일한 카카오/구글 계정 또는 이메일로 재가입하면 위 유지 정보와 함께 계정이 복구될 수 있습니다."
                 android:textColor="@color/text_200"
                 android:textSize="13sp"
                 android:lineSpacingExtra="4dp" />

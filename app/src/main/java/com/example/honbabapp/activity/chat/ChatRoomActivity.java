@@ -230,6 +230,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                         if ("group".equals(roomType)) {
                             binding.tvChatStatus.setText(memberCount + "명");
                         }
+                        updateSendInputEnabled();
                     }
                 });
             }
@@ -250,6 +251,20 @@ public class ChatRoomActivity extends AppCompatActivity {
                     ToastUtil.makeText(ChatRoomActivity.this,
                             "방장에 의해 강퇴되었습니다", Toast.LENGTH_LONG).show();
                     finish();
+                });
+            }
+
+            @Override
+            public void onMessageError(String clientMsgId, String content) {
+                runOnUiThread(() -> {
+                    if (clientMsgId != null) {
+                        Handler handler = pendingTimeoutHandlers.remove(clientMsgId);
+                        if (handler != null) handler.removeCallbacksAndMessages(null);
+                        failLocally(clientMsgId);
+                    }
+                    ToastUtil.makeText(ChatRoomActivity.this,
+                            content == null || content.isEmpty() ? "메시지를 보낼 수 없습니다" : content,
+                            Toast.LENGTH_SHORT).show();
                 });
             }
         });
@@ -514,6 +529,21 @@ public class ChatRoomActivity extends AppCompatActivity {
         } else {
             binding.tvChatStatus.setVisibility(View.GONE);
         }
+
+        updateSendInputEnabled();
+    }
+
+    /**
+     * 1:1 방에서 상대방이 나가서(탈퇴 등) 나 혼자만 남으면 입력창/전송 버튼을 막는다.
+     * 서버(isRoomStillSendable)도 같은 조건으로 막지만, 눌러보고서야 실패 토스트가
+     * 뜨는 것보다 애초에 못 누르게 하는 게 UX상 낫다.
+     * memberCount가 아직 0(로딩 전)일 땐 오탐 방지를 위해 막지 않는다.
+     */
+    private void updateSendInputEnabled() {
+        boolean blocked = "direct".equals(roomType) && memberCount == 1;
+        binding.etMessage.setEnabled(!blocked);
+        binding.btnSend.setEnabled(!blocked);
+        binding.etMessage.setHint(blocked ? "상대방이 나간 채팅방입니다" : "메시지를 입력하세요");
     }
 
     private void initRecyclerView() {
