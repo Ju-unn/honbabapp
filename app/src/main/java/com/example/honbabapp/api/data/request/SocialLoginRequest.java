@@ -11,11 +11,17 @@ public class SocialLoginRequest {
     private String provider;
     private String access_token;
     private String id_token;
+    private boolean confirm_restore;
 
     public SocialLoginRequest(String provider, String accessToken, String idToken) {
+        this(provider, accessToken, idToken, false);
+    }
+
+    public SocialLoginRequest(String provider, String accessToken, String idToken, boolean confirmRestore) {
         this.provider = provider;
         this.access_token = accessToken;
         this.id_token = idToken;
+        this.confirm_restore = confirmRestore;
     }
 
     public String getProvider() {
@@ -28,5 +34,9 @@ public class SocialLoginRequest {
 
     public String getId_token() {
         return id_token;
+    }
+
+    public boolean isConfirm_restore() {
+        return confirm_restore;
     }
 }

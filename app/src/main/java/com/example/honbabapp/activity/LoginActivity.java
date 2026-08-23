@@ -1,5 +1,6 @@
 package com.example.honbabapp.activity;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -348,7 +349,14 @@ public class LoginActivity extends AppCompatActivity {
      * @param idToken     구글 id_token (카카오면 null)
      */
     private void sendSocialLoginToServer(String provider, String accessToken, String idToken) {
-        SocialLoginRequest request = new SocialLoginRequest(provider, accessToken, idToken);
+        sendSocialLoginToServer(provider, accessToken, idToken, false);
+    }
+
+    /**
+     * @param confirmRestore 탈퇴 계정 복구 확인 다이얼로그에서 사용자가 "복구"를 눌렀을 때 true로 재호출
+     */
+    private void sendSocialLoginToServer(String provider, String accessToken, String idToken, boolean confirmRestore) {
+        SocialLoginRequest request = new SocialLoginRequest(provider, accessToken, idToken, confirmRestore);
 
         apiService.socialLogin(request).enqueue(new Callback<ApiResponse<SocialLoginData>>() {
             @Override
@@ -358,6 +366,8 @@ public class LoginActivity extends AppCompatActivity {
 
                     if (apiResponse.isSuccess()) {
                         handleSocialLoginSuccess(apiResponse.getData());
+                    } else if (apiResponse.getData() != null && apiResponse.getData().isRestore_required()) {
+                        showWithdrawnAccountRestoreDialog(provider, accessToken, idToken);
                     } else {
                         ToastUtil.makeText(LoginActivity.this,
                                 apiResponse.getMessage(),
@@ -380,6 +390,20 @@ public class LoginActivity extends AppCompatActivity {
                 Log.e(TAG, "네트워크 오류: " + t.getMessage(), t);
             }
         });
+    }
+
+    /**
+     * 탈퇴한 계정으로 소셜 로그인 시도 시 복구 여부 확인
+     * "복구" 선택 시 같은 토큰으로 confirm_restore=true를 실어 재호출한다.
+     */
+    private void showWithdrawnAccountRestoreDialog(String provider, String accessToken, String idToken) {
+        new AlertDialog.Builder(this)
+                .setTitle("탈퇴한 계정")
+                .setMessage("탈퇴한 계정입니다. 복구하시겠습니까?")
+                .setPositiveButton("복구", (dialog, which) ->
+                        sendSocialLoginToServer(provider, accessToken, idToken, true))
+                .setNegativeButton("취소", null)
+                .show();
     }
 
     /**

@@ -12,10 +12,14 @@ package com.example.honbabapp.api.data.login;
  *     "needs_onboarding": true
  *   }
  * }
+ *
+ * 탈퇴 계정이 감지되면 success:false와 함께 아래 형태로 옴 (user는 없음):
+ * "data": { "restore_required": true }
  */
 public class SocialLoginData {
     private SocialUserData user;
     private boolean needs_onboarding;
+    private boolean restore_required;
 
     public SocialUserData getUser() {
         return user;
@@ -23,6 +27,10 @@ public class SocialLoginData {
 
     public boolean isNeeds_onboarding() {
         return needs_onboarding;
+    }
+
+    public boolean isRestore_required() {
+        return restore_required;
     }
 
     /**
