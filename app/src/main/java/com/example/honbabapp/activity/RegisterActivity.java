@@ -226,7 +226,20 @@ public class RegisterActivity extends AppCompatActivity {
                 isEmailChecked = false;
                 isEmailVerified = false;
                 registerBinding.btnSendVerification.setText("중복확인");
+                // 코드 전송 직후엔 재전송 스팸 방지로 3분간 disabled 상태인데,
+                // 그걸 풀어주는 유일한 통로(타이머 onFinish)를 아래 cancelVerificationTimer()가
+                // 끊어버리므로 여기서 직접 다시 눌러지게 해줘야 함
+                registerBinding.btnSendVerification.setEnabled(true);
                 registerBinding.tvEmailCheckResult.setVisibility(View.GONE);
+
+                // 이전 이메일로 보낸 인증코드는 새 이메일에 더 이상 유효하지 않으므로
+                // 코드 입력창/인증확인 버튼/타이머를 전부 초기 상태로 되돌린다.
+                // (안 그러면 인증 완료 후 이메일을 고치면 입력창이 disable된 채로 멈춰있음)
+                registerBinding.etVerificationCode.setText("");
+                registerBinding.etVerificationCode.setEnabled(false);
+                registerBinding.btnVerifyCode.setEnabled(false);
+                registerBinding.tvVerifyCodeResult.setVisibility(View.GONE);
+                cancelVerificationTimer();
             }
 
             @Override
