@@ -3,12 +3,14 @@ package com.example.honbabapp.ui.fragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -29,6 +31,7 @@ import com.example.honbabapp.api.RetrofitClient;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.FragmentProfileBinding;
+import com.example.honbabapp.util.MannerScoreUtil;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -141,7 +144,15 @@ public class ProfileFragment extends Fragment {
         );
 
         // 매너 점수
-        binding.tvMannerScore.setText(String.valueOf(profile.getUser_manner_score()));
+        float mannerScore = profile.getUser_manner_score();
+        binding.tvMannerScore.setText(String.valueOf(mannerScore));
+
+        // 매너 점수 등급에 따라 헤더 배경색 변경
+        // mutate() 필수 — 안 하면 같은 drawable(@drawable/profile_header_background)을
+        // 공유하는 다른 화면(채팅방 참여자 프로필 등)의 배경색까지 같이 바뀜
+        Drawable headerBackground = binding.headerContainer.getBackground().mutate();
+        headerBackground.setTint(ContextCompat.getColor(requireContext(), MannerScoreUtil.colorRes(mannerScore)));
+        binding.headerContainer.setBackground(headerBackground);
 
         // 참여 횟수
         binding.tvParticipationCount.setText(profile.getUser_participation_count() + "회");

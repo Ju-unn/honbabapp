@@ -64,6 +64,7 @@
 
             <!-- ──── 그라데이션 헤더 (아바타 + 닉네임 + 상태 + 매너/참여) ──── -->
             <LinearLayout
+                android:id="@+id/header_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"

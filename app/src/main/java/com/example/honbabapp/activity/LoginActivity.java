@@ -51,11 +51,9 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * 로그인 Activity (최적화 버전)
-     * <p>
      * SharedPreferences 저장:
      * - user_id (int)         : API 호출 시 사용
      * - is_logged_in (boolean): 자동 로그인 체크
-     * <p>
      * 나머지 정보는 서버에서 가져오기:
      * - nickname, email, profile_image, location, manner_temp 등
      */
@@ -552,8 +550,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * 로그인 성공 처리
      * SharedPreferences에 로그인 정보 + JWT 토큰 저장
-     * <p>
-     * 수정 내역 (이슈 #4):
+     * 수정 내역:
      * - 기존에는 user_id, is_logged_in, 위치 정보만 저장하고 JWT 토큰(KEY_JWT_TOKEN)을
      * 저장하지 않았다. handleSocialLoginSuccess()와 동일한 패턴으로 토큰 저장 라인을
      * 추가한다.
