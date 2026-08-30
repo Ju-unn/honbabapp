@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -31,6 +32,7 @@ import com.example.honbabapp.ui.fragment.CampaignFragment;
 import com.example.honbabapp.ui.fragment.HomeFragment;
 import com.example.honbabapp.ui.fragment.MapFragment;
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
@@ -46,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private MainFragmentAdapter adapter;
+    private long lastBackPressedTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
         initViewPager();
         initNavigation();
+        setupBackPressed();
         handleIntent(getIntent());
         requestNotificationPermissionIfNeeded();
 
@@ -187,6 +191,32 @@ public class MainActivity extends AppCompatActivity {
 
     public void navigationToHome() {
         binding.viewPager.setCurrentItem(0);
+    }
+
+    /**
+     * 뒤로가기: 홈 외 탭이면 홈으로, 홈에서 누르면 스낵바 안내 후 2초 내 재입력 시 종료.
+     * (기존엔 콜백이 없어 어느 탭에서든 back = 앱 즉시 종료 → 오탈출)
+     */
+    private void setupBackPressed() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (binding.viewPager.getCurrentItem() != 0) {
+                    binding.viewPager.setCurrentItem(0, false);
+                    return;
+                }
+                long now = System.currentTimeMillis();
+                if (now - lastBackPressedTime < 2000) {
+                    finish();
+                    return;
+                }
+                lastBackPressedTime = now;
+                Snackbar.make(binding.getRoot(), "'뒤로'를 한 번 더 누르면 종료돼요",
+                                Snackbar.LENGTH_SHORT)
+                        .setAnchorView(binding.bottomNavigationBar)
+                        .show();
+            }
+        });
     }
 
     private void initViewPager() {
