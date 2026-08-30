@@ -4,9 +4,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.honbabapp.api.data.chat.MessageData;
+import com.example.honbabapp.ui.view.ChatImageGridView;
 import com.example.honbabapp.util.ChatGlide;
 
 import java.util.List;
@@ -25,7 +24,7 @@ final class MessageContentBinder {
 
     static void bind(TextView textContent,
                      ImageView imageContent,
-                     RecyclerView imageGridRecyclerView,
+                     ChatImageGridView imageGrid,
                      MessageData message,
                      MessageAdapter.OnImageClickListener imageClickListener) {
 
@@ -35,14 +34,14 @@ final class MessageContentBinder {
             // 텍스트
             textContent.setVisibility(View.VISIBLE);
             imageContent.setVisibility(View.GONE);
-            imageGridRecyclerView.setVisibility(View.GONE);
+            imageGrid.setVisibility(View.GONE);
             textContent.setText(message.getContent());
 
         } else if (images.size() == 1) {
             // 단일 이미지
             textContent.setVisibility(View.GONE);
             imageContent.setVisibility(View.VISIBLE);
-            imageGridRecyclerView.setVisibility(View.GONE);
+            imageGrid.setVisibility(View.GONE);
             ChatGlide.loadMessageImage(imageContent, images.get(0));
             imageContent.setOnClickListener(view -> {
                 if (imageClickListener != null) {
@@ -51,15 +50,11 @@ final class MessageContentBinder {
             });
 
         } else {
-            // 다중 이미지 그리드
+            // 다중 이미지 그리드 (카톡식 행 분배)
             textContent.setVisibility(View.GONE);
             imageContent.setVisibility(View.GONE);
-            imageGridRecyclerView.setVisibility(View.VISIBLE);
-            new ImageGridAdapter(images, (urls, index) -> {
-                if (imageClickListener != null) {
-                    imageClickListener.onImageClick(urls, index);
-                }
-            }).attachTo(imageGridRecyclerView);
+            imageGrid.setVisibility(View.VISIBLE);
+            imageGrid.setImages(images, imageClickListener);
         }
     }
 }

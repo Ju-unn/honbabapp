@@ -29,7 +29,7 @@ class MineMessageViewHolder extends RecyclerView.ViewHolder {
 
         // ── 본문 (텍스트/단일이미지/다중이미지) ──
         MessageContentBinder.bind(
-                binding.textContent, binding.imageContent, binding.rvImageGrid,
+                binding.textContent, binding.imageContent, binding.imageGrid,
                 message, imageClickListener);
 
         // ── 실패 오버레이 ──
