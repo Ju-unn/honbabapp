@@ -36,6 +36,7 @@ import com.example.honbabapp.databinding.PageMeetingDetailBinding;
 import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.ui.adapter.ParticipantListAdapter;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.SnackbarUtil;
 import com.example.honbabapp.util.ToastUtil;
 
 import org.json.JSONObject;
@@ -169,9 +170,10 @@ public class MeetingDetailActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<Meeting>> call, Throwable t) {
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
-                ToastUtil.makeText(MeetingDetailActivity.this,
+                if (binding == null) return;
+                SnackbarUtil.showRetry(binding.getRoot(),
                         "네트워크 오류가 발생했습니다.",
-                        Toast.LENGTH_SHORT).show();
+                        MeetingDetailActivity.this::loadMeetingDetail);
             }
         });
     }
@@ -520,9 +522,10 @@ public class MeetingDetailActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<ParticipantResponse>> call, Throwable t) {
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
-                ToastUtil.makeText(MeetingDetailActivity.this,
+                if (binding == null) return;
+                SnackbarUtil.showRetry(binding.getRoot(),
                         "네트워크 오류가 발생했습니다.",
-                        Toast.LENGTH_SHORT).show();
+                        MeetingDetailActivity.this::joinMeeting);
 
                 // 버튼 다시 활성화
                 binding.btnJoinMeeting.setEnabled(true);
@@ -641,7 +644,10 @@ public class MeetingDetailActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                ToastUtil.makeText(MeetingDetailActivity.this, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                if (binding == null) return;
+                SnackbarUtil.showRetry(binding.getRoot(),
+                        "네트워크 오류가 발생했습니다.",
+                        MeetingDetailActivity.this::deleteMeeting);
             }
 
         });
