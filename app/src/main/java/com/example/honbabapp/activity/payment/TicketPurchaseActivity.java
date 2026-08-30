@@ -228,10 +228,19 @@ public class TicketPurchaseActivity extends AppCompatActivity {
     private void showPaymentWidget() {
         binding.layoutPaymentSection.setVisibility(View.VISIBLE);
 
+        // 결제위젯 렌더링은 비동기다. onLoad() 전에 "결제하기"를 누르면 결제수단
+        // 미선택 상태로 실패가 statusListener.onFail로 전달되며 버튼이 잠기므로,
+        // 렌더링이 끝날 때까지 버튼을 비활성화해 조기 클릭 자체를 막는다.
+        binding.btnNext.setText("결제 수단 불러오는 중...");
+        binding.btnNext.setEnabled(false);
+        binding.btnNext.setOnClickListener(view -> requestTossPayment());
+
         PaymentWidgetStatusListener paymentWidgetStatusListener = new PaymentWidgetStatusListener() {
             @Override
             public void onLoad() {
                 Log.i(TAG, "결제위젯 렌더링 완료");
+                binding.btnNext.setText("결제하기 · " + formatAmount(preparedAmount) + "원");
+                binding.btnNext.setEnabled(true);
             }
 
             @Override
@@ -239,6 +248,9 @@ public class TicketPurchaseActivity extends AppCompatActivity {
                 Log.w(TAG, "결제 정보 입력 안내: " + fail.getErrorMessage());
                 ToastUtil.makeText(TicketPurchaseActivity.this,
                         fail.getErrorMessage(), Toast.LENGTH_SHORT).show();
+                // 안전망: 실패가 이 리스너로 오면 버튼 잠금을 반드시 해제한다.
+                binding.btnNext.setText("결제하기 · " + formatAmount(preparedAmount) + "원");
+                binding.btnNext.setEnabled(true);
             }
         };
 
@@ -255,10 +267,6 @@ public class TicketPurchaseActivity extends AppCompatActivity {
                 paymentWidgetStatusListener
         );
         paymentWidget.renderAgreement(binding.agreementWidget);
-
-        binding.btnNext.setText("결제하기 · " + formatAmount(preparedAmount) + "원");
-        binding.btnNext.setEnabled(true);
-        binding.btnNext.setOnClickListener(view -> requestTossPayment());
     }
 
     private void requestTossPayment() {
