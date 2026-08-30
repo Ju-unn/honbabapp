@@ -81,6 +81,10 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
             // 방 이름
             binding.textRoomName.setText(room.getRoom_name());
 
+            // 모임 채팅 배지 (meeting_id 있으면 모임 채팅). 매 bind마다 세팅 → 재사용 잔상 방지.
+            binding.imgMeetingBadge.setVisibility(
+                    room.getMeeting_id() != null ? android.view.View.VISIBLE : android.view.View.GONE);
+
             // 마지막 메시지
             String lastMsg = room.getLast_message();
             binding.textLastMessage.setText(lastMsg != null ? lastMsg : "");
