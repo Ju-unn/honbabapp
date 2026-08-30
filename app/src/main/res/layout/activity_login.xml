@@ -78,7 +78,19 @@
                 android:inputType="textPassword"
                 android:background="@drawable/edittext_background"
                 android:paddingHorizontal="16dp"
-                android:layout_marginBottom="18dp"/>
+                android:layout_marginBottom="10dp"/>
+
+            <!--        로그인 상태 유지-->
+            <CheckBox
+                android:id="@+id/cb_remember_me"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="로그인 상태 유지"
+                android:textColor="@color/text_100"
+                android:textSize="14sp"
+                android:checked="true"
+                android:paddingStart="4dp"
+                android:layout_marginBottom="16dp"/>
 
             <!--        로그인 버튼-->
             <Button
@@ -207,26 +219,6 @@
                     android:src="@drawable/ic_kakao" />
 
             </FrameLayout>
-
-<!--            &lt;!&ndash; 네이버 로그인 &ndash;&gt;-->
-<!--            <FrameLayout-->
-<!--                android:id="@+id/btn_naver_login"-->
-<!--                android:layout_width="48dp"-->
-<!--                android:layout_height="48dp"-->
-<!--                android:background="@drawable/social_button_naver_background"-->
-<!--                android:layout_marginEnd="15dp"-->
-<!--                android:clickable="true"-->
-<!--                android:focusable="true"-->
-<!--                android:foreground="?android:attr/selectableItemBackgroundBorderless">-->
-
-<!--                <ImageView-->
-<!--                    android:layout_width="35dp"-->
-<!--                    android:layout_height="35dp"-->
-<!--                    android:layout_gravity="center"-->
-<!--                    android:src="@drawable/ic_naver"-->
-<!--                    android:contentDescription="네이버 로그인" />-->
-
-<!--            </FrameLayout>-->
 
             <!-- 구글 로그인 -->
             <FrameLayout

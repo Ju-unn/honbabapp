@@ -2,6 +2,7 @@ package com.example.honbabapp.activity;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.os.CancellationSignal;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,6 +30,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.user.OnboardingStatusResponse;
 import com.example.honbabapp.databinding.ActivityLoginBinding;
 import com.example.honbabapp.util.InsetsUtils;
+import com.example.honbabapp.util.SnackbarUtil;
 import com.example.honbabapp.util.ToastUtil;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
@@ -67,6 +69,7 @@ public class LoginActivity extends AppCompatActivity {
     // SharedPreferences 설정
     private static final String PREF_NAME = "honbabapp_prefs";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
+    private static final String KEY_REMEMBER_ME = "remember_me";
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_SIGUNGU = "user_sigungu";
     private static final String KEY_DONG = "user_dong";
@@ -114,8 +117,10 @@ public class LoginActivity extends AppCompatActivity {
     private boolean checkAutoLogin() {
         boolean isLoggedIn = sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false);
         int userId = sharedPreferences.getInt(KEY_USER_ID, -1);
+        // "로그인 상태 유지" 해제 시 다음 실행에서 자동 로그인 건너뜀 (기존 사용자는 기본값 true로 유지)
+        boolean rememberMe = sharedPreferences.getBoolean(KEY_REMEMBER_ME, true);
 
-        if (isLoggedIn && userId != -1) {
+        if (isLoggedIn && userId != -1 && rememberMe) {
             Log.d(TAG, "자동 로그인 시도: user_id=" + userId + " (온보딩 완료 여부 확인 중)");
             verifyOnboardingThenProceed(userId);
             return true;
@@ -229,7 +234,7 @@ public class LoginActivity extends AppCompatActivity {
         credentialManager.getCredentialAsync(
                 this,
                 request,
-                new android.os.CancellationSignal(),
+                new CancellationSignal(),
                 executor,
                 new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
                     @Override
@@ -382,9 +387,9 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse<SocialLoginData>> call, Throwable t) {
-                ToastUtil.makeText(LoginActivity.this,
+                SnackbarUtil.showRetry(binding.getRoot(),
                         "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.",
-                        Toast.LENGTH_SHORT).show();
+                        () -> sendSocialLoginToServer(provider, accessToken, idToken, confirmRestore));
                 Log.e(TAG, "네트워크 오류: " + t.getMessage(), t);
             }
         });
@@ -419,6 +424,7 @@ public class LoginActivity extends AppCompatActivity {
         // SharedPreferences에 로그인 정보 + JWT 토큰 저장
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(KEY_IS_LOGGED_IN, true);
+        editor.putBoolean(KEY_REMEMBER_ME, binding.cbRememberMe.isChecked());
         editor.putInt(KEY_USER_ID, user.getUser_id());
         editor.putString(KEY_JWT_TOKEN, user.getToken());
         editor.putString(KEY_REFRESH_TOKEN, user.getRefresh_token());
@@ -511,9 +517,9 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse<LoginData>> call, Throwable t) {
-                ToastUtil.makeText(LoginActivity.this,
+                SnackbarUtil.showRetry(binding.getRoot(),
                         "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.",
-                        Toast.LENGTH_SHORT).show();
+                        LoginActivity.this::performLogin);
                 Log.e(TAG, "네트워크 오류: " + t.getMessage(), t);
             }
         });
@@ -563,6 +569,7 @@ public class LoginActivity extends AppCompatActivity {
         // SharedPreferences에 로그인 정보 + JWT 토큰 저장
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(KEY_IS_LOGGED_IN, true);
+        editor.putBoolean(KEY_REMEMBER_ME, binding.cbRememberMe.isChecked());
         editor.putInt(KEY_USER_ID, loginData.getUser_id());
         editor.putString(KEY_JWT_TOKEN, loginData.getToken());
         editor.putString(KEY_REFRESH_TOKEN, loginData.getRefresh_token());
@@ -592,7 +599,6 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * FCM 디바이스 토큰을 발급받아 SharedPreferences에 저장하고 서버에 등록한다.
-     * <p>
      * 로그인 성공 직후 1회 호출되며, 토큰 발급/등록이 실패해도 로그인 자체
      * 흐름(goToMainActivity)에는 영향을 주지 않는다 (이미 호출됨).
      */
