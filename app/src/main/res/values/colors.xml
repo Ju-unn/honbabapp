@@ -40,4 +40,10 @@
     <color name="orange_border">#FF6B00</color>
     <color name="gray_border">#E0E0E0</color>
 
+    <!-- 기존 하드코딩 색 편입 -->
+    <color name="danger_pressed">#D32F2F</color>
+    <color name="danger_disabled_bg">#FBD4D1</color>
+    <color name="danger_disabled_fg">#C62828</color>
+    <color name="warn_bg">#FFEBEE</color>
+
 </resources>

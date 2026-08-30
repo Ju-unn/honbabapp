@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MaterialButton backgroundTint용. android:background drawable은 morph되며 무시되므로 tint로 제어 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 비활성(동의 체크 전): 연한 빨강 -->
+    <item android:state_enabled="false" android:color="@color/danger_disabled_bg" />
+    <!-- 눌림 -->
+    <item android:state_pressed="true" android:color="@color/danger_pressed" />
+    <!-- 활성 -->
+    <item android:color="@color/error_red" />
+</selector>

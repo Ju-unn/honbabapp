@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 비활성: 진한 빨강 글자 -->
+    <item android:state_enabled="false" android:color="@color/danger_disabled_fg" />
+    <!-- 활성: 흰색 -->
+    <item android:color="@color/white" />
+</selector>
