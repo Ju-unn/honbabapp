@@ -85,7 +85,7 @@ public class ProfileTicketActivity extends AppCompatActivity {
                 } else {
                     Log.e(TAG, "등록권 잔액 로드 실패");
                     ToastUtil.makeText(ProfileTicketActivity.this,
-                            "등록권 확인에 실패했습니다. 잠시 후 다시 시도해주세요",
+                            "등록권 확인에 실패했습니다. \n잠시 후 다시 시도해주세요",
                             Toast.LENGTH_SHORT).show();
                 }
             }
@@ -95,7 +95,7 @@ public class ProfileTicketActivity extends AppCompatActivity {
                 if (binding == null) return;
                 Log.e(TAG, "등록권 잔액 로드 네트워크 오류: " + t.getMessage());
                 ToastUtil.makeText(ProfileTicketActivity.this,
-                        "등록권 확인에 실패했습니다. 잠시 후 다시 시도해주세요",
+                        "등록권 확인에 실패했습니다.\n 잠시 후 다시 시도해주세요",
                         Toast.LENGTH_SHORT).show();
             }
         });

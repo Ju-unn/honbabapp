@@ -37,6 +37,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -534,8 +535,8 @@ public class MeetingEditActivity extends AppCompatActivity {
         try {
             SimpleDateFormat sdf =
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
-            java.util.Date meetingDateTime = sdf.parse(selectedDate + " " + selectedTime);
-            if (meetingDateTime == null || !meetingDateTime.after(new java.util.Date())) {
+            Date meetingDateTime = sdf.parse(selectedDate + " " + selectedTime);
+            if (meetingDateTime == null || !meetingDateTime.after(new Date())) {
                 ToastUtil.makeText(this, "현재 시간 이후를 선택해주세요", Toast.LENGTH_SHORT).show();
                 return;
             }

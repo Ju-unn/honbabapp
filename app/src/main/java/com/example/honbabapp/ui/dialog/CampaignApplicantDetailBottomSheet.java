@@ -22,6 +22,11 @@ import com.example.honbabapp.databinding.BottomsheetCampaignApplicantDetailBindi
 import com.example.honbabapp.ui.adapter.ReceivedReviewAdapter;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -236,12 +241,12 @@ public class CampaignApplicantDetailBottomSheet extends BottomSheetDialogFragmen
     private String formatApplyTime(String appliedAt) {
         if (appliedAt == null || appliedAt.isEmpty()) return "";
         try {
-            java.text.SimpleDateFormat dateFormat =
-                    new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.KOREA);
+            SimpleDateFormat dateFormat =
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
             // 서버는 항상 KST(Asia/Seoul) 문자열을 내려주므로, 기기 타임존이 달라도
             // 항상 KST로 해석하도록 명시한다 (안 하면 기기 기본 타임존으로 파싱되어 시간이 어긋남)
-            dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul"));
-            java.util.Date applyDate = dateFormat.parse(appliedAt);
+            dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+            Date applyDate = dateFormat.parse(appliedAt);
             if (applyDate == null) return appliedAt;
             long diffMilliseconds = System.currentTimeMillis() - applyDate.getTime();
             long diffMinutes      = diffMilliseconds / 60000;

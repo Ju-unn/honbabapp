@@ -109,7 +109,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 binding.btnSendCode.setEnabled(true);
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    showEmailCheckResult(true, "인증 코드가 발송되었습니다. 메일함을 확인해주세요");
+                    showEmailCheckResult(true, "인증 코드가 발송되었습니다. \n메일함을 확인해주세요");
 
                     // 인증 코드 입력란 활성화
                     binding.btnSendCode.setText("재발송");
@@ -168,7 +168,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                     ApiResponse<VerifiedData> apiResponse = response.body();
 
                     if (apiResponse.isSuccess() && apiResponse.getData() != null && apiResponse.getData().isVerified()) {
-                        showVerifyCodeResult(true, "인증이 완료되었습니다. 새 비밀번호를 입력해주세요");
+                        showVerifyCodeResult(true, "인증이 완료되었습니다. \n새 비밀번호를 입력해주세요");
 
                         isCodeVerified = true;
                         binding.etCode.setEnabled(false);
