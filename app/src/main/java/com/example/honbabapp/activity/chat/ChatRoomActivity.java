@@ -561,9 +561,9 @@ public class ChatRoomActivity extends AppCompatActivity {
         binding.rvMessages.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
-                LinearLayoutManager lm = (LinearLayoutManager) rv.getLayoutManager();
+                LinearLayoutManager layoutManager = (LinearLayoutManager) rv.getLayoutManager();
                 if (!isLoadingMore && hasMorePages
-                        && lm != null && lm.findFirstVisibleItemPosition() == 0) {
+                        && layoutManager != null && layoutManager.findFirstVisibleItemPosition() == 0) {
                     loadMoreMessages();
                 }
             }

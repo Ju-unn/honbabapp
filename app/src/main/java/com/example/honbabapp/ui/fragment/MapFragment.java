@@ -214,8 +214,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                     marker.setZIndex(1);
 
                     marker.setOnClickListener(o -> {
-                        LatLng pos = marker.getPosition(); // 클러스터 중심 좌표
-                        List<Meeting> clusterMeetings = extractClusterMeetings(pos, clusterSize);
+                        LatLng position = marker.getPosition(); // 클러스터 중심 좌표
+                        List<Meeting> clusterMeetings = extractClusterMeetings(position, clusterSize);
 
                         MapClusterBottomSheetDialog dialog = new MapClusterBottomSheetDialog();
                         dialog.meetings = clusterMeetings;

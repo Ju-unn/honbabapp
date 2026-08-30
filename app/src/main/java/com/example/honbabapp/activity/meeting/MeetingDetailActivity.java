@@ -244,15 +244,15 @@ public class MeetingDetailActivity extends AppCompatActivity {
                     miniNaverMap = naverMap;
 
                     // 인터랙션 비활성화 (미니맵이므로)
-                    UiSettings ui = naverMap.getUiSettings();
-                    ui.setZoomControlEnabled(false);
-                    ui.setCompassEnabled(false);
-                    ui.setScaleBarEnabled(false);
-                    ui.setScrollGesturesEnabled(false);
-                    ui.setZoomGesturesEnabled(false);
-                    ui.setRotateGesturesEnabled(false);
-                    ui.setTiltGesturesEnabled(false);
-                    ui.setLogoClickEnabled(false);
+                    UiSettings uiSettings = naverMap.getUiSettings();
+                    uiSettings.setZoomControlEnabled(false);
+                    uiSettings.setCompassEnabled(false);
+                    uiSettings.setScaleBarEnabled(false);
+                    uiSettings.setScrollGesturesEnabled(false);
+                    uiSettings.setZoomGesturesEnabled(false);
+                    uiSettings.setRotateGesturesEnabled(false);
+                    uiSettings.setTiltGesturesEnabled(false);
+                    uiSettings.setLogoClickEnabled(false);
 
                     // 마커 추가 (재조회 시 중복 생성 방지 — 기존 마커 재사용)
                     LatLng position = new LatLng(lat, lng);
@@ -637,8 +637,8 @@ public class MeetingDetailActivity extends AppCompatActivity {
                     startActivity(intent);
                     finish();
                 } else {
-                    String msg = (response.body() != null) ? response.body().getMessage() : "삭제에 실패했습니다.";
-                    ToastUtil.makeText(MeetingDetailActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    String message = (response.body() != null) ? response.body().getMessage() : "삭제에 실패했습니다.";
+                    ToastUtil.makeText(MeetingDetailActivity.this, message, Toast.LENGTH_SHORT).show();
                 }
             }
 

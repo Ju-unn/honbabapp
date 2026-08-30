@@ -68,11 +68,11 @@ public class ImageSelectAdapter extends RecyclerView.Adapter<ImageSelectAdapter.
 
         // 클릭
         holder.itemView.setOnClickListener(v -> {
-            int prev = selectedPosition;
+            int previousPosition = selectedPosition;
             selectedPosition = holder.getAdapterPosition();
 
             // 이전 선택해제
-            if (prev >= 0) notifyItemChanged(prev);
+            if (previousPosition >= 0) notifyItemChanged(previousPosition);
             notifyItemChanged(selectedPosition);
 
             if (listener != null) listener.onImageSelected(imageUrls.get(selectedPosition));

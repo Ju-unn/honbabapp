@@ -136,8 +136,8 @@ public class FullScreenImageActivity extends AppCompatActivity {
                      OutputStream out = getContentResolver().openOutputStream(imageUri)) {
                     if (out == null) throw new IOException("OutputStream null");
                     byte[] buf = new byte[8192];
-                    int len;
-                    while ((len = in.read(buf)) != -1) out.write(buf, 0, len);
+                    int bytesRead;
+                    while ((bytesRead = in.read(buf)) != -1) out.write(buf, 0, bytesRead);
                 }
 
                 // 4-2) EXIF 촬영일자를 "지금"으로 덮어쓰기

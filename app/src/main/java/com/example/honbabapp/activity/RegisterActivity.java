@@ -370,10 +370,10 @@ public class RegisterActivity extends AppCompatActivity {
     // 진행바·인디케이터·버튼 라벨/노출/활성 갱신
     private void updateStepUI() {
         int step = registerBinding.viewFlipper.getDisplayedChild(); // 0-based
-        int human = step + 1;
-        registerBinding.progressStep.setProgress(human);
-        registerBinding.tvStepIndicator.setText(human + "/" + STEP_COUNT);
-        registerBinding.tvStepLabel.setText(human + "단계 · " + STEP_LABELS[step]);
+        int stepNumber = step + 1;
+        registerBinding.progressStep.setProgress(stepNumber);
+        registerBinding.tvStepIndicator.setText(stepNumber + "/" + STEP_COUNT);
+        registerBinding.tvStepLabel.setText(stepNumber + "단계 · " + STEP_LABELS[step]);
         registerBinding.btnPrev.setVisibility(step == 0 ? View.GONE : View.VISIBLE);
         registerBinding.btnNext.setText(step >= STEP_COUNT - 1 ? "회원가입 완료" : "다음");
         updateNextButton();
@@ -391,9 +391,9 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void updateNextButton() {
-        boolean ok = isCurrentStepValid();
+        boolean isStepValid = isCurrentStepValid();
         // 비활성 색은 backgroundTint selector(primary_button_bg: disabled→gray)가 처리
-        registerBinding.btnNext.setEnabled(ok);
+        registerBinding.btnNext.setEnabled(isStepValid);
     }
 
     private void confirmQuit() {

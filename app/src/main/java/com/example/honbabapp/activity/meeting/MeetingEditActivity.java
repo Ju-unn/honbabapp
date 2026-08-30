@@ -371,11 +371,11 @@ public class MeetingEditActivity extends AppCompatActivity {
 
         for (int i = 0; i < buttons.length; i++) {
             buttons[i].setChecked(texts[i].equals(category));
-            final int idx = i;
+            final int index = i;
             buttons[i].setOnClickListener(v -> {
                 for (RadioButton b : buttons) b.setChecked(false);
-                buttons[idx].setChecked(true);
-                selectedCategory = texts[idx];
+                buttons[index].setChecked(true);
+                selectedCategory = texts[index];
             });
         }
     }
@@ -580,8 +580,8 @@ public class MeetingEditActivity extends AppCompatActivity {
                 } else {
                     // 네이버 URL → OkHttp 다운로드
                     OkHttpClient client = new OkHttpClient();
-                    Request req = new Request.Builder().url(pendingImageValue).build();
-                    ResponseBody body = client.newCall(req).execute().body();
+                    Request request = new Request.Builder().url(pendingImageValue).build();
+                    ResponseBody body = client.newCall(request).execute().body();
                     if (body == null) { onUploadFailed(); return; }
                     tmpFile = File.createTempFile("meeting_img_", ".jpg", getCacheDir());
                     try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
@@ -679,9 +679,9 @@ public class MeetingEditActivity extends AppCompatActivity {
                     setResult(RESULT_OK); // DetailActivity에 새로고침 신호
                     finish();
                 } else {
-                    String msg = response.body() != null
+                    String message = response.body() != null
                             ? response.body().getMessage() : "수정에 실패했습니다.";
-                    ToastUtil.makeText(MeetingEditActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    ToastUtil.makeText(MeetingEditActivity.this, message, Toast.LENGTH_SHORT).show();
                     binding.btnCreateMeeting.setEnabled(true);
                     binding.btnCreateMeeting.setText("모임 수정");
                 }

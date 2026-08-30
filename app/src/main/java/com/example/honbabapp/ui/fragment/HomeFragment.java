@@ -69,10 +69,10 @@ public class HomeFragment extends Fragment {
             if (binding != null) {
                 int count = hotMeetingListAdapter.getItemCount();
                 if (count > 1) {
-                    LinearLayoutManager lm = (LinearLayoutManager) binding.rvHotMeetings.getLayoutManager();
-                    int cur = lm.findFirstCompletelyVisibleItemPosition();
-                    if (cur == RecyclerView.NO_POSITION) cur = lm.findFirstVisibleItemPosition();
-                    int next = (cur + 1 >= count) ? 0 : cur + 1;
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) binding.rvHotMeetings.getLayoutManager();
+                    int currentPosition = layoutManager.findFirstCompletelyVisibleItemPosition();
+                    if (currentPosition == RecyclerView.NO_POSITION) currentPosition = layoutManager.findFirstVisibleItemPosition();
+                    int next = (currentPosition + 1 >= count) ? 0 : currentPosition + 1;
                     // SNAP_TO_START로 한 카드씩 확실히 이동 (peek 카드라 기본 스크롤은 스냅이 제자리로 되돌림)
                     LinearSmoothScroller scroller = new LinearSmoothScroller(binding.rvHotMeetings.getContext()) {
                         @Override protected int getHorizontalSnapPreference() { return SNAP_TO_START; }
@@ -82,7 +82,7 @@ public class HomeFragment extends Fragment {
                         }
                     };
                     scroller.setTargetPosition(next);
-                    lm.startSmoothScroll(scroller);
+                    layoutManager.startSmoothScroll(scroller);
                 }
                 autoSlideHandler.postDelayed(this, AUTO_SLIDE_INTERVAL);
             }

@@ -549,13 +549,13 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                             LeaveRoomResponse data = response.body().getData();
 
                             // 사용자 피드백 (간단한 Toast)
-                            String msg = "채팅방을 나갔습니다.";
+                            String message = "채팅방을 나갔습니다.";
                             if (data.getPenalty_applied() > 0) {
-                                msg = String.format(Locale.KOREA,
+                                message = String.format(Locale.KOREA,
                                         "채팅방을 나갔습니다. (매너점수 -%.1f)",
                                         data.getPenalty_applied());
                             }
-                            ToastUtil.makeText(ChatRoomDetailActivity.this, msg, Toast.LENGTH_SHORT).show();
+                            ToastUtil.makeText(ChatRoomDetailActivity.this, message, Toast.LENGTH_SHORT).show();
 
                             // ChatRoomActivity 로 결과 전달 → 그쪽도 finish 하도록
                             Intent result = new Intent();

@@ -178,9 +178,9 @@ public class SocketManager {
             data.put("content", "사진");
 
             // image_urls 배열
-            JSONArray arr = new JSONArray();
-            for (String url : urls) arr.put(url);
-            data.put("image_urls", arr);
+            JSONArray imageUrlArray = new JSONArray();
+            for (String url : urls) imageUrlArray.put(url);
+            data.put("image_urls", imageUrlArray);
 
             // client_msg_id — 있을 때만 포함
             if (clientMsgId != null) data.put("client_msg_id", clientMsgId);

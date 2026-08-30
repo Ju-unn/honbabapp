@@ -92,9 +92,9 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
         // 포커스 잃을때 서버에 확인
         binding.etCurrentPassword.setOnFocusChangeListener((v , hasFocus) -> {
             if (!hasFocus) {
-                String pw = binding.etCurrentPassword.getText().toString().trim();
-                if (!pw.isEmpty()) {
-                    checkCurrentPassword(pw);
+                String currentPassword = binding.etCurrentPassword.getText().toString().trim();
+                if (!currentPassword.isEmpty()) {
+                    checkCurrentPassword(currentPassword);
                 }
             }
         });
@@ -225,9 +225,9 @@ public class ProfileChangePasswordActivity extends AppCompatActivity {
                             redirectToLogin();
                         } else {
                             // 현재 비밀번호 틀림 등 서버 에러 메시지 표시
-                            String msg = response.body() != null
+                            String message = response.body() != null
                                     ? response.body().getMessage() : "변경 실패";
-                            binding.etCurrentPassword.setError(msg);
+                            binding.etCurrentPassword.setError(message);
                         }
                     }
 

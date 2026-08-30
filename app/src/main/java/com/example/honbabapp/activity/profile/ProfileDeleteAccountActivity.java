@@ -103,15 +103,15 @@ public class ProfileDeleteAccountActivity extends AppCompatActivity {
                             startActivity(intent);
                         } else {
                             binding.btnDeleteAccount.setEnabled(true);
-                            String msg = response.body() != null
+                            String message = response.body() != null
                                     ? response.body().getMessage() : "탈퇴 실패";
                             // 진행 중 모임/체험단 차단은 사용자가 조치해야 하므로 다이얼로그+바로가기.
                             // 그 외 단순 실패는 Toast 유지(불필요한 다이얼로그화 방지).
-                            if (msg != null && msg.contains("탈퇴할 수 없습니다")) {
-                                showBlockedDialog(msg);
+                            if (message != null && message.contains("탈퇴할 수 없습니다")) {
+                                showBlockedDialog(message);
                             } else {
                                 ToastUtil.makeText(ProfileDeleteAccountActivity.this,
-                                        msg, Toast.LENGTH_SHORT).show();
+                                        message, Toast.LENGTH_SHORT).show();
                             }
                         }
                     }

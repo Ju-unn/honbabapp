@@ -25,7 +25,7 @@ import java.util.List;
  *
  * 행 분배 규칙(= {@link #rowsFor}):
  *   N ≤ 3 → 한 행에 N장
- *   N ≥ 4 → k=ceil(N/3)개 행, 앞 (N%k)개 행이 base+1(=많은 쪽), 나머지 base.
+ *   N ≥ 4 → rowCount=ceil(N/3)개 행, 앞 (N%rowCount)개 행이 baseColumns+1(=많은 쪽), 나머지 baseColumns.
  *   (4=2/2, 5=3/2, 6=3/3, 7=3/2/2, 8=3/3/2, 9=3/3/3, 10=3/3/2/2)
  * 각 칸은 행 안에서 동일 너비의 정사각(centerCrop), 간격 일정.
  */
@@ -47,21 +47,21 @@ public class ChatImageGridView extends ViewGroup {
     }
 
     /** 행별 열 수 목록. n=1~10 에서 규칙과 정확히 일치하도록 계산. */
-    public static List<Integer> rowsFor(int n) {
+    public static List<Integer> rowsFor(int imageCount) {
         List<Integer> result = new ArrayList<>();
-        if (n <= 0) return result;
-        if (n <= 3) {
-            result.add(n);
+        if (imageCount <= 0) return result;
+        if (imageCount <= 3) {
+            result.add(imageCount);
             return result;
         }
 
         // 필요한 행 계산
-        int k = (n + 2) / 3;        // ceil(n/3)
+        int rowCount = (imageCount + 2) / 3;        // ceil(imageCount/3)
 
-        int base = n / k;
-        int rem = n % k;
-        for (int i = 0; i < k; i++) {
-            result.add(i < rem ? base + 1 : base);
+        int baseColumns = imageCount / rowCount;
+        int remainder = imageCount % rowCount;
+        for (int i = 0; i < rowCount; i++) {
+            result.add(i < remainder ? baseColumns + 1 : baseColumns);
         }
         return result;
     }
@@ -69,9 +69,9 @@ public class ChatImageGridView extends ViewGroup {
     /** 이미지 URL 목록으로 그리드를 다시 구성. 매 bind 마다 호출(재사용 잔상 없음). */
     public void setImages(@NonNull List<String> urls, MessageAdapter.OnImageClickListener listener) {
         removeAllViews();
-        int n = Math.min(urls.size(), MAX);
-        rows = rowsFor(n);
-        for (int i = 0; i < n; i++) {
+        int imageCount = Math.min(urls.size(), MAX);
+        rows = rowsFor(imageCount);
+        for (int i = 0; i < imageCount; i++) {
             final int index = i;
             ImageView cell = new ImageView(getContext());
             cell.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -94,10 +94,10 @@ public class ChatImageGridView extends ViewGroup {
         int totalHeight = 0;
         int child = 0;
         for (int ri = 0; ri < rows.size(); ri++) {
-            int cols = rows.get(ri);
-            int cellW = (width - (cols - 1) * gap) / cols;
+            int columns = rows.get(ri);
+            int cellW = (width - (columns - 1) * gap) / columns;
             int cellH = cellW; // 정사각
-            for (int ci = 0; ci < cols; ci++) {
+            for (int ci = 0; ci < columns; ci++) {
                 getChildAt(child++).measure(
                         MeasureSpec.makeMeasureSpec(cellW, MeasureSpec.EXACTLY),
                         MeasureSpec.makeMeasureSpec(cellH, MeasureSpec.EXACTLY));
@@ -114,11 +114,11 @@ public class ChatImageGridView extends ViewGroup {
         int y = 0;
         int child = 0;
         for (int ri = 0; ri < rows.size(); ri++) {
-            int cols = rows.get(ri);
-            int cellW = (width - (cols - 1) * gap) / cols;
+            int columns = rows.get(ri);
+            int cellW = (width - (columns - 1) * gap) / columns;
             int cellH = cellW;
             int x = 0;
-            for (int ci = 0; ci < cols; ci++) {
+            for (int ci = 0; ci < columns; ci++) {
                 View v = getChildAt(child++);
                 v.layout(x, y, x + cellW, y + cellH);
                 x += cellW + gap;

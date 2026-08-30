@@ -211,9 +211,9 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
     }
 
     private void updateChannelButtonState(String channel, boolean selected) {
-        int idx = channelNames.indexOf(channel);
-        if (idx != -1) {
-            channelButtons.get(idx).setSelected(selected);
+        int index = channelNames.indexOf(channel);
+        if (index != -1) {
+            channelButtons.get(index).setSelected(selected);
         }
     }
 
@@ -265,9 +265,9 @@ public class MapFilterBottomSheetDialog extends BottomSheetDialogFragment {
     // chip_button_background.xml이 state_selected에 따라 스타일 자동 적용
     // ──────────────────────────────────────────────
     private void updateButtonState(String category , boolean selected) {
-        int idx = categoryNames.indexOf(category);
-        if (idx != -1) {
-            categoryButtons.get(idx).setSelected(selected);
+        int index = categoryNames.indexOf(category);
+        if (index != -1) {
+            categoryButtons.get(index).setSelected(selected);
         }
     }
 
