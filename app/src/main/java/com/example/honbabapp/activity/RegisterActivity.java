@@ -392,8 +392,8 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void updateNextButton() {
         boolean ok = isCurrentStepValid();
+        // 비활성 색은 backgroundTint selector(primary_button_bg: disabled→gray)가 처리
         registerBinding.btnNext.setEnabled(ok);
-        registerBinding.btnNext.setAlpha(ok ? 1f : 0.5f);
     }
 
     private void confirmQuit() {

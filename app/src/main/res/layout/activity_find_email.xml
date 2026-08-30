@@ -77,13 +77,11 @@
             <!-- 아이디 찾기 버튼 -->
             <Button
                 android:id="@+id/btn_find_email"
+                style="@style/Widget.Honbab.Button.Primary"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:text="아이디 찾기"
-                android:textColor="@color/white"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:background="@drawable/button_primary_background"
                 android:elevation="2dp"
                 android:layout_marginBottom="24dp" />
 

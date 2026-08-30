@@ -54,7 +54,10 @@ public class ChatImageGridView extends ViewGroup {
             result.add(n);
             return result;
         }
+
+        // 필요한 행 계산
         int k = (n + 2) / 3;        // ceil(n/3)
+
         int base = n / k;
         int rem = n % k;
         for (int i = 0; i < k; i++) {

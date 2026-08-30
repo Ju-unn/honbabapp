@@ -130,6 +130,7 @@
 
         <Button
             android:id="@+id/btnBuyTicket"
+            style="@style/Widget.Honbab.Button.Primary"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:text="구매하기" />

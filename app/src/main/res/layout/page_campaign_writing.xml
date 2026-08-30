@@ -129,15 +129,13 @@
 
                     <Button
                         android:id="@+id/btn_search_store"
+                        style="@style/Widget.Honbab.Button.Primary"
                         android:layout_width="0dp"
                         android:layout_height="50dp"
                         android:layout_weight="1"
-                        android:background="@drawable/button_primary_background"
                         android:minWidth="0dp"
                         android:text="검색"
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textSize="14sp" />
                 </LinearLayout>
             </LinearLayout>
             <!--  ========== 3. 선택된 가게 정보 ==========  -->
@@ -723,13 +721,11 @@
 
         <Button
             android:id="@+id/btn_register_campaign"
+            style="@style/Widget.Honbab.Button.Primary"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="@drawable/button_primary_background"
             android:elevation="2dp"
             android:text="체험단 등록"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textSize="16sp" />
     </LinearLayout>
 </LinearLayout>
