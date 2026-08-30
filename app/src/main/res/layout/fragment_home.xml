@@ -118,7 +118,7 @@
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:text="🍽️"
-                                android:textSize="24dp"
+                                android:textSize="24sp"
                                 android:gravity="center"
                                 android:layout_marginBottom="4dp" />
 
@@ -150,7 +150,7 @@
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:text="🍚"
-                                android:textSize="24dp"
+                                android:textSize="24sp"
                                 android:gravity="center"
                                 android:layout_marginBottom="4dp" />
 
@@ -182,7 +182,7 @@
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:text="🥟"
-                                android:textSize="24dp"
+                                android:textSize="24sp"
                                 android:gravity="center"
                                 android:layout_marginBottom="4dp" />
 
@@ -214,7 +214,7 @@
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:text="🍣"
-                                android:textSize="24dp"
+                                android:textSize="24sp"
                                 android:gravity="center"
                                 android:layout_marginBottom="4dp" />
 
@@ -254,7 +254,7 @@
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:text="🍔"
-                                android:textSize="24dp"
+                                android:textSize="24sp"
                                 android:gravity="center"
                                 android:layout_marginBottom="4dp" />
 
@@ -286,7 +286,7 @@
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:text="🍱"
-                                android:textSize="24dp"
+                                android:textSize="24sp"
                                 android:gravity="center"
                                 android:layout_marginBottom="4dp" />
 
@@ -318,7 +318,7 @@
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:text="🍺"
-                                android:textSize="24dp"
+                                android:textSize="24sp"
                                 android:gravity="center"
                                 android:layout_marginBottom="4dp" />
 
@@ -350,7 +350,7 @@
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:text="☕"
-                                android:textSize="24dp"
+                                android:textSize="24sp"
                                 android:gravity="center"
                                 android:layout_marginBottom="4dp" />
 
@@ -372,6 +372,7 @@
 
             <!-- 지금 뜨고 있는 모임 -->
             <LinearLayout
+                android:id="@+id/section_hot"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -401,6 +402,9 @@
                         android:text="더보기"
                         android:textColor="@color/text_200"
                         android:textSize="12sp"
+                        android:padding="8dp"
+                        android:layout_marginEnd="-8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:clickable="true"
                         android:focusable="true" />
 
@@ -424,6 +428,7 @@
 
             <!-- 전체 모임 -->
             <LinearLayout
+                android:id="@+id/section_all"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -453,6 +458,9 @@
                         android:text="더보기"
                         android:textColor="@color/text_200"
                         android:textSize="12sp"
+                        android:padding="8dp"
+                        android:layout_marginEnd="-8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:clickable="true"
                         android:focusable="true" />
 
@@ -473,6 +481,12 @@
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
             </LinearLayout>
+
+            <!-- 이 동네 모임 0건일 때 (HomeFragment에서 토글) -->
+            <include
+                android:id="@+id/empty_meetings"
+                layout="@layout/view_empty_meetings"
+                android:visibility="gone" />
 
         </LinearLayout>
 

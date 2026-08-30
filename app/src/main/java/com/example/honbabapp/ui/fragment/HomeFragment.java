@@ -8,8 +8,11 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -19,6 +22,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
+import androidx.recyclerview.widget.PagerSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.honbabapp.activity.MainActivity;
 import com.example.honbabapp.activity.meeting.MeetingCardWritingActivity;
@@ -52,6 +59,35 @@ public class HomeFragment extends Fragment {
     private ApiService apiService;
     private HomeHotMeetingListAdapter hotMeetingListAdapter;
     private HomeAllMeetingListAdapter allMeetingListAdapter;
+
+    // 핫모임 오토슬라이드 (3초마다 다음 카드, 끝→처음 순환, 터치 시 정지)
+    private final Handler autoSlideHandler = new Handler(Looper.getMainLooper());
+    private static final long AUTO_SLIDE_INTERVAL = 3000L;
+    private final Runnable autoSlideRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (binding != null) {
+                int count = hotMeetingListAdapter.getItemCount();
+                if (count > 1) {
+                    LinearLayoutManager lm = (LinearLayoutManager) binding.rvHotMeetings.getLayoutManager();
+                    int cur = lm.findFirstCompletelyVisibleItemPosition();
+                    if (cur == RecyclerView.NO_POSITION) cur = lm.findFirstVisibleItemPosition();
+                    int next = (cur + 1 >= count) ? 0 : cur + 1;
+                    // SNAP_TO_START로 한 카드씩 확실히 이동 (peek 카드라 기본 스크롤은 스냅이 제자리로 되돌림)
+                    LinearSmoothScroller scroller = new LinearSmoothScroller(binding.rvHotMeetings.getContext()) {
+                        @Override protected int getHorizontalSnapPreference() { return SNAP_TO_START; }
+                        // 기본값의 2배 → 픽셀당 이동 시간 2배 → 슬라이드 애니메이션이 2배 느려짐
+                        @Override protected float calculateSpeedPerPixel(android.util.DisplayMetrics dm) {
+                            return super.calculateSpeedPerPixel(dm) * 2f;
+                        }
+                    };
+                    scroller.setTargetPosition(next);
+                    lm.startSmoothScroll(scroller);
+                }
+                autoSlideHandler.postDelayed(this, AUTO_SLIDE_INTERVAL);
+            }
+        }
+    };
 
     // 모임 데이터
     private List<Meeting> allMeetings = new ArrayList<>();
@@ -147,6 +183,21 @@ public class HomeFragment extends Fragment {
         hotMeetingListAdapter = new HomeHotMeetingListAdapter();
         binding.rvHotMeetings.setAdapter(hotMeetingListAdapter);
 
+        // 한 카드씩 스냅 + 터치 시 오토슬라이드 정지/재개
+        new PagerSnapHelper().attachToRecyclerView(binding.rvHotMeetings);
+        binding.rvHotMeetings.setOnTouchListener((v, event) -> {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    stopAutoSlide();
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    startAutoSlide();
+                    break;
+            }
+            return false; // RecyclerView가 스크롤 계속 처리
+        });
+
         // All Meetings RecyclerView
         allMeetingListAdapter = new HomeAllMeetingListAdapter();
         binding.rvMeetings.setAdapter(allMeetingListAdapter);
@@ -218,6 +269,12 @@ public class HomeFragment extends Fragment {
      * Adapter에 데이터 업데이트
      */
     private void updateAdapters() {
+        // H: 이 동네 모임 0건이면 빈상태 표시, 있으면 목록 표시
+        boolean empty = allMeetings.isEmpty();
+        binding.sectionHot.setVisibility(empty ? View.GONE : View.VISIBLE);
+        binding.sectionAll.setVisibility(empty ? View.GONE : View.VISIBLE);
+        binding.emptyMeetings.getRoot().setVisibility(empty ? View.VISIBLE : View.GONE);
+
         // All meetings Adapter 업데이트
         allMeetingListAdapter.updateMeetings(allMeetings);
 
@@ -432,16 +489,34 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    // 오토슬라이드 시작/정지 (중복 방지 위해 항상 remove 후 post)
+    private void startAutoSlide() {
+        autoSlideHandler.removeCallbacks(autoSlideRunnable);
+        autoSlideHandler.postDelayed(autoSlideRunnable, AUTO_SLIDE_INTERVAL);
+    }
+
+    private void stopAutoSlide() {
+        autoSlideHandler.removeCallbacks(autoSlideRunnable);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
         if (binding == null) return;
         loadMeetings(); // 채팅방에서 모임 삭제/취소 후 돌아왔을때 새로고침
+        startAutoSlide();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopAutoSlide(); // 화면 벗어나면 루프 정지 (누수 방지)
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        stopAutoSlide();
         binding = null;
     }
 }
