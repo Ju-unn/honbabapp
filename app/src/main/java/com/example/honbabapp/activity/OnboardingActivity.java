@@ -4,6 +4,8 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -68,6 +70,12 @@ public class OnboardingActivity extends AppCompatActivity {
     private boolean isNicknameChecked = false;
     private boolean isPhoneChecked = false;
 
+    // 닉네임·전화번호 입력 멈춤 후 자동 중복확인(debounce 400ms)
+    private static final long CHECK_DEBOUNCE_MS = 400;
+    private final Handler debounceHandler = new Handler(Looper.getMainLooper());
+    private final Runnable nicknameCheckRunnable = this::checkNicknameDuplicate;
+    private final Runnable phoneCheckRunnable = this::checkPhoneDuplicate;
+
     private String selectedGender = null;
     private String selectedBirthday = null;
     private String selectedLocation = null;
@@ -121,13 +129,19 @@ public class OnboardingActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 isNicknameChecked = false;
+
+                // 입력 멈추면 자동 중복확인 (2자 미만이면 대기, 서버 스팸 방지)
+                debounceHandler.removeCallbacks(nicknameCheckRunnable);
+                if (s.toString().trim().length() >= 2) {
+                    debounceHandler.postDelayed(nicknameCheckRunnable, CHECK_DEBOUNCE_MS);
+                } else {
+                    binding.tvNicknameCheckResult.setVisibility(View.GONE);
+                }
             }
 
             @Override
             public void afterTextChanged(Editable s) {}
         });
-
-        binding.btnCheckNickname.setOnClickListener(v -> checkNicknameDuplicate());
     }
 
     private void checkNicknameDuplicate() {
@@ -201,13 +215,18 @@ public class OnboardingActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 isPhoneChecked = false;
+                binding.tvPhoneCheckResult.setVisibility(View.GONE);
+
+                // 형식(010-XXXX-XXXX)이 완성됐을 때만 자동 중복확인
+                debounceHandler.removeCallbacks(phoneCheckRunnable);
+                if (s.toString().trim().matches("^010-\\d{4}-\\d{4}$")) {
+                    debounceHandler.postDelayed(phoneCheckRunnable, CHECK_DEBOUNCE_MS);
+                }
             }
 
             @Override
             public void afterTextChanged(Editable s) {}
         });
-
-        binding.btnCheckPhone.setOnClickListener(v -> checkPhoneDuplicate());
     }
 
     private void checkPhoneDuplicate() {
@@ -436,6 +455,7 @@ public class OnboardingActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        debounceHandler.removeCallbacksAndMessages(null);
         binding = null;
     }
 }

@@ -3,6 +3,8 @@ package com.example.honbabapp.activity.profile;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -57,6 +59,11 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
     private String originalNickname = "";
     private static final String NICKNAME_PATTERN = "^[가-힣a-zA-Z0-9]+$";
 
+    // 닉네임 입력 멈춤 후 자동 중복확인(debounce 400ms)
+    private static final long CHECK_DEBOUNCE_MS = 400;
+    private final Handler debounceHandler = new Handler(Looper.getMainLooper());
+    private final Runnable nicknameCheckRunnable = this::checkNicknameDuplicate;
+
     // ─────────────────────────────────────────────────────────────
     // 갤러리 런처
     // ─────────────────────────────────────────────────────────────
@@ -99,7 +106,6 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
                 getOnBackPressedDispatcher().onBackPressed());
 
         setupNicknameWatcher();
-        binding.btnCheckNickname.setOnClickListener(v -> checkNicknameDuplicate());
         binding.btnChangeAvatar.setOnClickListener(v -> openGallery());
         binding.btnEditProfile.setOnClickListener(v -> saveProfile());
 
@@ -266,6 +272,12 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 isNicknameChecked = false;
                 binding.tvNicknameCheckResult.setVisibility(View.GONE);
+
+                // 입력 멈추면 자동 중복확인 (2자 미만이면 대기, 서버 스팸 방지)
+                debounceHandler.removeCallbacks(nicknameCheckRunnable);
+                if (s.toString().trim().length() >= 2) {
+                    debounceHandler.postDelayed(nicknameCheckRunnable, CHECK_DEBOUNCE_MS);
+                }
             }
             @Override public void afterTextChanged(Editable s) {}
         });
@@ -405,6 +417,7 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        debounceHandler.removeCallbacksAndMessages(null);
         binding = null;
     }
 }
