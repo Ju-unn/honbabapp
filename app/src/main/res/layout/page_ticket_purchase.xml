@@ -130,7 +130,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:clickable="false"
-                            android:focusable="false" />
+                            android:focusable="false"
+                            android:buttonTint="@color/radio_tint" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -207,7 +208,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:clickable="false"
-                            android:focusable="false" />
+                            android:focusable="false"
+                            android:buttonTint="@color/radio_tint" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -283,7 +285,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:clickable="false"
-                            android:focusable="false" />
+                            android:focusable="false"
+                            android:buttonTint="@color/radio_tint" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>

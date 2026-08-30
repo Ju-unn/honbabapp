@@ -19,6 +19,7 @@ import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.databinding.PageProfileDeleteAccountBinding;
 import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.util.ToastUtil;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -55,15 +56,8 @@ public class ProfileDeleteAccountActivity extends AppCompatActivity {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    // 체크 시 버튼 활성화
-                    binding.btnDeleteAccount.setEnabled(true);
-                    binding.btnDeleteAccount.setAlpha(1.0f);
-                } else {
-                    // 해제 시 버튼 비활성화
-                    binding.btnDeleteAccount.setEnabled(false);
-                    binding.btnDeleteAccount.setAlpha(0.5f);
-                }
+                // 색상은 button_danger_background 상태 selector가 처리 (alpha 트릭 제거)
+                binding.btnDeleteAccount.setEnabled(isChecked);
             }
         });
 
@@ -111,8 +105,14 @@ public class ProfileDeleteAccountActivity extends AppCompatActivity {
                             binding.btnDeleteAccount.setEnabled(true);
                             String msg = response.body() != null
                                     ? response.body().getMessage() : "탈퇴 실패";
-                            ToastUtil.makeText(ProfileDeleteAccountActivity.this,
-                                    msg, Toast.LENGTH_SHORT).show();
+                            // 진행 중 모임/체험단 차단은 사용자가 조치해야 하므로 다이얼로그+바로가기.
+                            // 그 외 단순 실패는 Toast 유지(불필요한 다이얼로그화 방지).
+                            if (msg != null && msg.contains("탈퇴할 수 없습니다")) {
+                                showBlockedDialog(msg);
+                            } else {
+                                ToastUtil.makeText(ProfileDeleteAccountActivity.this,
+                                        msg, Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
@@ -126,5 +126,17 @@ public class ProfileDeleteAccountActivity extends AppCompatActivity {
                 });
     }
 
+    /** 진행 중 모임/체험단 때문에 탈퇴가 차단됐을 때: 스쳐가는 Toast 대신
+     *  다이얼로그로 안내하고 [바로가기]로 내 모임 관리(진행중 탭)로 이동시킨다. */
+    private void showBlockedDialog(String message) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("지금은 탈퇴할 수 없어요")
+                .setMessage(message)
+                .setNegativeButton("취소", null)
+                .setPositiveButton("바로가기", (d, w) ->
+                        startActivity(new Intent(ProfileDeleteAccountActivity.this,
+                                ProfileMyMeetingsActivity.class)))
+                .show();
+    }
 
 }
