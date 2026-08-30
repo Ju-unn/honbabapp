@@ -11,6 +11,8 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
@@ -22,7 +24,9 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -119,6 +123,16 @@ public class RegisterActivity extends AppCompatActivity {
     private static final long VERIFICATION_TIMEOUT_MS = 3 * 60 * 1000L;
     private CountDownTimer verificationTimer;
 
+    // 닉네임·전화번호 입력 멈춤 후 자동 중복확인 (debounce 400ms)
+    private static final long CHECK_DEBOUNCE_MS = 400L;
+    private final Handler debounceHandler = new Handler(Looper.getMainLooper());
+    private final Runnable nicknameCheckRunnable = this::checkNicknameDuplicate;
+    private final Runnable phoneCheckRunnable = this::checkPhoneDuplicate;
+
+    // 멀티스텝 마법사: 스텝 수 (0=이메일 1=비번 2=닉네임 3=전화 4=프로필)
+    private static final int STEP_COUNT = 5;
+    private static final String[] STEP_LABELS = {"이메일 인증", "비밀번호 설정", "닉네임", "전화번호", "프로필"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,8 +144,8 @@ public class RegisterActivity extends AppCompatActivity {
         // API 서비스 초기화
         apiService = RetrofitClient.getClient().create(ApiService.class);
 
-        // 뒤로가기 버튼
-        registerBinding.btnBack.setOnClickListener(v -> finish());
+        // 멀티스텝 마법사 네비게이션(진행바 / 이전·다음 / 뒤로가기 정책)
+        setupWizardNavigation();
 
         // 성별 선택 버튼
         setupGenderButtons();
@@ -148,11 +162,7 @@ public class RegisterActivity extends AppCompatActivity {
         // 이미지 선택하기
         initProfileImagePicker();
 
-        // 전화번호 중복확인
-        registerBinding.btnCheckPhone.setOnClickListener(v -> checkPhoneDuplicate());
-
-        // 닉네임 중복확인
-        registerBinding.btnCheckNickname.setOnClickListener(v -> checkNicknameDuplicate());
+        // 닉네임·전화번호는 debounce 자동검사(아래 TextWatcher). 수동 중복확인 버튼 없음
 
         // 위치 서비스 초기화 (onCreate에서 바로 실행)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -206,6 +216,15 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 isNicknameChecked = false; // 닉네임 변경시 재확인 필요
+                updateNextButton();
+
+                // 입력 멈추면 자동 중복확인 (2자 미만이면 대기, 서버 스팸 방지)
+                debounceHandler.removeCallbacks(nicknameCheckRunnable);
+                if (s.toString().trim().length() < 2) {
+                    registerBinding.tvNicknameCheckResult.setVisibility(View.GONE);
+                    return;
+                }
+                debounceHandler.postDelayed(nicknameCheckRunnable, CHECK_DEBOUNCE_MS);
             }
 
             @Override
@@ -240,6 +259,7 @@ public class RegisterActivity extends AppCompatActivity {
                 registerBinding.btnVerifyCode.setEnabled(false);
                 registerBinding.tvVerifyCodeResult.setVisibility(View.GONE);
                 cancelVerificationTimer();
+                updateNextButton();
             }
 
             @Override
@@ -257,6 +277,13 @@ public class RegisterActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 isPhoneChecked = false;
                 registerBinding.tvPhoneCheckResult.setVisibility(View.GONE);
+                updateNextButton();
+
+                // 형식(010-XXXX-XXXX)이 완성됐을 때만 자동 중복확인
+                debounceHandler.removeCallbacks(phoneCheckRunnable);
+                if (s.toString().trim().matches("^010-\\d{4}-\\d{4}$")) {
+                    debounceHandler.postDelayed(phoneCheckRunnable, CHECK_DEBOUNCE_MS);
+                }
             }
 
             @Override
@@ -288,9 +315,94 @@ public class RegisterActivity extends AppCompatActivity {
             verifyEmailCode();
         });
 
-        // 회원가입 완료 버튼
-        registerBinding.btnSignupComplete.setOnClickListener(v -> performRegister());
+    }
 
+    // ==================== 멀티스텝 마법사 네비게이션 ====================
+
+    private void setupWizardNavigation() {
+        updateStepUI();
+
+        // 다음 / 회원가입 완료
+        registerBinding.btnNext.setOnClickListener(v -> {
+            if (registerBinding.viewFlipper.getDisplayedChild() >= STEP_COUNT - 1) {
+                performRegister();
+            } else {
+                goNext();
+            }
+        });
+
+        // 이전
+        registerBinding.btnPrev.setOnClickListener(v -> goPrev());
+
+        // 헤더 뒤로가기 + 시스템 뒤로가기 동일 정책
+        registerBinding.btnBack.setOnClickListener(v -> handleBack());
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                handleBack();
+            }
+        });
+    }
+
+    // 스텝N>0 → 이전 스텝, 스텝1(=0) → 가입 그만두기 확인
+    private void handleBack() {
+        if (registerBinding.viewFlipper.getDisplayedChild() > 0) {
+            goPrev();
+        } else {
+            confirmQuit();
+        }
+    }
+
+    private void goNext() {
+        ViewFlipper flipper = registerBinding.viewFlipper;
+        if (flipper.getDisplayedChild() >= STEP_COUNT - 1) return;
+        flipper.showNext();
+        updateStepUI();
+    }
+
+    private void goPrev() {
+        ViewFlipper flipper = registerBinding.viewFlipper;
+        if (flipper.getDisplayedChild() == 0) return;
+        flipper.showPrevious();
+        updateStepUI();
+    }
+
+    // 진행바·인디케이터·버튼 라벨/노출/활성 갱신
+    private void updateStepUI() {
+        int step = registerBinding.viewFlipper.getDisplayedChild(); // 0-based
+        int human = step + 1;
+        registerBinding.progressStep.setProgress(human);
+        registerBinding.tvStepIndicator.setText(human + "/" + STEP_COUNT);
+        registerBinding.tvStepLabel.setText(human + "단계 · " + STEP_LABELS[step]);
+        registerBinding.btnPrev.setVisibility(step == 0 ? View.GONE : View.VISIBLE);
+        registerBinding.btnNext.setText(step >= STEP_COUNT - 1 ? "회원가입 완료" : "다음");
+        updateNextButton();
+    }
+
+    // 현재 스텝의 검증 통과 여부 (통과해야 '다음' 활성화)
+    private boolean isCurrentStepValid() {
+        switch (registerBinding.viewFlipper.getDisplayedChild()) {
+            case 0: return isEmailVerified;      // 이메일 인증 완료
+            case 1: return isPasswordConfirmed;  // 비밀번호 확인 일치
+            case 2: return isNicknameChecked;    // 닉네임 중복확인 통과
+            case 3: return isPhoneChecked;       // 전화번호 중복확인 통과
+            default: return true;                // 스텝5는 performRegister에서 최종 검증
+        }
+    }
+
+    private void updateNextButton() {
+        boolean ok = isCurrentStepValid();
+        registerBinding.btnNext.setEnabled(ok);
+        registerBinding.btnNext.setAlpha(ok ? 1f : 0.5f);
+    }
+
+    private void confirmQuit() {
+        new AlertDialog.Builder(this)
+                .setTitle("가입을 그만두시겠어요?")
+                .setMessage("지금까지 입력한 내용이 사라져요.")
+                .setPositiveButton("그만두기", (d, w) -> finish())
+                .setNegativeButton("계속하기", null)
+                .show();
     }
 
     // 위치 조회 메서드
@@ -666,6 +778,7 @@ public class RegisterActivity extends AppCompatActivity {
                         registerBinding.etVerificationCode.setEnabled(false);
                         registerBinding.btnVerifyCode.setEnabled(false);
                         cancelVerificationTimer();
+                        updateNextButton();
                     } else {
                         showVerifyCodeResult(false, apiResponse.getMessage());
                     }
@@ -732,6 +845,7 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         cancelVerificationTimer();
+        debounceHandler.removeCallbacksAndMessages(null);
     }
 
     /**
@@ -820,6 +934,7 @@ public class RegisterActivity extends AppCompatActivity {
         if (passwordConfirm.isEmpty()) {
             registerBinding.tvPasswordMatch.setVisibility(View.GONE);
             isPasswordConfirmed = false;
+            updateNextButton();
             return;
         }
 
@@ -834,6 +949,7 @@ public class RegisterActivity extends AppCompatActivity {
                     ContextCompat.getColor(this, R.color.error_red));
             isPasswordConfirmed = false;
         }
+        updateNextButton();
     }
 
     /**
@@ -889,6 +1005,7 @@ public class RegisterActivity extends AppCompatActivity {
                             showPhoneCheckResult(false, apiResponse.getMessage()); // "이미 가입된 전화번호입니다"
                             isPhoneChecked = false;
                         }
+                        updateNextButton();
 
                     } else {
                         // API 처리 실패
@@ -978,6 +1095,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 isNicknameChecked = false;
                                 showNicknameResult(false, "이미 사용중인 닉네임입니다");
                             }
+                            updateNextButton();
                         }
                     }
 
@@ -1008,27 +1126,9 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // 모든 검증 완료 확인
-        if (!isEmailVerified) {
-            ToastUtil.makeText(this, "이메일 인증이 필요합니다", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (!isPasswordConfirmed) {
-            ToastUtil.makeText(this, "비밀번호 확인이 필요합니다", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (!isNicknameChecked) {
-            ToastUtil.makeText(this, "닉네임 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // 전화번호 중복확인 체크
-        if (!isPhoneChecked) {
-            ToastUtil.makeText(this, "전화번호 중복 확인이 필요합니다", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // 스텝0~3(이메일 인증·비번·닉네임·전화)은 위저드 게이팅(updateNextButton)이
+        // 통과 전 '다음'을 막으므로 스텝5까지 왔으면 이미 완료·유효 상태 → 재검증 불필요.
+        // 게이트가 없는 스텝5(프로필)만 아래 두 항목을 최종 확인한다.
 
         // 입력값 가져오기
         String nickname = registerBinding.etNickname.getText().toString().trim();
@@ -1038,43 +1138,15 @@ public class RegisterActivity extends AppCompatActivity {
         String birthday = registerBinding.etBirthdate.getText().toString().trim();
         String location = selectedLocation;
 
-        // 필수 입력 확인
-        if (nickname.isEmpty()) {
-            ToastUtil.makeText(this, "닉네임을 입력해주세요", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (email.isEmpty()) {
-            ToastUtil.makeText(this, "이메일을 입력해주세요", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (password.isEmpty()) {
-            ToastUtil.makeText(this, "비밀번호를 입력해주세요", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (phoneNumber.isEmpty()) {
-            ToastUtil.makeText(this, "전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         if (location.isEmpty()) {
             ToastUtil.makeText(this, "활동 지역을 설정해주세요", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (!isRestored) {
-            // birthday 검증
-            if (birthday == null || birthday.isEmpty()) {
-                ToastUtil.makeText(this, "생년월일을 입력해주세요", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            // gender 검증
-            if (selectedGender == null) {
-                ToastUtil.makeText(this, "성별을 선택해주세요", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        // 복원 계정은 생년월일 입력을 받지 않음(서버가 기존값 유지)
+        if (!isRestored && birthday.isEmpty()) {
+            ToastUtil.makeText(this, "생년월일을 입력해주세요", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         // 제출 시작 — 응답/실패 시 finishRegisterSubmission()으로 복구
@@ -1091,12 +1163,12 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void startRegisterSubmission() {
         isRegistering = true;
-        registerBinding.btnSignupComplete.setEnabled(false);
+        registerBinding.btnNext.setEnabled(false);
     }
 
     private void finishRegisterSubmission() {
         isRegistering = false;
-        registerBinding.btnSignupComplete.setEnabled(true);
+        registerBinding.btnNext.setEnabled(true);
     }
 
     /**

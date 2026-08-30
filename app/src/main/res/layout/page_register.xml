@@ -42,238 +42,90 @@
 
     </LinearLayout>
 
-    <!-- 스크롤 -->
-    <ScrollView
+    <!-- 진행바 (스텝 라벨 + N/5 + 둥근 진행바) -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true"
-        android:scrollbars="none">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/bg_100"
+        android:paddingHorizontal="22dp"
+        android:paddingBottom="14dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="22dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
-            <!-- 환영 메시지 구간 -->
+            <TextView
+                android:id="@+id/tv_step_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1단계 · 이메일 인증"
+                android:textColor="@color/text_100"
+                android:textSize="13sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tv_step_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1/5"
+                android:textColor="@color/primary_200"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progress_step"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:max="5"
+            android:progress="1"
+            android:progressDrawable="@drawable/progress_step_bar"/>
+
+    </LinearLayout>
+
+    <!-- 스텝 전환 컨테이너 -->
+    <ViewFlipper
+        android:id="@+id/view_flipper"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- ================= STEP 1 · 이메일 + 인증 ================= -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
                 android:orientation="vertical"
-                android:layout_marginBottom="32dp">
+                android:padding="22dp">
 
-                <!-- 앱 로고 -->
-                <ImageView
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:src="@drawable/app_logo2"
-                    android:scaleType="centerCrop"
-                    android:layout_marginBottom="12dp"
-                    android:elevation="2dp"/>
-
-                <!-- 환영 메시지 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="환영합니다"
+                    android:text="이메일로 시작하기"
                     android:textColor="@color/primary_200"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="4dp"
-                    android:letterSpacing="-0.02"/>
+                    android:layout_marginBottom="4dp"/>
 
-                <!-- 설명 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="기본 정보를 입력해주세요."
-                    android:textColor="@color/text_200"
-                    android:textSize="13sp"/>
-
-            </LinearLayout>
-
-            <!-- 회원가입 폼 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <!-- ========== 프로필 이미지 선택 (추가) ========== -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="프로필 이미지"
+                    android:text="본인 확인을 위해 이메일 인증을 진행해 주세요."
                     android:textColor="@color/text_200"
                     android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="7dp"/>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:layout_marginBottom="18dp">
-
-                    <!-- 프로필 이미지 프리뷰 -->
-                    <FrameLayout
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:layout_marginBottom="12dp">
-
-                        <ImageView
-                            android:id="@+id/iv_profile_preview"
-                            android:layout_width="100dp"
-                            android:layout_height="100dp"
-                            android:src="@drawable/ic_person"
-                            android:background="@drawable/profile_avatar_background"
-                            android:scaleType="centerCrop"
-                            android:clipToOutline="true"/>
-
-                        <!-- 카메라 아이콘 버튼 -->
-                        <ImageButton
-                            android:id="@+id/btn_select_profile_image"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_camera"
-                            android:background="@drawable/camera_button_background"
-                            android:layout_gravity="bottom|end"
-                            android:elevation="4dp" />
-
-                    </FrameLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="이미지를 선택해주세요 (선택사항)"
-                        android:textColor="@color/text_200"
-                        android:textSize="11sp"/>
-
-                </LinearLayout>
-
-                <!-- ========== 전화번호 (추가) ========== -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="전화번호"
-                    android:textColor="@color/text_200"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="7dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="18dp">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_weight="2"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginEnd="10dp">
-
-                        <EditText
-                            android:id="@+id/et_phone_number"
-                            android:layout_width="match_parent"
-                            android:layout_height="45dp"
-                            android:hint="010-1234-5678"
-                            android:textColorHint="@color/text_200"
-                            android:textColor="@color/text_100"
-                            android:textSize="14sp"
-                            android:inputType="phone"
-                            android:background="@drawable/edittext_background"
-                            android:paddingHorizontal="14dp"
-                            android:maxLength="13"/>
-
-                        <!-- 전화번호 중복확인 결과 메시지 -->
-                        <TextView
-                            android:id="@+id/tv_phone_check_result"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="11sp"
-                            android:layout_marginTop="4dp"
-                            android:visibility="gone"/>
-
-                    </LinearLayout>
-
-                    <Button
-                        android:id="@+id/btn_check_phone"
-                        android:layout_width="0dp"
-                        android:layout_height="45dp"
-                        android:layout_weight="1"
-                        android:text="중복확인"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/button_primary_background" />
-
-                </LinearLayout>
-
-                <!-- 닉네임 -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="닉네임"
-                    android:textColor="@color/text_200"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="7dp"/>
-
-                <!-- EditText + 중복확인 버튼 가로 배치 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="18dp">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <EditText
-                            android:id="@+id/et_nickname"
-                            android:layout_width="match_parent"
-                            android:layout_height="45dp"
-                            android:hint="사용할 닉네임을 입력하세요"
-                            android:textColorHint="@color/text_200"
-                            android:textColor="@color/text_100"
-                            android:textSize="14sp"
-                            android:inputType="text"
-                            android:background="@drawable/edittext_background"
-                            android:paddingHorizontal="14dp"
-                            android:maxLength="10"/>
-
-                        <!-- 중복확인 결과 메시지 -->
-                        <TextView
-                            android:id="@+id/tv_nickname_check_result"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="11sp"
-                            android:layout_marginTop="4dp"
-                            android:visibility="gone"/>
-
-                    </LinearLayout>
-
-                    <Button
-                        android:id="@+id/btn_check_nickname"
-                        android:layout_width="wrap_content"
-                        android:layout_height="45dp"
-                        android:text="중복확인"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/button_primary_background"
-                        android:layout_marginStart="8dp"
-                        android:paddingHorizontal="12dp"
-                        app:backgroundTint="@null"/>
-
-                </LinearLayout>
+                    android:layout_marginBottom="24dp"/>
 
                 <!-- 이메일 -->
                 <TextView
@@ -302,7 +154,7 @@
                             android:id="@+id/et_email"
                             android:layout_width="match_parent"
                             android:layout_height="45dp"
-                            android:hint="이메일을 입력하세요"
+                            android:hint="이메일을 입력해 주세요"
                             android:textColorHint="@color/text_200"
                             android:textColor="@color/text_100"
                             android:textSize="14sp"
@@ -310,7 +162,6 @@
                             android:background="@drawable/edittext_background"
                             android:paddingHorizontal="14dp" />
 
-                        <!-- 이메일 중복확인/코드전송 결과 메시지 -->
                         <TextView
                             android:id="@+id/tv_email_check_result"
                             android:layout_width="wrap_content"
@@ -362,7 +213,7 @@
                             android:id="@+id/et_verification_code"
                             android:layout_width="match_parent"
                             android:layout_height="45dp"
-                            android:hint="인증번호를 입력하세요"
+                            android:hint="인증번호를 입력해 주세요"
                             android:textColorHint="@color/text_200"
                             android:textColor="@color/text_100"
                             android:textSize="14sp"
@@ -372,7 +223,6 @@
                             android:maxLength="6"
                             android:enabled="false"/>
 
-                        <!-- 인증번호 확인 결과 메시지 -->
                         <TextView
                             android:id="@+id/tv_verify_code_result"
                             android:layout_width="wrap_content"
@@ -381,7 +231,6 @@
                             android:layout_marginTop="4dp"
                             android:visibility="gone"/>
 
-                        <!-- 인증번호 남은 시간 -->
                         <TextView
                             android:id="@+id/tv_verification_timer"
                             android:layout_width="wrap_content"
@@ -407,39 +256,55 @@
 
                 </LinearLayout>
 
-                <LinearLayout
+            </LinearLayout>
+
+        </ScrollView>
+
+        <!-- ================= STEP 2 · 비밀번호 ================= -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="22dp">
+
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    >
-                    <!-- 비밀번호 -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="비밀번호"
-                        android:textColor="@color/text_200"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="7dp"/>
+                    android:text="비밀번호 설정"
+                    android:textColor="@color/primary_200"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="(8자 이상, 영문/숫자/특수문자 사용 가능)"
-                        android:textColor="@color/text_200"
-                        android:textSize="13sp"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginBottom="7dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8자 이상, 영문/숫자/특수문자를 사용할 수 있어요."
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="24dp"/>
 
-                </LinearLayout>
-
-
+                <!-- 비밀번호 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="비밀번호"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="7dp"/>
 
                 <EditText
                     android:id="@+id/et_password"
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
-                    android:hint="비밀번호를 입력하세요"
+                    android:hint="비밀번호를 입력해 주세요"
                     android:textColorHint="@color/text_200"
                     android:textColor="@color/text_100"
                     android:textSize="14sp"
@@ -448,8 +313,6 @@
                     android:paddingHorizontal="14dp"
                     android:layout_marginBottom="18dp"
                     android:maxLength="14"/>
-
-
 
                 <!-- 비밀번호 확인 -->
                 <TextView
@@ -465,7 +328,7 @@
                     android:id="@+id/et_password_confirm"
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
-                    android:hint="비밀번호를 다시 입력하세요"
+                    android:hint="비밀번호를 다시 입력해 주세요"
                     android:textColorHint="@color/text_200"
                     android:textColor="@color/text_100"
                     android:textSize="14sp"
@@ -475,16 +338,261 @@
                     android:layout_marginBottom="18dp"
                     android:maxLength="14"/>
 
-                <!-- 비밀번호 일치 여부 실시간 표시 -->
                 <TextView
                     android:id="@+id/tv_password_match"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="11sp"
                     android:layout_marginTop="4dp"
-                    android:layout_marginBottom="14dp"
                     android:visibility="gone"/>
 
+            </LinearLayout>
+
+        </ScrollView>
+
+        <!-- ================= STEP 3 · 닉네임 ================= -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="22dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="닉네임 정하기"
+                    android:textColor="@color/primary_200"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="다른 사용자에게 보여질 이름이에요. (2~10자)"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="24dp"/>
+
+                <!-- 닉네임 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="닉네임"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="7dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="18dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <EditText
+                            android:id="@+id/et_nickname"
+                            android:layout_width="match_parent"
+                            android:layout_height="45dp"
+                            android:hint="사용할 닉네임을 입력해 주세요"
+                            android:textColorHint="@color/text_200"
+                            android:textColor="@color/text_100"
+                            android:textSize="14sp"
+                            android:inputType="text"
+                            android:background="@drawable/edittext_background"
+                            android:paddingHorizontal="14dp"
+                            android:maxLength="10"/>
+
+                        <TextView
+                            android:id="@+id/tv_nickname_check_result"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="11sp"
+                            android:layout_marginTop="4dp"
+                            android:visibility="gone"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+        <!-- ================= STEP 4 · 전화번호 ================= -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="22dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="전화번호 확인"
+                    android:textColor="@color/primary_200"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="안전한 모임을 위해 전화번호를 확인해 주세요."
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="24dp"/>
+
+                <!-- 전화번호 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="전화번호"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="7dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="18dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="2"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="10dp">
+
+                        <EditText
+                            android:id="@+id/et_phone_number"
+                            android:layout_width="match_parent"
+                            android:layout_height="45dp"
+                            android:hint="010-1234-5678"
+                            android:textColorHint="@color/text_200"
+                            android:textColor="@color/text_100"
+                            android:textSize="14sp"
+                            android:inputType="phone"
+                            android:background="@drawable/edittext_background"
+                            android:paddingHorizontal="14dp"
+                            android:maxLength="13"/>
+
+                        <TextView
+                            android:id="@+id/tv_phone_check_result"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="11sp"
+                            android:layout_marginTop="4dp"
+                            android:visibility="gone"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+        <!-- ================= STEP 5 · 프로필/생년월일/성별/동네 ================= -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="22dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="프로필 완성"
+                    android:textColor="@color/primary_200"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="마지막이에요! 기본 정보를 입력해 주세요."
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="24dp"/>
+
+                <!-- 프로필 이미지 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="프로필 이미지"
+                    android:textColor="@color/text_200"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="7dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="18dp">
+
+                    <FrameLayout
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView
+                            android:id="@+id/iv_profile_preview"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:src="@drawable/ic_person"
+                            android:background="@drawable/profile_avatar_background"
+                            android:scaleType="centerCrop"
+                            android:clipToOutline="true"/>
+
+                        <ImageButton
+                            android:id="@+id/btn_select_profile_image"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_camera"
+                            android:background="@drawable/camera_button_background"
+                            android:layout_gravity="bottom|end"
+                            android:elevation="4dp" />
+
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="이미지를 선택해 주세요 (선택사항)"
+                        android:textColor="@color/text_200"
+                        android:textSize="11sp"/>
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/layout_birthday"
@@ -492,7 +600,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <!-- 생년월일 -->
                     <TextView
                         android:id="@+id/tv_label_birthday"
                         android:layout_width="wrap_content"
@@ -507,7 +614,7 @@
                         android:id="@+id/et_birthdate"
                         android:layout_width="match_parent"
                         android:layout_height="45dp"
-                        android:hint="20250701"
+                        android:hint="생년월일을 선택해 주세요"
                         android:textColorHint="@color/text_200"
                         android:textColor="@color/text_100"
                         android:textSize="14sp"
@@ -526,15 +633,14 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                <!-- 성별 -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="성별"
-                    android:textColor="@color/text_200"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="7dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="성별"
+                        android:textColor="@color/text_200"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="7dp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -542,7 +648,6 @@
                         android:orientation="horizontal"
                         android:layout_marginBottom="18dp">
 
-                        <!-- 남성 버튼 -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_gender_male"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -561,7 +666,6 @@
                             app:cornerRadius="8dp"
                             android:layout_marginEnd="5dp" />
 
-                        <!-- 여성 버튼 -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_gender_female"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -584,7 +688,7 @@
 
                 </LinearLayout>
 
-                <!-- ========== 위치 선택 (추가) ========== -->
+                <!-- 내 동네 설정 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -617,7 +721,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="동네를 선택해주세요"
+                        android:text="동네를 선택해 주세요"
                         android:textColor="@color/text_200"
                         android:textSize="14sp"/>
 
@@ -630,11 +734,11 @@
 
             </LinearLayout>
 
-        </LinearLayout>
+        </ScrollView>
 
-    </ScrollView>
+    </ViewFlipper>
 
-    <!-- 하단 고정 버튼 -->
+    <!-- 하단 고정 네비게이션 (이전 / 다음) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -643,18 +747,40 @@
         android:padding="18dp"
         android:elevation="4dp">
 
-        <!-- 회원가입 완료 버튼 -->
-        <Button
-            android:id="@+id/btn_signup_complete"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="45dp"
-            android:text="회원가입 완료"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:background="@drawable/button_primary_background"
-            android:layout_marginBottom="10dp"
-            android:elevation="2dp" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp">
+
+            <!-- 이전 버튼 (스텝1에서는 숨김) -->
+            <Button
+                android:id="@+id/btn_prev"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="이전"
+                android:textColor="@color/text_100"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:background="@drawable/edittext_background"
+                android:layout_marginEnd="10dp"
+                android:visibility="gone"/>
+
+            <!-- 다음 / 회원가입 완료 버튼 -->
+            <Button
+                android:id="@+id/btn_next"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="2"
+                android:text="다음"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@drawable/button_primary_background"
+                android:elevation="2dp" />
+
+        </LinearLayout>
 
         <!-- 약관 동의 텍스트 -->
         <TextView
