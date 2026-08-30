@@ -93,6 +93,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
     private String roomType    = "group";   // "group" or "direct"
     private String roomImage   = null;
     private int    meetingId   = -1;        // direct 면 0 또는 미사용
+    private boolean isRoomActionInFlight = false; // 나가기/강퇴 인플라이트 가드(연타 중복요청 방지)
 
     // ─────────────────────────────────────────
     // 런타임 상태 (API 응답 후 확정됨)
@@ -533,11 +534,14 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
 
     /** 실제 leaveRoom API 호출 */
     private void performLeave() {
+        if (isRoomActionInFlight) return; // 이미 처리 중이면 무시(연타 방지)
+        isRoomActionInFlight = true;
         ChatRepository.getInstance().leaveRoom(roomId, myUserId,
                 new Callback<ApiResponse<LeaveRoomResponse>>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse<LeaveRoomResponse>> call,
                                            @NonNull Response<ApiResponse<LeaveRoomResponse>> response) {
+                        isRoomActionInFlight = false;
                         if (response.isSuccessful()
                                 && response.body() != null
                                 && response.body().isSuccess()) {
@@ -570,6 +574,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(@NonNull Call<ApiResponse<LeaveRoomResponse>> call,
                                           @NonNull Throwable t) {
+                        isRoomActionInFlight = false;
                         Log.e(TAG, "leaveRoom 네트워크 오류: " + t.getMessage());
                         ToastUtil.makeText(ChatRoomDetailActivity.this,
                                 "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
@@ -612,6 +617,8 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
      * 3단계 : 실제 강퇴 API 호출 (Repository 경유)
      */
     private void performKick(MeetingParticipant participant) {
+        if (isRoomActionInFlight) return; // 이미 처리 중이면 무시(연타 방지)
+        isRoomActionInFlight = true;
         ChatRepository.getInstance().kickMember(
                 roomId,
                 myUserId,
@@ -620,7 +627,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse<KickMemberResponse>> call,
                                            @NonNull Response<ApiResponse<KickMemberResponse>> response) {
-
+                        isRoomActionInFlight = false;
                         if (response.isSuccessful()
                                 && response.body() != null
                                 && response.body().isSuccess()) {
@@ -647,6 +654,7 @@ public class ChatRoomDetailActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(@NonNull Call<ApiResponse<KickMemberResponse>> call,
                                           @NonNull Throwable t) {
+                        isRoomActionInFlight = false;
                         Log.e(TAG, "kickMember 네트워크 오류: " + t.getMessage());
                         ToastUtil.makeText(ChatRoomDetailActivity.this,
                                 "네트워크 오류가 발생했습니다", Toast.LENGTH_SHORT).show();

@@ -46,6 +46,7 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
     private int meetingId;
     private int hostId;
     private String meetingTitle;
+    private boolean isProcessing = false; // 승인/거절 인플라이트 가드(연타 중복요청 방지)
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -197,6 +198,9 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
      * 승인/거절 API 호출
      */
     private void approveApplicant(ApplicantsResponse.Applicant applicant, String action) {
+        if (isProcessing) return; // 이미 처리 중이면 무시(연타 방지)
+        isProcessing = true;
+
         ApproveMeetingRequest request = new ApproveMeetingRequest(
                 applicant.getParticipant_id(),
                 action
@@ -207,6 +211,7 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
         call.enqueue(new Callback<ApiResponse<ApproveResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<ApproveResponse>> call, Response<ApiResponse<ApproveResponse>> response) {
+                isProcessing = false;
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<ApproveResponse> apiResponse = response.body();
 
@@ -249,6 +254,7 @@ public class MeetingApplicantListActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse<ApproveResponse>> call, Throwable t) {
+                isProcessing = false;
                 Log.e(TAG, "네트워크 오류: " + t.getMessage());
                 ToastUtil.makeText(MeetingApplicantListActivity.this,
                         "네트워크 오류가 발생했습니다.",

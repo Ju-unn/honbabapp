@@ -29,6 +29,7 @@ import com.example.honbabapp.databinding.PageCampaignApplicantListBinding;
 import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.ui.adapter.CampaignApplicantAdapter;
 import com.example.honbabapp.ui.dialog.CampaignApplicantDetailBottomSheet;
+import com.example.honbabapp.util.SnackbarUtil;
 import com.example.honbabapp.util.ToastUtil;
 
 import java.util.List;
@@ -55,6 +56,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     private int hostId;
 
     private String currentStatusFilter = "대기";
+    private boolean isProcessing = false; // 승인/거절 인플라이트 가드(연타 중복요청 방지)
 
     // ─────────────────────────────────────────────────────────────
     // 생명주기
@@ -179,8 +181,8 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                     public void onFailure(Call<ApiResponse<ApplicantsResponse>> call,
                                           Throwable throwable) {
                         Log.e(TAG, "네트워크 오류: " + throwable.getMessage());
-                        ToastUtil.makeText(CampaignApplicantListActivity.this,
-                                "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                        SnackbarUtil.showRetry(binding.getRoot(),
+                                "네트워크 오류가 발생했습니다.", () -> loadApplicants(status));
                     }
                 });
     }
@@ -221,6 +223,9 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
     }
 
     private void approveApplicant(ApplicantsResponse.Applicant applicant, String action) {
+        if (isProcessing) return; // 이미 처리 중이면 무시(연타 방지)
+        isProcessing = true;
+
         ApproveMeetingRequest request = new ApproveMeetingRequest(
                 applicant.getParticipant_id(), action
         );
@@ -230,6 +235,7 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<ApiResponse<ApproveResponse>> call,
                                            Response<ApiResponse<ApproveResponse>> response) {
+                        isProcessing = false;
                         if (response.isSuccessful() && response.body() != null
                                 && response.body().isSuccess()) {
                             String message = "approve".equals(action) ? "승인되었습니다." : "거절되었습니다.";
@@ -247,9 +253,10 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ApiResponse<ApproveResponse>> call,
                                           Throwable throwable) {
+                        isProcessing = false;
                         Log.e(TAG, "승인/거절 오류: " + throwable.getMessage());
-                        ToastUtil.makeText(CampaignApplicantListActivity.this,
-                                "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                        SnackbarUtil.showRetry(binding.getRoot(),
+                                "네트워크 오류가 발생했습니다.", () -> approveApplicant(applicant, action));
                     }
                 });
     }
@@ -293,8 +300,8 @@ public class CampaignApplicantListActivity extends AppCompatActivity {
                     public void onFailure(Call<ApiResponse<CreateRoomResponse>> call,
                                           Throwable throwable) {
                         Log.e(TAG, "채팅방 생성 오류: " + throwable.getMessage());
-                        ToastUtil.makeText(CampaignApplicantListActivity.this,
-                                "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                        SnackbarUtil.showRetry(binding.getRoot(),
+                                "네트워크 오류가 발생했습니다.", () -> onChatClick(applicant));
                     }
                 });
     }

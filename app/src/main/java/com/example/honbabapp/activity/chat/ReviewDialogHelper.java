@@ -160,6 +160,7 @@ public class ReviewDialogHelper {
 
             String content = dialogBinding.etReviewContent.getText().toString().trim();
 
+            dialogBinding.btnReviewSubmit.setEnabled(false); // 인플라이트 가드(연타 중복제출 방지)
             submitReview(selectedTarget, rating, content, reviewAdapter,
                     selectedPosition, dialogBinding);
         });
@@ -187,6 +188,7 @@ public class ReviewDialogHelper {
                     @Override
                     public void onResponse(Call<ApiResponse<ReviewSubmitData>> call,
                                            Response<ApiResponse<ReviewSubmitData>> response) {
+                        dialogBinding.btnReviewSubmit.setEnabled(true);
                         if (response.isSuccessful()
                                 && response.body() != null
                                 && response.body().isSuccess()) {
@@ -211,6 +213,7 @@ public class ReviewDialogHelper {
 
                     @Override
                     public void onFailure(Call<ApiResponse<ReviewSubmitData>> call, Throwable throwable) {
+                        dialogBinding.btnReviewSubmit.setEnabled(true);
                         Log.e(TAG, "후기 제출 실패: " + throwable.getMessage());
                         ToastUtil.makeText(activity,
                                 "네트워크 오류: " + throwable.getMessage(),
