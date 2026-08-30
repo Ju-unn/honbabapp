@@ -135,6 +135,15 @@
                 android:paddingTop="8dp"
                 android:scrollbars="none" />
 
+            <!-- 로딩 인디케이터 (첫 로드 중, 빈 화면 깜빡임 방지) -->
+            <ProgressBar
+                android:id="@+id/progress_loading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/primary_100"
+                android:visibility="gone" />
+
             <!-- 빈 상태 안내 (채팅방 없을 때 표시) -->
             <LinearLayout
                 android:id="@+id/layout_empty"
@@ -144,14 +153,41 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
+                <!-- 아이콘 (흰 원 + 채팅 아이콘) -->
+                <FrameLayout
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:background="@drawable/circle_white"
+                    android:layout_marginBottom="20dp">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_chat"
+                        app:tint="@color/primary_100"
+                        android:contentDescription="@null" />
+                </FrameLayout>
+
                 <TextView
                     android:id="@+id/textEmpty"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="참여 중인 채팅방이 없습니다"
+                    android:text="아직 대화가 없어요"
+                    android:textColor="@color/text_100"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="모임에 참여하거나 이웃과\n1:1 대화를 시작해 보세요."
                     android:textColor="@color/text_200"
-                    android:textSize="14sp" />
+                    android:textSize="13sp"
+                    android:lineSpacingExtra="2dp" />
 
             </LinearLayout>
 

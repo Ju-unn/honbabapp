@@ -247,10 +247,18 @@ public class ChatFragment extends Fragment {
         if (myUserId == -1) return;
         Log.d("ChatFragment", "user_id: " + myUserId);
 
+        // 첫 로드(캐시 없음)일 때만 로딩 인디케이터 — 빈 화면 깜빡임 방지.
+        // onResume 재호출 시 기존 목록이 있으면 스피너를 띄우지 않는다.
+        if (allRooms.isEmpty() && binding != null) {
+            binding.progressLoading.setVisibility(View.VISIBLE);
+            binding.layoutEmpty.setVisibility(View.GONE);
+        }
+
         ChatRepository.getInstance().getChatRooms(myUserId,
                 new Callback<ApiResponse<List<ChatRoomData>>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<List<ChatRoomData>>> call, Response<ApiResponse<List<ChatRoomData>>> response) {
+                        if (binding != null) binding.progressLoading.setVisibility(View.GONE);
 
                         if (response.isSuccessful()
                                 && response.body() != null
@@ -269,6 +277,8 @@ public class ChatFragment extends Fragment {
                     @Override
                     public void onFailure(Call<ApiResponse<List<ChatRoomData>>> call, Throwable t) {
                         Log.e("ChatFragment", "실패: " + t.getMessage());
+                        if (binding == null) return;
+                        binding.progressLoading.setVisibility(View.GONE);
                         showEmpty();
                     }
                 });

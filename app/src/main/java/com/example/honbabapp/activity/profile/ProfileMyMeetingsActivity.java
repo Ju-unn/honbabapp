@@ -95,6 +95,15 @@ public class ProfileMyMeetingsActivity extends AppCompatActivity {
 
     private void loadMyMeetings() {
 
+        // 캐시가 없는 첫 로드에서만 스피너 — 빈상태가 먼저 깜빡이는 것 방지.
+        // onResume 재호출 때 이미 데이터가 있으면 그대로 목록 유지.
+        if (currentMeetings.isEmpty() && pastHostMeetings.isEmpty()
+                && pastParticipantMeetings.isEmpty()) {
+            binding.progressLoading.setVisibility(View.VISIBLE);
+            binding.emptyStateLayout.setVisibility(View.GONE);
+            binding.rvMyMeetings.setVisibility(View.GONE);
+        }
+
         apiService.getMyMeetings()
                 .enqueue(new Callback<ApiResponse<List<MyMeetingItem>>>() {
                     @Override
@@ -117,6 +126,7 @@ public class ProfileMyMeetingsActivity extends AppCompatActivity {
                         }  else {
                             Log.e(TAG, "API 실패: " + (response.body() != null
                                     ? response.body().getMessage() : "body null"));
+                            showEmpty();
                         }
                     }
 
@@ -169,12 +179,14 @@ public class ProfileMyMeetingsActivity extends AppCompatActivity {
     }
 
     private void showList(List<MyMeetingItem> list) {
+        binding.progressLoading.setVisibility(View.GONE);
         binding.rvMyMeetings.setVisibility(View.VISIBLE);
         binding.emptyStateLayout.setVisibility(View.GONE);
         adapter.updateMeetings(list);
     }
 
     private void showEmpty() {
+        binding.progressLoading.setVisibility(View.GONE);
         binding.rvMyMeetings.setVisibility(View.GONE);
         binding.emptyStateLayout.setVisibility(View.VISIBLE);
     }

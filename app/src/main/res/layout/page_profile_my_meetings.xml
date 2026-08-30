@@ -116,13 +116,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- 로딩 인디케이터 (첫 로드 중; 빈상태가 먼저 깜빡이는 것 방지) -->
+    <ProgressBar
+        android:id="@+id/progress_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/primary_100"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/divider_tab"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- 빈 상태 레이아웃 (처음에는 숨김) -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/empty_state_layout"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/bg_100"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/divider_tab"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
