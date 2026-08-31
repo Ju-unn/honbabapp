@@ -569,24 +569,26 @@ public class MeetingEditActivity extends AppCompatActivity {
         new Thread(() -> {
             File tmpFile = null;
             try {
+                byte[] originalBytes;
                 if ("gallery".equals(pendingImageSource)) {
                     java.io.InputStream is = getContentResolver()
                             .openInputStream(android.net.Uri.parse(pendingImageValue));
                     if (is == null) { onUploadFailed(); return; }
+                    originalBytes = IOUtils.toByteArray(is);
+                    is.close();
                     tmpFile = File.createTempFile("meeting_gallery_", ".jpg", getCacheDir());
-                    try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
-                        fos.write(IOUtils.toByteArray(is));
-                    }
                 } else {
                     // 네이버 URL → OkHttp 다운로드
                     OkHttpClient client = new OkHttpClient();
                     Request request = new Request.Builder().url(pendingImageValue).build();
                     ResponseBody body = client.newCall(request).execute().body();
                     if (body == null) { onUploadFailed(); return; }
+                    originalBytes = body.bytes();
                     tmpFile = File.createTempFile("meeting_img_", ".jpg", getCacheDir());
-                    try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
-                        fos.write(body.bytes());
-                    }
+                }
+                byte[] uploadBytes = com.example.honbabapp.util.ImageCompressUtil.compress(originalBytes);
+                try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
+                    fos.write(uploadBytes);
                 }
 
                 RequestBody reqBody = RequestBody.create(MediaType.parse("image/jpeg"), tmpFile);

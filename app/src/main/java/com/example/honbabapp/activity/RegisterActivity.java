@@ -525,15 +525,15 @@ public class RegisterActivity extends AppCompatActivity {
      * Bitmap을 File로 변환 (압축 포함)
      */
     private File createImageFileFromBitmap(Bitmap bitmap) throws IOException {
-        // 비율 유지하면서 리사이즈 (최대 1024 1024)
-        bitmap = resizeBitmap(bitmap , 1024 , 1024);
+        // 비율 유지하면서 리사이즈 (최대 1280 1280 — ImageCompressUtil과 동일)
+        bitmap = resizeBitmap(bitmap , 1280 , 1280);
 
         // 임시 파일 생성
         File tempFile = File.createTempFile("profile_" , ".jpg" , getCacheDir());
 
         // jepg 압축
         FileOutputStream fos = new FileOutputStream(tempFile);
-        bitmap.compress(Bitmap.CompressFormat.JPEG , 80 , fos);
+        bitmap.compress(Bitmap.CompressFormat.JPEG , 85 , fos);
         fos.close();
 
         return tempFile;

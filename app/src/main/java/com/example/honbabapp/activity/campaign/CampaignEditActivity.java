@@ -354,28 +354,31 @@ public class CampaignEditActivity extends AppCompatActivity {
         new Thread(() -> {
             File temporaryFile = null;
             try {
+                byte[] originalBytes;
                 if ("gallery".equals(pendingImageSource)) {
                     java.io.InputStream inputStream = getContentResolver()
                             .openInputStream(android.net.Uri.parse(pendingImageValue));
                     if (inputStream == null) { onUploadFailed(); return; }
-                    temporaryFile = File.createTempFile("campaign_edit_gallery_", ".jpg", getCacheDir());
-                    try (FileOutputStream fileOutputStream = new FileOutputStream(temporaryFile)) {
-                        byte[] buffer = new byte[4096];
-                        int length;
-                        while ((length = inputStream.read(buffer)) != -1) {
-                            fileOutputStream.write(buffer, 0, length);
-                        }
+                    java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
+                    byte[] buffer = new byte[4096];
+                    int length;
+                    while ((length = inputStream.read(buffer)) != -1) {
+                        buf.write(buffer, 0, length);
                     }
                     inputStream.close();
+                    originalBytes = buf.toByteArray();
+                    temporaryFile = File.createTempFile("campaign_edit_gallery_", ".jpg", getCacheDir());
                 } else {
                     OkHttpClient okHttpClient = new OkHttpClient();
                     Request httpRequest = new Request.Builder().url(pendingImageValue).build();
                     ResponseBody responseBody = okHttpClient.newCall(httpRequest).execute().body();
                     if (responseBody == null) { onUploadFailed(); return; }
+                    originalBytes = responseBody.bytes();
                     temporaryFile = File.createTempFile("campaign_edit_img_", ".jpg", getCacheDir());
-                    try (FileOutputStream fileOutputStream = new FileOutputStream(temporaryFile)) {
-                        fileOutputStream.write(responseBody.bytes());
-                    }
+                }
+                byte[] uploadBytes = com.example.honbabapp.util.ImageCompressUtil.compress(originalBytes);
+                try (FileOutputStream fileOutputStream = new FileOutputStream(temporaryFile)) {
+                    fileOutputStream.write(uploadBytes);
                 }
 
                 RequestBody requestBody = RequestBody.create(

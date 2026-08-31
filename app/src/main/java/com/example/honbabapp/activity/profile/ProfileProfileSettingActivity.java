@@ -27,6 +27,7 @@ import com.example.honbabapp.api.data.request.user.UpdateProfileRequest;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.api.data.response.user.UserProfileResponse;
 import com.example.honbabapp.databinding.PageProfileProfilesettingBinding;
+import com.example.honbabapp.util.ImageCompressUtil;
 import com.example.honbabapp.util.InsetsUtils;
 import com.example.honbabapp.util.ToastUtil;
 
@@ -351,15 +352,20 @@ public class ProfileProfileSettingActivity extends AppCompatActivity {
     private void uploadImageToS3(Uri imageUri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(imageUri);
-            File tempFile = new File(getCacheDir(), "profile_temp.jpg");
-            FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
-            byte[] buffer = new byte[1024];
+            java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
             int length;
             while ((length = inputStream.read(buffer)) != -1) {
-                fileOutputStream.write(buffer, 0, length);
+                buf.write(buffer, 0, length);
             }
-            fileOutputStream.close();
             inputStream.close();
+
+            byte[] uploadBytes = ImageCompressUtil.compress(buf.toByteArray());
+
+            File tempFile = new File(getCacheDir(), "profile_temp.jpg");
+            FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
+            fileOutputStream.write(uploadBytes);
+            fileOutputStream.close();
 
             RequestBody requestBody = RequestBody.create(
                     MediaType.parse("image/jpeg"), tempFile

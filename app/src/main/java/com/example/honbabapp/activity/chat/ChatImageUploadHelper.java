@@ -12,6 +12,7 @@ import com.example.honbabapp.api.data.local.PendingMessageStore;
 import com.example.honbabapp.api.data.response.ApiResponse;
 import com.example.honbabapp.network.SocketManager;
 import com.example.honbabapp.repository.ChatRepository;
+import com.example.honbabapp.util.ImageCompressUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -147,16 +148,21 @@ public class ChatImageUploadHelper {
                 return;
             }
 
-            File tempFile = new File(applicationContext.getCacheDir(),
-                    "chat_" + System.currentTimeMillis() + ".jpg");
-            FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
+            java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
             byte[] buffer = new byte[4096];
             int readLength;
             while ((readLength = inputStream.read(buffer)) != -1) {
-                fileOutputStream.write(buffer, 0, readLength);
+                buf.write(buffer, 0, readLength);
             }
-            fileOutputStream.close();
             inputStream.close();
+
+            byte[] uploadBytes = ImageCompressUtil.compress(buf.toByteArray());
+
+            File tempFile = new File(applicationContext.getCacheDir(),
+                    "chat_" + System.currentTimeMillis() + ".jpg");
+            FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
+            fileOutputStream.write(uploadBytes);
+            fileOutputStream.close();
 
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), tempFile);
             MultipartBody.Part imagePart = MultipartBody.Part.createFormData(

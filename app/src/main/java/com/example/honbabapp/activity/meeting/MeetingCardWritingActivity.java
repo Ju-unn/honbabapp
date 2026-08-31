@@ -410,30 +410,41 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
         new Thread(() -> {
             File temporaryFile = null;
             try {
+                byte[] originalBytes;
                 if ("gallery".equals(pendingImageSource)) {
                     java.io.InputStream inputStream = getContentResolver()
                             .openInputStream(android.net.Uri.parse(pendingImageValue));
                     if (inputStream == null) { onUploadFailed(); return; }
-                    temporaryFile = File.createTempFile("meeting_gallery_", ".jpg", getCacheDir());
-                    try (FileOutputStream fileOutputStream = new FileOutputStream(temporaryFile)) {
-                        byte[] buffer = new byte[4096];
-                        int length;
-                        while ((length = inputStream.read(buffer)) != -1) {
-                            fileOutputStream.write(buffer, 0, length);
-                        }
+                    java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
+                    byte[] buffer = new byte[4096];
+                    int length;
+                    while ((length = inputStream.read(buffer)) != -1) {
+                        buf.write(buffer, 0, length);
                     }
                     inputStream.close();
+                    originalBytes = buf.toByteArray();
+                    temporaryFile = File.createTempFile("meeting_gallery_", ".jpg", getCacheDir());
                 } else {
                     // 네이버 이미지 URL → OkHttp 다운로드
                     OkHttpClient okHttpClient = new OkHttpClient();
                     Request httpRequest = new Request.Builder().url(pendingImageValue).build();
                     ResponseBody responseBody = okHttpClient.newCall(httpRequest).execute().body();
                     if (responseBody == null) { onUploadFailed(); return; }
+                    originalBytes = responseBody.bytes();
                     temporaryFile = File.createTempFile("meeting_img_", ".jpg", getCacheDir());
-                    try (FileOutputStream fileOutputStream = new FileOutputStream(temporaryFile)) {
-                        fileOutputStream.write(responseBody.bytes());
-                    }
                 }
+
+                byte[] uploadBytes = com.example.honbabapp.util.ImageCompressUtil.compress(originalBytes);
+                Log.i(TAG, "이미지 압축: "
+                        + String.format("%.2f", originalBytes.length / 1024.0 / 1024.0) + "MB → "
+                        + String.format("%.2f", uploadBytes.length / 1024.0 / 1024.0) + "MB");
+                try (FileOutputStream fileOutputStream = new FileOutputStream(temporaryFile)) {
+                    fileOutputStream.write(uploadBytes);
+                }
+
+                Log.i(TAG, "업로드 이미지 크기: "
+                        + String.format("%.2f", temporaryFile.length() / 1024.0 / 1024.0) + "MB ("
+                        + temporaryFile.length() + " bytes)");
 
                 RequestBody requestBody = RequestBody.create(
                         MediaType.parse("image/jpeg"), temporaryFile
@@ -457,6 +468,11 @@ public class MeetingCardWritingActivity extends AppCompatActivity {
                                     Log.i(TAG, "이미지 S3 업로드 완료: " + imageUrl);
                                     createMeeting(title, description, date, time, priceRange, imageUrl);
                                 } else {
+                                    String failMessage = response.body() != null
+                                            ? response.body().getMessage() : "body=null";
+                                    Log.e(TAG, "이미지 S3 업로드 실패: httpCode=" + response.code()
+                                            + ", success=" + (response.body() != null && response.body().isSuccess())
+                                            + ", message=" + failMessage);
                                     onUploadFailed();
                                 }
                             }
