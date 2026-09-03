@@ -68,6 +68,20 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 binding.tvEmailCheckResult.setVisibility(View.GONE);
+
+                // 이메일을 고치면 이전 이메일로 받은 인증은 무효 → 발송/인증 상태를 전부 초기화.
+                // (안 하면 isCodeVerified가 true로 남아 재설정 버튼이 활성화된 채로 유지됨 — RegisterActivity와 동일 패턴)
+                isCodeVerified = false;
+                binding.btnSendCode.setText("코드 발송");
+                binding.btnSendCode.setEnabled(true);
+                binding.etCode.setText("");
+                binding.etCode.setEnabled(false);
+                binding.btnVerifyCode.setEnabled(false);
+                binding.tvVerifyCodeResult.setVisibility(View.GONE);
+                binding.etNewPassword.setEnabled(false);
+                binding.etConfirmPassword.setEnabled(false);
+                cancelVerificationTimer();
+                updateResetButtonState();
             }
 
             @Override
